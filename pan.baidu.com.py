@@ -474,19 +474,21 @@ def main(url):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='download from pan.baidu.com')
     p.add_argument('url', help='eg: http://pan.baidu.com/s/1gdutU3S, '\
-                'http://pan.baidu.com/disk/home# '\
-                'dir/path=/tmp/\xe5\x90\x8d\xe4\xbe\xa6\xe6\x8e\xa2\xe6\x9f\xaf\xe5\x8d\x97')
+        'http://pan.baidu.com/disk/home# '\
+        'dir/path=/tmp/\xe5\x90\x8d\xe4\xbe\xa6\xe6\x8e\xa2\xe6\x9f\xaf\xe5\x8d\x97')
     p.add_argument('-a', '--aria2c', action='store_true', \
-                help='download with aria2c')
+        help='download with aria2c')
     p.add_argument('-p', '--play', action='store_true', \
-                help='play with mpv')
+        help='play with mpv')
     p.add_argument('-s', '--secret', action='store', \
-                default=None, help='提取密码')
+        default=None, help='提取密码')
     p.add_argument('-f', '--from_', action='store', \
-                default=None, type=int, help='start at')
+        default=None, type=int, \
+        help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
-                default=None, type=str, help='file\'s type')
+        default=None, type=str, \
+        help='要下载的文件的后缀，eg: -t mp3')
     p.add_argument('-l', '--limit', action='store', \
-                default=None, type=str, help='limitrate')
+        default=None, type=str, help='下载速度限制，eg: -l 100k')
     args = p.parse_args()
     main(args.url)

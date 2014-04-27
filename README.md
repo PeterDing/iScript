@@ -106,6 +106,15 @@
     关于播放操作:
     
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+    
+    参数:
+
+        -a, --aria2c                   download with aria2c
+        -p, --play                     play with mpv
+        -s SECRET, --secret SECRET     提取密码
+        -f number, --from_ number      从第几个开始下载，eg: -f 42
+        -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
+        -l amount, --limit amount      下载速度限制，eg: -l 100k
 
 3. 用法
 
