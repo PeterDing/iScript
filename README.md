@@ -6,8 +6,6 @@
 
 - pan.baidu.com.py - 百度网盘的下载和播放
 
-- youku_parser.py - 下载或播放在线视频
-
 - tumblr.py - 下载某个tumblr.com的所有图片
 
 - unzip.py - 解决linux下unzip乱码的问题
