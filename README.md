@@ -6,6 +6,8 @@
 
 - pan.baidu.com.py - 百度网盘的下载和播放
 
+- music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
+
 - tumblr.py - 下载某个tumblr.com的所有图片
 
 - unzip.py - 解决linux下unzip乱码的问题
