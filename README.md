@@ -111,13 +111,17 @@
 
         # 下载自己网盘中的*单个文件*
         bp http://pan.baidu.com/disk/home#dir/path=/path/to/filename
+        bp http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename
         # or
         bp path=/path/to/filename
+        bp path%3D%2Fpath%2Fto%2Ffilename
 
         # 递归下载自己网盘中的*文件夹*
         bp http://pan.baidu.com/disk/home#dir/path=/path/to/directory
+        bp http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory
         # or
         bp path=/path/to/directory
+        bp path%3D%2Fpath%2Fto%2Fdirectory
 
         # 下载别人分享的*单个文件*
         bp http://pan.baidu.com/s/1o64pFnW
