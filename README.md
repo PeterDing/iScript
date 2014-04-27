@@ -14,6 +14,8 @@
 
 - torrent2magnet.py - 种子转磁力
 
+- 91porn.py - 下载或播放91porn
+
 - 待续
 
 ---
