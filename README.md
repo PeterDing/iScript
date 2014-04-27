@@ -136,6 +136,50 @@
 
 ---
 
+### music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
+
+1. 依赖
+
+        python2-requests (https://github.com/kennethreitz/requests)
+
+        python2-mutagen (https://code.google.com/p/mutagen/)
+
+        mpv (http://mpv.io)
+
+2. 使用说明
+
+    默认执行下载，如要播放，加参数-p。
+    
+    参数：
+        
+        -f, --flac  download flac
+        -i, --high  download 320, default
+        -l, --low   download 128
+        -p, --play  play with mpv
+
+    下载的MP3默认添加id3 tags，保存在当前目录下。
+    
+    关于播放操作:
+    
+    > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+
+3. 用法
+
+    \# bm 是music.baidu.com.py的马甲 (alias xm='python2 /path/to/music.baidu.com.py')
+
+        # 下载专辑
+        bm http://music.baidu.com/album/115032005
+
+        # 下载单曲
+        bm http://music.baidu.com/song/117948039
+
+    播放:
+
+        # url 是上面的
+        bm -p url
+
+---
+
 ### tumblr.py - 下载某个tumblr.com的所有图片
 
 1. 依赖
