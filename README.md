@@ -230,3 +230,42 @@
     \# ttm是torrent2magnet.py的马甲 (alias vx='python2 /path/to/torrent2magnet.py')
 
         ttm /path/to/directory
+        
+---
+
+### 91porn.py - 下载或播放91porn
+
+> 警告: 18岁以下者，请自己远离。
+
+1. 依赖
+
+        wget, aria2
+
+        python2-requests (https://github.com/kennethreitz/requests)
+
+        mpv (http://mpv.io)
+
+2. 使用说明
+
+    > 没有解决 *7个/day* 限制
+
+    下载工具默认为wget, 可用参数-a选用aria2
+
+    默认执行下载，如要播放媒体文件，加参数-p。
+
+    下载的文件，保存在当前目录下。
+    
+    关于播放操作:
+    
+    > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+
+3. 用法
+
+    \# pn 是91porn.py的马甲 (alias pn='python2 /path/to/91porn.py')
+
+        pn url # 91porn.com 视频的url
+
+    播放
+
+        pn -p url
+
