@@ -140,8 +140,6 @@
 
 1. 依赖
 
-        python2-requests (https://github.com/kennethreitz/requests)
-
         python2-mutagen (https://code.google.com/p/mutagen/)
 
         mpv (http://mpv.io)
