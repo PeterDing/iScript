@@ -23,8 +23,8 @@ wget_es = {
     0: "No problems occurred.",
     2: "User interference.",
     1<<8: "Generic error code.",
-    2<<8: "Parse error - for instance, when parsing command-line optio.wgetrc \
-    or .netrc...",
+    2<<8: "Parse error - for instance, when parsing command-line " \
+        "optio.wgetrc or .netrc...",
     3<<8: "File I/O error.",
     4<<8: "Network failure.",
     5<<8: "SSL verification failure.",
@@ -39,14 +39,14 @@ s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
 cookie_file = os.path.join(os.path.expanduser('~'), '.bpp.cookie')
 
 headers = {
-    "Accept":"text/html,application/xhtml+xml,application/xml; \
-        q=0.9,image/webp,*/*;q=0.8",
+    "Accept":"text/html,application/xhtml+xml,application/xml; " \
+        "q=0.9,image/webp,*/*;q=0.8",
     "Accept-Encoding":"text/html",
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://www.baidu.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 \
-        (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
+        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
 }
 
 ss = requests.session()
@@ -124,8 +124,8 @@ class panbaiducom_HOME(object):
         # Now we'll do login
         # Get token
         ss.get('http://www.baidu.com')
-        t = ss.get('https://passport.baidu.com/v2/api/?getapi&class=login \
-                   &tpl=pp&tangram=false').text
+        t = ss.get('https://passport.baidu.com/v2/api/?getapi&class=login' \
+                   '&tpl=pp&tangram=false').text
         token = re.search(r'login_token=\'(.+?)\'', t).group(1)
 
         # Construct post body
@@ -159,7 +159,7 @@ class panbaiducom_HOME(object):
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
             g.write(json.dumps(ss.cookies.get_dict(), indent=4, \
-                               sort_keys=True))
+                sort_keys=True))
 
     def get_infos(self):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
@@ -241,37 +241,36 @@ class panbaiducom_HOME(object):
 
         if args.aria2c:
             if args.limit:
-                cmd = 'aria2c -c -x10 -s10 \
-                    --max-download-limit %s \
-                    -o "%s.tmp" -d "%s" \
-                    --user-agent "%s" \
-                    --header "Referer:http://pan.baidu.com/disk/home" \
-                    "%s"' % (args.limit, infos['name'], infos['dir_'],\
+                cmd = 'aria2c -c -x10 -s10 ' \
+                    '--max-download-limit %s ' \
+                    '-o "%s.tmp" -d "%s" \
+                    --user-agent "%s" ' \
+                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                    % (args.limit, infos['name'], infos['dir_'],\
                         headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -x10 -s10 \
-                    -o "%s.tmp" -d "%s" --user-agent "%s" \
-                    --header "Referer:http://pan.baidu.com/disk/home" \
-                    "%s"' % (infos['name'], infos['dir_'], headers['User-Agent'], \
+                cmd = 'aria2c -c -x10 -s10 ' \
+                    '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
+                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                    % (infos['name'], infos['dir_'], headers['User-Agent'], \
                         infos['dlink'])
         else:
-            #cmd = 'wget -c -O "%s.tmp" --user-agent "%s" --header "Referer:http://pan.baidu.com/disk/home" "%s"' % (infos['file'], headers['User-Agent'], infos['dlink'])
             if args.limit:
-                cmd = 'wget -c --limit-rate %s \
-                    -O "%s.tmp" --user-agent "%s" \
-                    --header "Referer:http://pan.baidu.com/disk/home" "%s"' % \
-                    (args.limit, infos['file'], headers['User-Agent'], infos['dlink'])
+                cmd = 'wget -c --limit-rate %s ' \
+                    '-O "%s.tmp" --user-agent "%s" ' \
+                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                    % (args.limit, infos['file'], headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'wget -c -O "%s.tmp" --user-agent "%s" \
-                    --header "Referer:http://pan.baidu.com/disk/home" "%s"' % \
-                    (infos['file'], headers['User-Agent'], infos['dlink'])
+                cmd = 'wget -c -O "%s.tmp" --user-agent "%s" ' \
+                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                    % (infos['file'], headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
             wget_exit_status_info = wget_es[status]
-            print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \
-                \x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' % \
-                (status, wget_exit_status_info))
+            print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
+                '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
+                 % (status, wget_exit_status_info))
             print s % (91, '  ===> '), cmd
             sys.exit(1)
         else:
@@ -284,15 +283,15 @@ class panbaiducom_HOME(object):
         print '\n  ++ play: %s' % col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
-            cmd = 'mplayer -really-quiet -cache 8140 \
-                -http-header-fields "user-agent:%s" \
-                -http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' % \
-                (headers['User-Agent'], infos['dlink'])
+            cmd = 'mplayer -really-quiet -cache 8140 ' \
+                '-http-header-fields "user-agent:%s" ' \
+                '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                % (headers['User-Agent'], infos['dlink'])
         else:
-            cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 \
-                --http-header-fields "user-agent:%s" \
-                --http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' % \
-                (headers['User-Agent'], infos['dlink'])
+            cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
+                '--http-header-fields "user-agent:%s" '\
+                '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                % (headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         timeout = 1
@@ -474,9 +473,9 @@ def main(url):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='download from pan.baidu.com')
-    p.add_argument('url', help='eg: http://pan.baidu.com/s/1gdutU3S, \
-                http://pan.baidu.com/disk/home# \
-                dir/path=/tmp/\xe5\x90\x8d\xe4\xbe\xa6\xe6\x8e\xa2\xe6\x9f\xaf\xe5\x8d\x97')
+    p.add_argument('url', help='eg: http://pan.baidu.com/s/1gdutU3S, '\
+                'http://pan.baidu.com/disk/home# '\
+                'dir/path=/tmp/\xe5\x90\x8d\xe4\xbe\xa6\xe6\x8e\xa2\xe6\x9f\xaf\xe5\x8d\x97')
     p.add_argument('-a', '--aria2c', action='store_true', \
                 help='download with aria2c')
     p.add_argument('-p', '--play', action='store_true', \

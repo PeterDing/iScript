@@ -72,8 +72,8 @@ wget_es = {
     0:"No problems occurred.",
     2:"User interference.",
     1<<8:"Generic error code.",
-    2<<8:"Parse error - for instance, when parsing command-line \
-        optio.wgetrc or .netrc...",
+    2<<8:"Parse error - for instance, when parsing command-line ' \
+        'optio.wgetrc or .netrc...",
     3<<8:"File I/O error.",
     4<<8:"Network failure.",
     5<<8:"SSL verification failure.",
@@ -86,14 +86,14 @@ wget_es = {
 cookie_file = os.path.join(os.path.expanduser('~'), '.Xiami.cookies')
 
 headers = {
-    "Accept":"text/html,application/xhtml+xml,application/xml; \
-        q=0.9,image/webp,*/*;q=0.8",
+    "Accept":"text/html,application/xhtml+xml,application/xml; " \
+        "q=0.9,image/webp,*/*;q=0.8",
     "Accept-Encoding":"text/html",
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://www.xiami.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 \
-        (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
+        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
 }
 
 ss = requests.session()
@@ -159,8 +159,8 @@ class xiami(object):
         self.song_infos = []
         self.json_url = ''
         self.dir_ = os.getcwd().decode('utf8')
-        self.template_wgets = 'wget -c -T 5 -nv -U "%s" -O' % \
-            headers['User-Agent'] + ' "%s.tmp" %s'
+        self.template_wgets = 'wget -c -T 5 -nv -U "%s" -O' \
+            % headers['User-Agent'] + ' "%s.tmp" %s'
         self.template_song = 'http://www.xiami.com/song/gethqsong/sid/%s'
         self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
 
@@ -314,8 +314,8 @@ class xiami(object):
             self.download_album()
         elif '/artist/' in self.url:
             self.artist_id = re.search(r'/artist/(\d+)', self.url).group(1)
-            code = raw_input('  >> 输入 a 下载该艺术家所有专辑.\n  \
-                >> 输入 t 下载该艺术家top 20歌曲.\n  >> ')
+            code = raw_input('  >> 输入 a 下载该艺术家所有专辑.\n' \
+                '  >> 输入 t 下载该艺术家top 20歌曲.\n  >> ')
             if code == 'a':
                 print(s % (92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                 self.download_artist_albums()
@@ -498,7 +498,7 @@ class xiami(object):
 
     def download_artist_top_20_songs(self):
         logging.info('url (top20) -> http://www.xiami.com/artist/%s' \
-             % self.artist_id)
+            % self.artist_id)
         j = ss.get(url_artist_top_song % self.artist_id).json()
         d = modificate_text(j['songs'][0]['artist_name'] + u' - top 20')
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
@@ -520,8 +520,8 @@ class xiami(object):
 
     def download_user_songs(self):
         logging.info('url -> http://www.xiami.com/u/%s' % self.user_id)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), u'虾米用户 \
-            %s 收藏的歌曲' % self.user_id)
+        dir_ = os.path.join(os.getcwd().decode('utf8'), \
+            u'虾米用户 %s 收藏的歌曲' % self.user_id)
         self.dir_ = modificate_file_name_for_wget(dir_)
         logging.info('directory: %s' % self.dir_)
         ii = 1
@@ -585,8 +585,6 @@ class xiami(object):
             t = modificate_file_name_for_wget(i['file_name'])
             file_name = os.path.join(dir_, t)
             if os.path.exists(file_name):  ## if file exists, no get_durl
-                #print 'go'
-                #sys.exit()
                 if args.undownload:
                     self.modified_id3(file_name, i)
                     ii += 1
@@ -606,7 +604,7 @@ class xiami(object):
                 else:
                     print(u'\n  ++ 正在下载: #%s/%s# %s' \
                         % (n, amount_songs, col))
-                    logging.info(u'  #%s/%s [%s] -> %s'  \
+                    logging.info(u'  #%s/%s [%s] -> %s' \
                         % (n, amount_songs, mp3_quality, i['file_name']))
                 if mp3_quality == 'L':
                     print s % (91, ' !!! Warning: '), 'gaining LOW quality mp3 link.'
@@ -615,13 +613,11 @@ class xiami(object):
                 status = os.system(wget)
                 if status != 0:     # other http-errors, such as 302.
                     wget_exit_status_info = wget_es[status]
-                    logging.info(\
-                        '   \\\n                            \\->WARN: status: \
-                        %d (%s), command: %s' % (status, wget_exit_status_info, wget))
+                    logging.info('   \\\n                            \\->WARN: status: ' \
+                        '%d (%s), command: %s' % (status, wget_exit_status_info, wget))
                     logging.info('  ########### work is over ###########\n')
-                    print(
-                        '\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d \
-                        (%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
+                    print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
+                        '(%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
                     print s % (91, '  ===> '), wget
                     sys.exit(1)
                 else:
