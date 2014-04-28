@@ -8,6 +8,8 @@
 
 - music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
+- music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
+
 - tumblr.py - 下载某个tumblr.com的所有图片
 
 - unzip.py - 解决linux下unzip乱码的问题
@@ -192,6 +194,57 @@
 
         # url 是上面的
         bm -p url
+
+---
+
+### music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
+
+1. 依赖
+
+        python2-requests (https://github.com/kennethreitz/requests)
+
+        python2-mutagen (https://code.google.com/p/mutagen/)
+
+        mpv (http://mpv.io)
+
+2. 使用说明
+
+    !!! 默认下载和播放高品质音乐，如果服务器没有高品质音乐则转到低品质音乐。
+
+    默认执行下载，如要播放，加参数-p。
+
+    下载的MP3默认添加id3 tags，保存在当前目录下。
+
+    日志保存在 ~/.163music.log。
+    
+    关于播放操作:
+    
+    > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+
+3. 用法
+
+    \# nm 是music.163.com.py的马甲 (alias xm='python2 /path/to/music.163.com.py')
+
+        # 下载专辑
+        nm http://music.163.com/#/album?id=18915
+
+        # 下载单曲
+        nm http://music.163.com/#/song?id=186114
+
+        # 下载歌单
+        nm http://music.163.com/#/playlist?id=12214308
+
+        # 下载艺术家所有专辑
+        nm http://music.163.com/#/artist?id=6452
+
+        # 下载DJ节目
+        nm http://music.163.com/#/dj?id=675051
+
+
+    播放:
+
+        # url 是上面的
+        nm -p url
 
 ---
 
