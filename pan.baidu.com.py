@@ -189,8 +189,9 @@ class panbaiducom_HOME(object):
                     j['list'] = [x for x in j['list'] if x['isdir'] \
                         or x['server_filename'][-len(args.type_):] \
                         == unicode(args.type_)]
-                if args.from_:
+                if args.from_ - 1:
                     j['list'] = j['list'][args.from_-1:] if args.from_ else j['list']
+                nn = args.from_
                 for i in j['list']:
                     if i['isdir']:
                         dir_loop.append(i['path'].encode('utf8'))
@@ -203,8 +204,10 @@ class panbaiducom_HOME(object):
                             'file': t,
                             'dir_': os.path.split(t)[0],
                             'dlink': i['dlink'].encode('utf8'),
-                            'name': i['server_filename'].encode('utf8')
+                            'name': i['server_filename'].encode('utf8'),
+                            'nn': nn
                         }
+                        nn += 1
                         self.download(infos)
             elif j['errno'] != 0:
                 print s % (91, '  error: get_infos')
@@ -237,7 +240,7 @@ class panbaiducom_HOME(object):
 
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['file'])
-        print '\n  ++ 正在下载: %s' % col
+        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '#', col
 
         if args.aria2c:
             if args.limit:
@@ -280,7 +283,7 @@ class panbaiducom_HOME(object):
     def play(infos):
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['name'])
-        print '\n  ++ play: %s' % col
+        print '\n  ++ play: #', s % (97, infos['nn']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
             cmd = 'mplayer -really-quiet -cache 8140 ' \
@@ -483,7 +486,7 @@ if __name__ == '__main__':
     p.add_argument('-s', '--secret', action='store', \
         default=None, help='提取密码')
     p.add_argument('-f', '--from_', action='store', \
-        default=None, type=int, \
+        default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
         default=None, type=str, \
