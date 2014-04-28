@@ -63,13 +63,19 @@ class panbaiducom_HOME(object):
             ss.cookies.update(t)
             if not self.check_login():
                 self.login()
+                if self.check_login():
+                    print s % (92, '  -- login success\n')
+                else:
+                    print s % (91, '  !! login fail, maybe username or password is wrong.\n')
+                    print s % (91, '  !! maybe this app is down.')
+                    sys.exit(1)
         else:
             self.login()
             if self.check_login():
                 print s % (92, '  -- login success\n')
             else:
-                print s % (91, '  -- login fail, maybe username or password is wrong.\n' \
-                    '  -- maybe this app is down.')
+                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (91, '  !! maybe this app is down.')
                 sys.exit(1)
 
     def get_path(self, url):
@@ -80,15 +86,15 @@ class panbaiducom_HOME(object):
         else:
             return '/'
 
-    def getvcode(self, codestring):
-        url = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-        r = requests.get(url).content
-        with open('vcode.gif','wb') as f:
-            f.write(r)
-        p = os.popen('feh vcode.gif')
-        ret = input('vcode?')
-        p.terminate()
-        return ret
+    @staticmethod
+    def save_img(url, ext):
+        path = os.path.join(os.path.expanduser('~'), 'vcode.%s' % ext)
+        with open(path, 'w') as g:
+            data = urllib.urlopen(url).read()
+            g.write(data)
+        print "  ++ 验证码已经保存至", s % (91, path)
+        input_code = raw_input(s % (92, "  请输入看到的验证码: "))
+        return input_code
 
     def check_login(self):
         print s % (97, '\n  -- check_login')
@@ -119,10 +125,12 @@ class panbaiducom_HOME(object):
         url = 'https://passport.baidu.com/v2/api/?logincheck'
         r = ss.get(url, params=params)
         # Callback for verify code if we need
-        codestring = r.text[r.text.index('(')+1:r.text.index(')')]
+        #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
+        codestring = re.search(r'\((.+?)\)', r.content).group(1)
         codestring = json.loads(codestring)['codestring']
         codestring = codestring if codestring != "null" else None
-        verifycode = (self.getvcode(codestring)) if codestring != None else ""
+        url = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
+        verifycode = self.save_img(url, 'gif') if codestring != None else ""
 
         # Now we'll do login
         # Get token
@@ -421,16 +429,8 @@ class panbaiducom(object):
                 break
             else:
                 vcode = j['vcode']
-                self.save_img(j['img'])
-                input_code = raw_input(s % (92, "  请输入看到的验证码: "))
+                input_code = panbaiducom_HOME.save_img(j['img'], 'jpg')
                 self.params.update({'input': input_code, 'vcode': vcode})
-
-    def save_img(self, url):
-        path = os.path.join(os.path.expanduser('~'), 'vcode.jpg')
-        with open(path, 'w') as g:
-            data = urllib.urlopen(url).read()
-            g.write(data)
-        print "  ++ 验证码已经保存至", s % (91, path)
 
     def get_infos2(self):
         url = self.url
