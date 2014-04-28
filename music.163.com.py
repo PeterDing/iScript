@@ -286,10 +286,12 @@ class neteaseMusic(object):
             self.download_album()
 
     def display_infos(self, i):
+        q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
         print '\n  ----------------'
         print '  >>', s % (94, i['file_name'])
         print '  >>', s % (95, i['album_name'])
         print '  >>', s % (92, 'http://music.163.com/song/%s' % i['song_id'])
+        print '  >>', s % (97, 'MP3-Quality'), ':', s % (92, q[i['mp3_quality']])
         print ''
 
     def play(self, nnn=None, nn=None):
