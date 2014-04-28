@@ -65,7 +65,7 @@ class panbaiducom_HOME(object):
                 self.login()
         else:
             self.login()
-            if not self.check_login():
+            if self.check_login():
                 print s % (92, '  -- login success\n')
             else:
                 print s % (91, '  -- login fail, maybe username or password is wrong.\n' \
