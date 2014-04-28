@@ -157,7 +157,6 @@ class xiami(object):
         self.password = password
         self.url = url
         self.song_infos = []
-        self.json_url = ''
         self.dir_ = os.getcwd().decode('utf8')
         self.template_wgets = 'wget -c -T 5 -nv -U "%s" -O' \
             % headers['User-Agent'] + ' "%s.tmp" %s'
