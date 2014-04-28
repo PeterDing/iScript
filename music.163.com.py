@@ -115,9 +115,6 @@ class neteaseMusic(object):
         self.cover_id = ''
         self.cover_data = ''
 
-        self.mp3_quality = args.quality if args.quality \
-            in ('h', 'm', 'l') else 'h'
-
         self.download = self.play if args.play else self.download
 
     def get_durl(self, i):
@@ -126,7 +123,7 @@ class neteaseMusic(object):
                 dfsId = str(i[q]['dfsId'])
                 edfsId = encrypted_id(dfsId)
                 durl = u'http://m2.music.126.net/%s/%s.mp3' % (edfsId, dfsId)
-                return durl
+                return durl, q[0]
 
     def get_cover(self, info):
         if info['album_name'] == self.cover_id:
@@ -157,7 +154,7 @@ class neteaseMusic(object):
         #id3.add(TSST(encoding=3, text=info['sub_title']))
         #id3.add(TSRC(encoding=3, text=info['disc_code']))
         id3.add(COMM(encoding=3, desc=u'Comment', \
-            text=info['song_url'))
+            text=info['song_url']))
         id3.add(APIC(encoding=3, mime=u'image/jpeg', type=3, \
             desc=u'Front Cover', data=self.get_cover(info)))
         id3.save(file_name)
@@ -188,7 +185,7 @@ class neteaseMusic(object):
         song_info['song_id'] = i['id']
         song_info['song_url'] = u'http://music.163.com/song/%s' % i['id']
         song_info['track'] = str(i['position'])
-        song_info['durl'] = self.get_durl(i)
+        song_info['durl'], song_info['mp3_quality'] = self.get_durl(i)
         #song_info['album_description'] = album_description
         #song_info['lyric_url'] = i['lyric']
         #song_info['sub_title'] = i['sub_title']
@@ -334,12 +331,12 @@ class neteaseMusic(object):
                     print(u'\n  ++ 正在下载: #%s/%s# %s' \
                         % (ii, amount_songs, col))
                     logging.info(u'  #%s/%s [%s] -> %s' \
-                        % (ii, amount_songs, self.mp3_quality, i['file_name']))
+                        % (ii, amount_songs, i['mp3_quality'], i['file_name']))
                 else:
                     print(u'\n  ++ 正在下载: #%s/%s# %s' \
                         % (n, amount_songs, col))
                     logging.info(u'  #%s/%s [%s] -> %s' \
-                        % (n, amount_songs, self.mp3_quality, i['file_name']))
+                        % (n, amount_songs, i['mp3_quality'], i['file_name']))
                 wget = self.template_wgets % (file_name_for_wget, durl)
                 wget = wget.encode('utf8')
                 status = os.system(wget)
