@@ -224,8 +224,7 @@ class panbaiducom_HOME(object):
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
                                 'dlink': i['dlink'].encode('utf8'),
-                                'name': i['server_filename'].encode('utf8'),
-                                'nn': 1
+                                'name': i['server_filename'].encode('utf8')
                             }
                             self.download(infos)
                             break
@@ -241,6 +240,7 @@ class panbaiducom_HOME(object):
 
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['file'])
+        infos['nn'] = infos['nn'] if infos.get('nn') else 1
         print '\n  ++ 正在下载: #', s % (97, infos['nn']), '#', col
 
         if args.aria2c:
@@ -284,6 +284,7 @@ class panbaiducom_HOME(object):
     def play(infos):
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['name'])
+        infos['nn'] = infos['nn'] if infos.get('nn') else 1
         print '\n  ++ play: #', s % (97, infos['nn']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
