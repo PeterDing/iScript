@@ -36,7 +36,7 @@ wget_es = {
 
 s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
 
-cookie_file = os.path.join(os.path.expanduser('~'), '.bpp.cookie')
+cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookie')
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; " \
@@ -65,13 +65,16 @@ class panbaiducom_HOME(object):
                 self.login()
         else:
             self.login()
+            if not self.check_login():
+                print s % (92, '  -- login success\n')
+            else:
+                print s % (91, '  -- login fail, maybe username or password is wrong.\n' \
+                    '  -- maybe this app is down.')
+                sys.exit(1)
 
     def get_path(self, url):
         url = urllib.unquote(url)
-        #print repr(url)
         f = re.search(r'path=(.+?)(&|$)', url)
-        #print f.group(1)
-        #sys.exit()
         if f:
             return f.group(1)
         else:
@@ -154,7 +157,6 @@ class panbaiducom_HOME(object):
         url = 'https://passport.baidu.com/v2/api/?login'
         r = ss.post(url, data=data)
         self.save_cookies()
-        print s % (92, '  -- login success\n')
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
