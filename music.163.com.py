@@ -133,7 +133,7 @@ class neteaseMusic(object):
             while True:
                 url = info['album_pic_url']
                 try:
-                    self.cover_data = ss.get(url).content
+                    self.cover_data = requests.get(url).content
                     if self.cover_data[:5] != '<?xml':
                         return self.cover_data
                 except Exception as e:
@@ -155,7 +155,7 @@ class neteaseMusic(object):
         #id3.add(TSRC(encoding=3, text=info['disc_code']))
         id3.add(COMM(encoding=3, desc=u'Comment', \
             text=info['song_url']))
-        id3.add(APIC(encoding=3, mime=u'image/jpeg', type=3, \
+        id3.add(APIC(encoding=3, mime=u'image/jpg', type=3, \
             desc=u'Front Cover', data=self.get_cover(info)))
         id3.save(file_name)
 
