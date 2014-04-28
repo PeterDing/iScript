@@ -224,7 +224,8 @@ class panbaiducom_HOME(object):
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
                                 'dlink': i['dlink'].encode('utf8'),
-                                'name': i['server_filename'].encode('utf8')
+                                'name': i['server_filename'].encode('utf8'),
+                                'nn': 1
                             }
                             self.download(infos)
                             break
