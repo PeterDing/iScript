@@ -328,7 +328,7 @@ class neteaseMusic(object):
         for i in self.song_infos:
             durl = i['durl']
             self.display_infos(i)
-            os.system('mpv --really-quiet %s' % durl)
+            os.system('mpv --really-quiet --audio-display no %s' % durl)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
             if ii:
