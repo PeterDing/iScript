@@ -65,7 +65,7 @@
         # 下载精选集
         xm http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
 
-        # 下载该艺术家所有专辑或top 20歌曲
+        # 下载该艺术家所有专辑或 Top 20 歌曲
         xm http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
         # 下载用户的收藏
@@ -241,7 +241,7 @@
 
 3. 用法
 
-    \# nm 是music.163.com.py的马甲 (alias xm='python2 /path/to/music.163.com.py')
+    \# nm 是music.163.com.py的马甲 (alias nm='python2 /path/to/music.163.com.py')
 
         # 下载专辑
         nm http://music.163.com/#/album?id=18915
@@ -252,7 +252,7 @@
         # 下载歌单
         nm http://music.163.com/#/playlist?id=12214308
 
-        # 下载艺术家所有专辑
+        # 下载该艺术家所有专辑或 Top 20 歌曲
         nm http://music.163.com/#/artist?id=6452
 
         # 下载DJ节目
