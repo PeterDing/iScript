@@ -225,7 +225,7 @@ class neteaseMusic(object):
             song_info = self.get_song_info(i)
             self.song_infos.append(song_info)
 
-    def download_song(self, amount_songs=u'1', noprint=False):
+    def download_song(self):
         j = ss.get(url_song % (self.song_id, urllib.quote('[%s]' % self.song_id))).json()
         songs = j['songs']
         logging.info('url -> http://music.163.com/song/%s' % self.song_id)
@@ -235,7 +235,7 @@ class neteaseMusic(object):
             print(s % (97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
                 if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs=amount_songs)
+        self.download(amount_songs)
 
     def download_album(self):
         j = ss.get(url_album % (self.album_id)).json()
@@ -250,7 +250,7 @@ class neteaseMusic(object):
         print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs=amount_songs)
+        self.download(amount_songs)
 
     def download_playlist(self):
         #print url_playlist % (self.playlist_id, urllib.quote('[%s]' % self.playlist_id))
@@ -270,7 +270,7 @@ class neteaseMusic(object):
             if not args.play else ''
         n = 1
         self.get_song_infos(songs)
-        self.download(amount_songs=amount_songs)
+        self.download(amount_songs)
 
     def download_dj(self):
         j = ss.get(url_dj % (self.dj_id, urllib.quote('[%s]' % self.dj_id))).json()
@@ -286,7 +286,7 @@ class neteaseMusic(object):
         print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs=amount_songs)
+        self.download(amount_songs)
 
 
     def download_artist_albums(self):
@@ -312,8 +312,10 @@ class neteaseMusic(object):
         print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         for sid in songids:
-            self.song_id = sid
-            self.download_song(amount_songs=amount_songs, noprint=True)
+            j = ss.get(url_song % (sid, urllib.quote('[%s]' % sid))).json()
+            songs = j['songs']
+            self.get_song_infos(songs)
+        self.download(amount_songs)
 
     def display_infos(self, i):
         q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
