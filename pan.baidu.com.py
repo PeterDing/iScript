@@ -199,6 +199,7 @@ class panbaiducom_HOME(object):
                     j['list'] = [x for x in j['list'] if x['isdir'] \
                         or x['server_filename'][-len(args.type_):] \
                         == unicode(args.type_)]
+                total_file = len([i for i in j['list'] if not i['isdir']])
                 if args.from_ - 1:
                     j['list'] = j['list'][args.from_-1:] if args.from_ else j['list']
                 nn = args.from_
@@ -215,7 +216,8 @@ class panbaiducom_HOME(object):
                             'dir_': os.path.split(t)[0],
                             'dlink': i['dlink'].encode('utf8'),
                             'name': i['server_filename'].encode('utf8'),
-                            'nn': nn
+                            'nn': nn,
+                            'total_file': total_file
                         }
                         nn += 1
                         self.download(infos)
@@ -251,7 +253,8 @@ class panbaiducom_HOME(object):
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
-        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '#', col
+        infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
+        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
 
         if args.aria2c:
             if args.limit:
@@ -295,7 +298,8 @@ class panbaiducom_HOME(object):
         num = random.randint(0, 7) % 7
         col = s % (num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
-        print '\n  ++ play: #', s % (97, infos['nn']), '#', col
+        infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
+        print '\n  ++ play: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
             cmd = 'mplayer -really-quiet -cache 8140 ' \
