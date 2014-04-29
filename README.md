@@ -252,7 +252,7 @@
         # 下载歌单
         nm http://music.163.com/#/playlist?id=12214308
 
-        # 下载该艺术家所有专辑或 Top 20 歌曲
+        # 下载该艺术家所有专辑或 Top 50 歌曲
         nm http://music.163.com/#/artist?id=6452
 
         # 下载DJ节目
