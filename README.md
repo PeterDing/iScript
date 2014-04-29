@@ -1,4 +1,4 @@
-## iscript
+## iScript
 
 包含项目:
 
@@ -77,6 +77,14 @@
         # url 是上面的
         xm -p url
 
+4. 参考:
+
+> http://kanoha.org/2011/08/30/xiami-absolute-address/
+
+> http://www.blackglory.me/xiami-vip-audition-with-no-quality-difference-between-downloading/
+
+> https://gist.github.com/lepture/1014329
+
 ---
 
 ### pan.baidu.com.py - 百度网盘的下载和播放
@@ -153,6 +161,12 @@
         bp -p url
         bp -s [secret] -p url
 
+4. 参考:
+
+> https://gist.github.com/HououinRedflag/6191023
+
+> https://github.com/banbanchs/pan-baidu-download/blob/master/bddown_core.py
+
 ---
 
 ### music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
@@ -194,6 +208,10 @@
 
         # url 是上面的
         bm -p url
+
+4. 参考:
+
+> http://v2ex.com/t/77685 # 第9楼
 
 ---
 
@@ -246,6 +264,12 @@
         # url 是上面的
         nm -p url
 
+4. 参考:
+
+> https://github.com/yanunon/NeteaseCloudMusic/wiki/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90API%E5%88%86%E6%9E%90
+
+> http://s3.music.126.net/s/2/core.js
+
 ---
 
 ### tumblr.py - 下载某个tumblr.com的所有图片
@@ -278,6 +302,10 @@
 
         unzip.py azipfile.zip
 
+代码来自以下连接，我改了一点。
+
+> http://wangqige.com/the-solution-of-unzip-files-which-zip-under-windows/解决在Linux环境下解压zip的乱码问题
+
 ---
 
 ### torrent2magnet.py - 种子转磁力
@@ -294,7 +322,13 @@
     \# ttm是torrent2magnet.py的马甲 (alias vx='python2 /path/to/torrent2magnet.py')
 
         ttm /path/to/directory
-        
+
+3. 参考
+
+代码来自以下连接，我改了一点。
+
+> https://github.com/repolho/torrent2magnet
+
 ---
 
 ### 91porn.py - 下载或播放91porn
@@ -332,4 +366,8 @@
     播放
 
         pn -p url
+
+4. 参考
+
+> http://v2ex.com/t/110196 # 第16楼
 
