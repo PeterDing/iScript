@@ -324,7 +324,7 @@ class neteaseMusic(object):
         print '  >>', s % (97, 'MP3-Quality'), ':', s % (92, q[i['mp3_quality']])
         print ''
 
-    def play(self, nnn=None, nn=None):
+    def play(self, amount_songs=None, n=None):
         for i in self.song_infos:
             durl = i['durl']
             self.display_infos(i)
