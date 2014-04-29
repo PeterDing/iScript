@@ -116,6 +116,7 @@ class neteaseMusic(object):
         self.song_id = ''
         self.cover_id = ''
         self.cover_data = ''
+        self.amount_songs = u'1'
 
         self.download = self.play if args.play else self.download
 
@@ -186,6 +187,10 @@ class neteaseMusic(object):
             self.song_id = re.search(r'song.+?(\d+)', self.url).group(1)
             print(s % (92, u'\n  -- 正在分析歌曲信息 ...'))
             self.download_song()
+        elif 'dj' in self.url:
+            self.dj_id = re.search(r'dj.+?(\d+)', self.url).group(1)
+            print(s % (92, u'\n  -- 正在分析DJ节目信息 ...'))
+            self.download_dj()
         else:
             print(s % (91, u'   请正确输入music.163.com网址.'))
 
@@ -225,7 +230,7 @@ class neteaseMusic(object):
             song_info = self.get_song_info(i)
             self.song_infos.append(song_info)
 
-    def download_song(self):
+    def download_song(self, noprint=False, n=1):
         j = ss.get(url_song % (self.song_id, urllib.quote('[%s]' % self.song_id))).json()
         songs = j['songs']
         logging.info('url -> http://music.163.com/song/%s' % self.song_id)
@@ -235,7 +240,7 @@ class neteaseMusic(object):
             print(s % (97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
                 if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs)
+        self.download(self.amount_songs, n)
 
     def download_album(self):
         j = ss.get(url_album % (self.album_id)).json()
@@ -246,11 +251,11 @@ class neteaseMusic(object):
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songs))
         logging.info('url -> http://music.163.com/album/%s' % self.album_id)
-        amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        self.amount_songs = unicode(len(songs))
+        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs)
+        self.download(self.amount_songs)
 
     def download_playlist(self):
         #print url_playlist % (self.playlist_id, urllib.quote('[%s]' % self.playlist_id))
@@ -265,12 +270,12 @@ class neteaseMusic(object):
                      % self.playlist_id)
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songs))
-        amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        self.amount_songs = unicode(len(songs))
+        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         n = 1
         self.get_song_infos(songs)
-        self.download(amount_songs)
+        self.download(self.amount_songs)
 
     def download_dj(self):
         j = ss.get(url_dj % (self.dj_id, urllib.quote('[%s]' % self.dj_id))).json()
@@ -281,12 +286,12 @@ class neteaseMusic(object):
         logging.info('url -> http://music.163.com/dj/%s' \
                      % self.dj_id)
         logging.info('directory: %s' % self.dir_)
-        logging.info('total songs: %d' % len(j['collect']['songs']))
-        amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        logging.info('total songs: %d' % len(songs))
+        self.amount_songs = unicode(len(songs))
+        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
-        self.download(amount_songs)
+        self.download(self.amount_songs)
 
 
     def download_artist_albums(self):
@@ -308,14 +313,15 @@ class neteaseMusic(object):
                      % self.artist_id)
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songids))
-        amount_songs = unicode(len(songids))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        self.amount_songs = unicode(len(songids))
+        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
+        n = 1
         for sid in songids:
-            j = ss.get(url_song % (sid, urllib.quote('[%s]' % sid))).json()
-            songs = j['songs']
-            self.get_song_infos(songs)
-        self.download(amount_songs)
+            self.song_id = sid
+            self.song_infos = []
+            self.download_song(noprint=True, n=n)
+            n += 1
 
     def display_infos(self, i):
         q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
@@ -326,7 +332,7 @@ class neteaseMusic(object):
         print '  >>', s % (97, 'MP3-Quality'), ':', s % (92, q[i['mp3_quality']])
         print ''
 
-    def play(self, amount_songs=None, n=None):
+    def play(self, amount_songs, n=None):
         for i in self.song_infos:
             durl = i['durl']
             self.display_infos(i)
@@ -338,7 +344,7 @@ class neteaseMusic(object):
             else:
                 pass
 
-    def download(self, amount_songs=u'1', n=None):
+    def download(self, amount_songs, n=None):
         dir_ = modificate_file_name_for_wget(self.dir_)
         cwd = os.getcwd().decode('utf8')
         if dir_ != cwd:
