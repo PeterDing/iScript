@@ -6,6 +6,8 @@
 
 - pan.baidu.com.py - 百度网盘的下载和播放
 
+- 115.py - 115网盘的下载和播放
+
 - music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
 - music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
