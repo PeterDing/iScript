@@ -36,7 +36,7 @@ wget_es = {
 
 s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
 
-cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookie')
+cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookies')
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; " \
