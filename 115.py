@@ -157,7 +157,8 @@ class pan115(object):
             "limit": 10000,
             "format": "json",
             "aid": 1,
-            "o": "user_ptime",
+            "o": "file_name",
+            "asc": 0,
             "show_dir": 1
         }
 
@@ -172,7 +173,6 @@ class pan115(object):
                 params['cid'] = d['cid']
                 j = json.loads(ss.get(url, params=params).content[3:])
                 if j['errNo'] == 0 and j['data']:
-                    j['data'] = j['data'][::-1]
                     if args.type_:
                         j['data'] = [x for x in j['data'] if x.get('ns') \
                             or x['ico'].lower() == unicode(args.type_.lower())]
