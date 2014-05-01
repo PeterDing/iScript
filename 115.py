@@ -300,6 +300,7 @@ class pan115(object):
     def do2(self, pc):
         dlink = self.get_dlink(pc)
         name = re.search(r'file=(.+?)(&|$)', dlink).group(1)
+        name = urllib.unquote_plus(name)
         t = os.path.join(os.getcwd(), name)
         infos = {
             'file': t,
