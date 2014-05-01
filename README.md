@@ -235,6 +235,58 @@
 
 ---
 
+### yunpan.360.cn.py - 360网盘的下载
+
+1. 依赖
+
+        wget, aria2
+
+        python2-requests (https://github.com/kennethreitz/requests)
+
+
+2. 使用说明
+
+    在源码中填入yunpan.360.com账户username和password后，可以递归下载自己的网盘文件。
+    
+    !!!!!!  万恶的360不支持断点续传   !!!!!!
+    
+    由于上面的原因，不能播放媒体文件。
+
+    只支持自己的\*文件夹\*的下载。
+
+    下载工具默认为wget, 可用参数-a选用aria2
+
+    下载的文件，保存在当前目录下。
+
+    cookies保存在 ~/.360.cookies
+    
+    参数:
+
+        -a, --aria2c                   download with aria2c
+        -f number, --from_ number      从第几个开始下载，eg: -f 42
+        -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
+        -l amount, --limit amount      下载速度限制，eg: -l 100k
+
+3. 用法
+
+    \# yp 是yunpan.360.cn.py的马甲 (alias yp='python2 /path/to/yunpan.360.cn.py')
+
+        # 递归下载自己网盘中的*文件夹*
+        yp http://c17.yunpan.360.cn/my/?sid=#/path/to/directory
+        yp http://c17.yunpan.360.cn/my/?sid=#%2Fpath%3D%2Fpath%2Fto%2Fdirectory
+        # or
+        yp sid=/path/to/directory
+        yp sid%3D%2Fpath%2Fto%2Fdirectory
+
+        # 下载用aria2, url 是上面的
+        bp -a url
+
+4. 参考:
+
+> https://github.com/Shu-Ji/gorthon/blob/master/_3rdapp/CloudDisk360/main.py
+
+---
+
 ### music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
 1. 依赖
