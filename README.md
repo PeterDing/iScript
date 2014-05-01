@@ -2,25 +2,27 @@
 
 包含项目:
 
-- xiami.py - 下载或播放高品质虾米音乐(xiami.com)
+> *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
-- pan.baidu.com.py - 百度网盘的下载和播放
+- *[L]* xiami.py - 下载或播放高品质虾米音乐(xiami.com)
 
-- 115.py - 115网盘的下载和播放
+- *[L]* pan.baidu.com.py - 百度网盘的下载和播放
 
-- yunpan.360.cn.py - 360网盘的下载
+- *[L]* 115.py - 115网盘的下载和播放
 
-- music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
+- *[L]* yunpan.360.cn.py - 360网盘的下载
 
-- music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
+- *[L]* music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
-- tumblr.py - 下载某个tumblr.com的所有图片
+- *[L]* music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
 
-- unzip.py - 解决linux下unzip乱码的问题
+- *[L]* tumblr.py - 下载某个tumblr.com的所有图片
 
-- torrent2magnet.py - 种子转磁力
+- *[L]* unzip.py - 解决linux下unzip乱码的问题
 
-- 91porn.py - 下载或播放91porn
+- *[L]* torrent2magnet.py - 种子转磁力
+
+- *[L]* 91porn.py - 下载或播放91porn
 
 - 待续
 
