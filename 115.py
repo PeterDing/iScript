@@ -312,22 +312,21 @@ class pan115(object):
         self.download(infos)
 
 def main(url):
-    if '115.com' in url:
-        if 'pickcode' in url:
-            pc = re.search(r'pickcode=([\d\w]+)', url)
-            if pc:
-                pc = pc.group(1)
-                x = pan115()
-                x.init()
-                x.do2(pc)
-            else:
-                print s % (91, '  can\'t find pickcode.')
-        else:
-            cid = re.search(r'cid=(\d+)', url)
-            cid = cid.group(1) if cid else '0'
-            x = pan115(cid)
+    if 'pickcode' in url:
+        pc = re.search(r'pickcode=([\d\w]+)', url)
+        if pc:
+            pc = pc.group(1)
+            x = pan115()
             x.init()
-            x.do()
+            x.do2(pc)
+        else:
+            print s % (91, '  can\'t find pickcode.')
+    elif 'cid' in url:
+        cid = re.search(r'cid=(\d+)', url)
+        cid = cid.group(1) if cid else '0'
+        x = pan115(cid)
+        x.init()
+        x.do()
     else:
         print s % (91, '  请正确输入自己的115地址。')
 
