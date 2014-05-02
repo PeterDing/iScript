@@ -164,7 +164,6 @@ class panbaiducom_HOME(object):
         # XXX : do not handle errors
         url = 'https://passport.baidu.com/v2/api/?login'
         r = ss.post(url, data=data)
-        self.save_cookies()
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
