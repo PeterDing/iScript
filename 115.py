@@ -129,8 +129,6 @@ class pan115(object):
         }
         url = 'http://passport.115.com'
         ss.post(url, params=params, data=data, headers=theaders)
-        self.save_cookies()
-        sys.exit()
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
