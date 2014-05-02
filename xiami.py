@@ -182,8 +182,20 @@ class xiami(object):
             ss.cookies.update(t)
             if not self.check_login():
                 self.login()
+                if self.check_login():
+                    print s % (92, '  -- login success\n')
+                else:
+                    print s % (91, '  !! login fail, maybe username or password is wrong.\n')
+                    print s % (91, '  !! maybe this app is down.')
+                    sys.exit(1)
         else:
             self.login()
+            if self.check_login():
+                print s % (92, '  -- login success\n')
+            else:
+                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (91, '  !! maybe this app is down.')
+                sys.exit(1)
 
     def check_login(self):
         print s % (97, '\n  -- check_login')
@@ -210,8 +222,7 @@ class xiami(object):
         }
 
         url = 'http://www.xiami.com/web/login'
-        r = ss.post(url, data=data)
-        self.check_login()
+        ss.post(url, data=data)
 
     def get_validate(self):
         url = 'https://login.xiami.com/coop/checkcode?forlogin=1&%s' \
