@@ -54,8 +54,7 @@ ss = requests.session()
 ss.headers.update(headers)
 
 class pan115(object):
-    def __init__(self, cid='0'):
-        self.cid = cid
+    def __init__(self):
         self.download = self.play if args.play else self.download
 
     def init(self):
@@ -147,9 +146,9 @@ class pan115(object):
         dlink = j['data']['url'].encode('utf8')
         return dlink
 
-    def get_infos(self):
+    def get_infos(self, cid):
         params = {
-            "cid": self.cid,
+            "cid": cid,
             "offset": 0,
             "type": "",
             "limit": 10000,
@@ -292,10 +291,50 @@ class pan115(object):
     def upload(self, path, dir_):
         pass
 
-    def do(self):
-        self.get_infos()
+    def addtask(self, u):
+        # get uid
+        url = 'http://my.115.com/?ct=ajax&ac=get_user_aq'
+        r = ss.get(url)
+        j = r.json()
+        uid = j['data']['uid']
 
-    def do2(self, pc):
+        # get sign, time
+        url = 'http://115.com/?ct=offline&ac=space'
+        r = ss.get(url)
+        j = r.json()
+        sign = j['sign']
+        tm = j['time']
+
+        # now, add task
+        data = {
+            'url': urllib.quote_plus(u),
+            'uid': uid,
+            'sign': sign,
+            'time': str(tm)
+        }
+        url = 'http://115.com/lixian/?ct=lixian&ac=add_task_url'
+        r = ss.post(url, data=data)
+        j = r.json()
+        if j['info_hash']:
+            print s % (92, '  ++ add task success.')
+        else:
+            print s % (91, '  !! Error: %s' % j['error_msg'])
+            sys.exit()
+
+        data = {
+            'page': 1,
+            'uid': uid,
+            'sign': sign,
+            'time': str(tm)
+        }
+        url = 'http://115.com/lixian/?ct=lixian&ac=task_lists'
+        r = ss.post(url, data=data)
+        j = r.json()
+        percentDone = j['tasks'][0]['percentDone']
+        print s % (97, '  ++ %s' % j['tasks'][0]['name'])
+        print s % (92, '  %s%s Done' % (percentDone, '%'))
+
+    def do(self, pc):
         dlink = self.get_dlink(pc)
         name = re.search(r'file=(.+?)(&|$)', dlink).group(1)
         name = urllib.unquote_plus(name)
@@ -317,15 +356,19 @@ def main(url):
             pc = pc.group(1)
             x = pan115()
             x.init()
-            x.do2(pc)
+            x.do(pc)
         else:
             print s % (91, '  can\'t find pickcode.')
-    elif 'cid' in url:
+    elif 'cid=' in url:
         cid = re.search(r'cid=(\d+)', url)
         cid = cid.group(1) if cid else '0'
-        x = pan115(cid)
+        x = pan115()
         x.init()
-        x.do()
+        x.get_infos(cid)
+    elif args.addtask:
+        x = pan115()
+        x.init()
+        x.addtask(url)
     else:
         print s % (91, '  请正确输入自己的115地址。')
 
@@ -344,5 +387,7 @@ if __name__ == '__main__':
         help='要下载的文件的后缀，eg: -t mp3')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
+    p.add_argument('-d', '--addtask', action='store_true', \
+        help='加离线下载任务')
     args = p.parse_args()
     main(args.url)
