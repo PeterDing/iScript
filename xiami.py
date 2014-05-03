@@ -213,11 +213,11 @@ class xiami(object):
     def login(self):
         print s % (97, '\n  -- login')
 
-        validate = self.get_validate()
+        #validate = self.get_validate()
         data = {
             'email': self.email,
             'password': self.password,
-            'validate': validate,
+            #'validate': validate,
             'remember': 1,
             'LoginButton': '登录'
         }
