@@ -58,18 +58,7 @@ class panbaiducom_HOME(object):
         self.download = self.play if args.play else self.download
 
     def init(self):
-        if os.path.exists(cookie_file):
-            t = json.loads(open(cookie_file).read())
-            ss.cookies.update(t)
-            if not self.check_login():
-                self.login()
-                if self.check_login():
-                    print s % (92, '  -- login success\n')
-                else:
-                    print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                    print s % (91, '  !! maybe this app is down.')
-                    sys.exit(1)
-        else:
+        def loginandcheck():
             self.login()
             if self.check_login():
                 print s % (92, '  -- login success\n')
@@ -77,6 +66,18 @@ class panbaiducom_HOME(object):
                 print s % (91, '  !! login fail, maybe username or password is wrong.\n')
                 print s % (91, '  !! maybe this app is down.')
                 sys.exit(1)
+
+        if os.path.exists(cookie_file):
+            t = json.loads(open(cookie_file).read())
+            if t.get('user') != None and t.get('user') == username:
+                ss.cookies.update(t.get('cookies', t))
+                if not self.check_login():
+                    loginandcheck()
+            else:
+                print s % (91, '\n  ++  username changed, then relogin')
+                loginandcheck()
+        else:
+            loginandcheck()
 
     def get_path(self, url):
         url = urllib.unquote(url)
@@ -128,9 +129,9 @@ class panbaiducom_HOME(object):
         #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
         codestring = re.search(r'\((.+?)\)', r.content).group(1)
         codestring = json.loads(codestring)['codestring']
-        codestring = codestring if codestring != "null" else None
+        codestring = codestring if codestring else ""
         url = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-        verifycode = self.save_img(url, 'gif') if codestring != None else ""
+        verifycode = self.save_img(url, 'gif') if codestring != "" else ""
 
         # Now we'll do login
         # Get token
@@ -167,8 +168,8 @@ class panbaiducom_HOME(object):
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
-            g.write(json.dumps(ss.cookies.get_dict(), indent=4, \
-                sort_keys=True))
+            c = {'user': username, 'cookies': ss.cookies.get_dict()}
+            g.write(json.dumps(c, indent=4, sort_keys=True))
 
     def get_infos(self):
         t = {'Referer':'http://pan.baidu.com/disk/home'}

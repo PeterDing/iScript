@@ -177,18 +177,7 @@ class xiami(object):
         self.download = self.play if args.play else self.download
 
     def init(self):
-        if os.path.exists(cookie_file):
-            t = json.loads(open(cookie_file).read())
-            ss.cookies.update(t)
-            if not self.check_login():
-                self.login()
-                if self.check_login():
-                    print s % (92, '  -- login success\n')
-                else:
-                    print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                    print s % (91, '  !! maybe this app is down.')
-                    sys.exit(1)
-        else:
+        def loginandcheck():
             self.login()
             if self.check_login():
                 print s % (92, '  -- login success\n')
@@ -196,6 +185,18 @@ class xiami(object):
                 print s % (91, '  !! login fail, maybe username or password is wrong.\n')
                 print s % (91, '  !! maybe this app is down.')
                 sys.exit(1)
+
+        if os.path.exists(cookie_file):
+            t = json.loads(open(cookie_file).read())
+            if t.get('user') != None and t.get('user') == email:
+                ss.cookies.update(t.get('cookies', t))
+                if not self.check_login():
+                    loginandcheck()
+            else:
+                print s % (91, '\n  ++  email changed, then relogin')
+                loginandcheck()
+        else:
+            loginandcheck()
 
     def check_login(self):
         print s % (97, '\n  -- check_login')
@@ -238,7 +239,8 @@ class xiami(object):
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
-            g.write(json.dumps(ss.cookies.get_dict(), indent=4, sort_keys=True))
+            c = {'user': email, 'cookies': ss.cookies.get_dict()}
+            g.write(json.dumps(c, indent=4, sort_keys=True))
 
     def get_durl(self, id_):
         while True:
