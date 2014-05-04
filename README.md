@@ -24,6 +24,8 @@
 
 - *[L]* 91porn.py - 下载或播放91porn
 
+- *[L]* ThunderLixianExporter.user.js - fork binux/ThunderLixianExporter，增加了mpv和mplayer的导出。
+
 - 待续
 
 ---
