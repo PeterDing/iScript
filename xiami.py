@@ -256,10 +256,7 @@ class xiami(object):
                 time.sleep(5)
 
     def record(self, id_):
-        try:
-            api_json = self.opener.open(self.template_record % id_).read()
-        except:
-            pass
+        ss.get(self.template_record % id_)
 
     def get_cover(self, info):
         if info['album_name'] == self.cover_id:
