@@ -214,6 +214,7 @@
         -f number, --from_ number      从第几个开始下载，eg: -f 42
         -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
         -l amount, --limit amount      下载速度限制，eg: -l 100k
+        -d "url"                       增加离线下载 "http/ftp/magnet/ed2k"
 
 3. 用法
 
@@ -227,6 +228,9 @@
 
         # 下载用aria2, url 是上面的
         pan115 -a url
+        
+        # 增加离线下载
+        pan115 -d "magnet:?xt=urn:btih:757fc565c56462b28b4f9c86b21ac753500eb2a7&dn=archlinux-2014.04.01-dual.iso"
 
     播放
 
