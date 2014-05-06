@@ -165,7 +165,15 @@ class neteaseMusic(object):
     def url_parser(self):
         if 'playlist' in self.url:
             self.playlist_id = re.search(r'playlist.+?(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析精选集信息 ...'))
+            print(s % (92, u'\n  -- 正在分析歌单信息 ...'))
+            self.download_playlist()
+        elif 'toplist' in self.url:
+            t = re.search(r'toplist.+?(\d+)', self.url)
+            if t:
+                self.playlist_id = t.group(1)
+            else:
+                self.playlist_id = '3779629'
+            print(s % (92, u'\n  -- 正在分析排行榜信息 ...'))
             self.download_playlist()
         elif 'album' in self.url:
             self.album_id = re.search(r'album.+?(\d+)', self.url).group(1)
