@@ -383,6 +383,9 @@
 
         # 下载DJ节目
         nm http://music.163.com/#/dj?id=675051
+        
+        # 下载排行榜
+        nm http://music.163.com/#/discover/toplist?id=11641012
 
 
     播放:
