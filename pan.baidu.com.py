@@ -231,6 +231,7 @@ class panbaiducom_HOME(object):
                 if j['errno'] == 0 and j['list']:
                     for i in j['list']:
                         if i['server_filename'].encode('utf8') == server_filename:
+                            if i['isdir']: break
                             t =  os.path.join(os.getcwd(), server_filename)
                             infos = {
                                 'file': t,
