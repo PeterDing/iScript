@@ -104,6 +104,7 @@ class panbaiducom_HOME(object):
         if 'errNo":"0' in j.text:
             print s % (92, '  -- check_login success\n')
             self.save_cookies()
+            self.get_dsign()
             return True
         else:
             print s % (91, '  -- check_login fail\n')
@@ -214,7 +215,7 @@ class panbaiducom_HOME(object):
                         infos = {
                             'file': t,
                             'dir_': os.path.split(t)[0],
-                            'dlink': i['dlink'].encode('utf8'),
+                            'dlink': self.get_dlink(i),
                             'name': i['server_filename'].encode('utf8'),
                             'nn': nn,
                             'total_file': total_file
@@ -236,11 +237,74 @@ class panbaiducom_HOME(object):
                             infos = {
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
-                                'dlink': i['dlink'].encode('utf8'),
+                                'dlink': self.get_dlink(i),
                                 'name': i['server_filename'].encode('utf8')
                             }
                             self.download(infos)
                             break
+
+    def get_dsign(self):
+        url = 'http://pan.baidu.com/disk/home'
+        r = ss.get(url)
+        html = r.content
+        sign1 = re.search(r'sign1="(.+?)";', html).group(1)
+        sign3 = re.search(r'sign3="(.+?)";', html).group(1)
+        timestamp = re.search(r'timestamp="(.+?)";', html).group(1)
+
+        import base64
+        def sign2(j, r):
+            a = []
+            p = []
+            o = ''
+            v = len(j)
+
+            for q in xrange(256):
+                a.append(ord(j[q % v]))
+                p.append(q)
+
+            u = 0
+            for q in xrange(256):
+                u = (u + p[q] + a[q]) % 256
+                t = p[q]
+                p[q] = p[u]
+                p[u] = t
+
+            i = 0
+            u = 0
+            for q in xrange(len(r)):
+                i = (i + 1) % 256
+                u = (u + p[i]) % 256
+                t = p[i]
+                p[i] = p[u]
+                p[u] = t
+                k = p[((p[i] + p[u]) % 256)]
+                o += chr(ord(r[q]) ^ k)
+
+            return base64.b64encode(o)
+
+        self.dsign = sign2(sign3, sign1)
+        self.timestamp = timestamp
+
+    def get_dlink(self, i):
+        params = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            #"bdstoken": token
+        }
+
+        data = {
+            "sign": self.dsign,
+            "timestamp": self.timestamp,
+            "fidlist": "[%s]" % i['fs_id'],
+            "type": "dlink"
+        }
+
+        url = 'http://pan.baidu.com/api/download'
+        r = ss.post(url, params=params, data=data)
+        j = r.json()
+        dlink = j['dlink'][0]['dlink']
+        return dlink
 
     @staticmethod
     def download(infos):
