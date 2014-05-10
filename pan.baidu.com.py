@@ -11,6 +11,7 @@ import time
 import argparse
 import random
 import select
+import base64
 
 
 username = ''
@@ -251,7 +252,6 @@ class panbaiducom_HOME(object):
         sign3 = re.search(r'sign3="(.+?)";', html).group(1)
         timestamp = re.search(r'timestamp="(.+?)";', html).group(1)
 
-        import base64
         def sign2(j, r):
             a = []
             p = []
