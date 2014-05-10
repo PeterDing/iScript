@@ -80,7 +80,7 @@ class panbaiducom_HOME(object):
             loginandcheck()
 
     def get_path(self, url):
-        url = urllib.unquote(url)
+        url = urllib.unquote_plus(url)
         f = re.search(r'path=(.+?)(&|$)', url)
         if f:
             return f.group(1)
