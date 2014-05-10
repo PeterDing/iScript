@@ -286,25 +286,29 @@ class panbaiducom_HOME(object):
         self.timestamp = timestamp
 
     def get_dlink(self, i):
-        params = {
-            "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
-            #"bdstoken": token
-        }
+        while True:
+            params = {
+                "channel": "chunlei",
+                "clienttype": 0,
+                "web": 1,
+                #"bdstoken": token
+            }
 
-        data = {
-            "sign": self.dsign,
-            "timestamp": self.timestamp,
-            "fidlist": "[%s]" % i['fs_id'],
-            "type": "dlink"
-        }
+            data = {
+                "sign": self.dsign,
+                "timestamp": self.timestamp,
+                "fidlist": "[%s]" % i['fs_id'],
+                "type": "dlink"
+            }
 
-        url = 'http://pan.baidu.com/api/download'
-        r = ss.post(url, params=params, data=data)
-        j = r.json()
-        dlink = j['dlink'][0]['dlink']
-        return dlink
+            url = 'http://pan.baidu.com/api/download'
+            r = ss.post(url, params=params, data=data)
+            j = r.json()
+            if j['errno'] == 0:
+                dlink = j['dlink'][0]['dlink']
+                return dlink
+            else:
+                self.get_dsign()
 
     @staticmethod
     def download(infos):
