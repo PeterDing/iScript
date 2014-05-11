@@ -305,7 +305,7 @@ class panbaiducom_HOME(object):
             r = ss.post(url, params=params, data=data)
             j = r.json()
             if j['errno'] == 0:
-                dlink = j['dlink'][0]['dlink']
+                dlink = j['dlink'][0]['dlink'].encode('utf8')
                 return dlink
             else:
                 self.get_dsign()
