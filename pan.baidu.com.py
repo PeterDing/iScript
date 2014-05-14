@@ -81,12 +81,13 @@ class panbaiducom_HOME(object):
             loginandcheck()
 
     def get_path(self, url):
-        url = urllib.unquote_plus(url)
-        f = re.search(r'path=(.+?)(&|$)', url)
-        if f:
-            return f.group(1)
+        t = re.search(r'path=(.+?)(&|$)', url)
+        if t:
+            t = t.group(1)
         else:
-            return '/'
+            t = '/'
+        t = urllib.unquote_plus(t)
+        return t
 
     @staticmethod
     def save_img(url, ext):
@@ -224,7 +225,7 @@ class panbaiducom_HOME(object):
                         nn += 1
                         self.download(infos)
             elif j['errno'] != 0:
-                print s % (91, '  error: get_infos')
+                print s % (91, '  error: get_infos'), '--', j
                 sys.exit(0)
             elif not j['list']:
                 self.path, server_filename = os.path.split(self.path)
