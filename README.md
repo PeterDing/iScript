@@ -36,6 +36,8 @@
 
 1. 依赖
 
+        wget
+
         python2-requests (https://github.com/kennethreitz/requests)
 
         python2-mutagen (https://code.google.com/p/mutagen/)
@@ -299,6 +301,8 @@
 
 1. 依赖
 
+        wget
+
         python2-mutagen (https://code.google.com/p/mutagen/)
 
         mpv (http://mpv.io)
@@ -344,6 +348,8 @@
 ### music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
 
 1. 依赖
+
+        wget
 
         python2-requests (https://github.com/kennethreitz/requests)
 
