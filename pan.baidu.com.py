@@ -217,7 +217,8 @@ class panbaiducom_HOME(object):
                         infos = {
                             'file': t,
                             'dir_': os.path.split(t)[0],
-                            'dlink': self.get_dlink(i),
+                            #'dlink': self.get_dlink(i),
+                            'dlink': i['dlink'],
                             'name': i['server_filename'].encode('utf8'),
                             'nn': nn,
                             'total_file': total_file
@@ -239,7 +240,8 @@ class panbaiducom_HOME(object):
                             infos = {
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
-                                'dlink': self.get_dlink(i),
+                                #'dlink': self.get_dlink(i),
+                                'dlink': i['dlink'],
                                 'name': i['server_filename'].encode('utf8')
                             }
                             self.download(infos)
