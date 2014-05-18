@@ -105,7 +105,7 @@ class panbaiducom_HOME(object):
         j = ss.get(url)
         if 'errNo":"0' in j.text:
             print s % (92, '  -- check_login success\n')
-            self.get_dsign()
+            #self.get_dsign()
             self.save_cookies()
             return True
         else:
