@@ -417,7 +417,8 @@
 
 2. 使用说明
 
-    使用前需用在 http://www.tumblr.com/oauth/apps 加入一个app，证实后得到api_key，再在源码中填入，完成后则可使用。
+    使用前需用在 http://www.tumblr.com/oauth/apps 加入一个app，证实后得到api_key，再在源码中填入，完成后则可使用。或者用 http://www.tumblr.com/docs/en/api/v2 提供的api_key (fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4
+)
 
     默认开5个进程，如需改变用参数-p [num]。
 
@@ -426,6 +427,12 @@
     默认下载原图。
     
     支持连续下载，下载进度储存在下载文件夹内的 json.json。
+    
+    参数:
+
+		-p PROCESSES, --processes PROCESSES      指定多进程数,默认为5个,最多为20个 eg: -p 20
+		-c, --check           尝试修复未下载成功的图片
+		-t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
 
 3. 用法
 
