@@ -113,7 +113,7 @@
 
     分享的网盘连接中只支持单个文件的下载。
 
-    下载工具默认为wget, 可用参数-a选用aria2
+    下载工具默认为wget, 可用参数-a num选用aria2
 
     对所有文件，默认执行下载，如要播放媒体文件，加参数-p。
 
@@ -127,7 +127,7 @@
     
     参数:
 
-        -a, --aria2c                   download with aria2c
+        -a num, --aria2c num           aria2c分段下载数量: eg: -a 10
         -p, --play                     play with mpv
         -s SECRET, --secret SECRET     提取密码
         -f number, --from_ number      从第几个开始下载，eg: -f 42

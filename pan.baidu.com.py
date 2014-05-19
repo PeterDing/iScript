@@ -330,18 +330,18 @@ class panbaiducom_HOME(object):
 
         if args.aria2c:
             if args.limit:
-                cmd = 'aria2c -c -x10 -s10 ' \
+                cmd = 'aria2c -c -x%s -s%s ' \
                     '--max-download-limit %s ' \
                     '-o "%s.tmp" -d "%s" \
                     --user-agent "%s" ' \
                     '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.limit, infos['name'], infos['dir_'],\
-                        headers['User-Agent'], infos['dlink'])
+                    % (args.aria2c, args.aria2c, args.limit, infos['name'], \
+                    infos['dir_'], headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -x10 -s10 ' \
+                cmd = 'aria2c -c -x%s -s%s ' \
                     '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
                     '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (infos['name'], infos['dir_'], headers['User-Agent'], \
+                    % (args.aria2c, args.aria2c, infos['name'], infos['dir_'], headers['User-Agent'], \
                         infos['dlink'])
         else:
             if args.limit:
@@ -559,8 +559,8 @@ if __name__ == '__main__':
     p.add_argument('url', help='eg: http://pan.baidu.com/s/1gdutU3S, '\
         'http://pan.baidu.com/disk/home# '\
         'dir/path=/tmp/\xe5\x90\x8d\xe4\xbe\xa6\xe6\x8e\xa2\xe6\x9f\xaf\xe5\x8d\x97')
-    p.add_argument('-a', '--aria2c', action='store_true', \
-        help='download with aria2c')
+    p.add_argument('-a', '--aria2c', action='store', default=None, \
+        type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', \
         help='play with mpv')
     p.add_argument('-s', '--secret', action='store', \
