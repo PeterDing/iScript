@@ -275,14 +275,14 @@ class xiami(object):
 
     def get_lyric(self, lyric_url):
         if lyric_url:
-            data = ss.get(lyric_url).text
+            data = ss.get(lyric_url).content
             return data.decode('utf8')
         else:
             return u''
 
     def get_disc_description(self, album_url, info):
         if not self.html:
-            self.html = ss.get(album_url).text
+            self.html = ss.get(album_url).content
             t = re.findall(re_disc_description, self.html)
             t = dict([(a, modificate_text(parser.unescape(b.decode('utf8')))) for a, b in t])
             self.disc_description_archives = dict(t)
