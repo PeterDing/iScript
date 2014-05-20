@@ -61,14 +61,8 @@ def modificate_file_name_for_wget(file_name):
 
 def z_index(song_infos):
     size = len(song_infos)
-    if size <= 9:
-        return 1
-    elif size >= 10 and size <= 99:
-        return 2
-    elif size >= 100 and size <= 999:
-        return 3
-    else:
-        return 1
+    z = len(str(size))
+    return z
 
 class baidu_music(object):
     def __init__(self, url):
