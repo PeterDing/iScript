@@ -241,10 +241,11 @@ class panbaiducom_HOME(object):
                         t = t.replace(base_dir, '')
                         t = t[1:] if t[0] == '/' else t
                         t =  os.path.join(os.getcwd(), t)
+                        if not i.has_key('dlink'):
+                            i['dlink'] = self.get_dlink(i)
                         infos = {
                             'file': t,
                             'dir_': os.path.split(t)[0],
-                            #'dlink': self.get_dlink(i),
                             'dlink': i['dlink'].encode('utf8'),
                             'name': i['server_filename'].encode('utf8'),
                             'nn': nn,
@@ -264,6 +265,8 @@ class panbaiducom_HOME(object):
                         if i['server_filename'].encode('utf8') == server_filename:
                             if i['isdir']: break
                             t =  os.path.join(os.getcwd(), server_filename)
+                            if not i.has_key('dlink'):
+                                i['dlink'] = self.get_dlink(i)
                             infos = {
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
@@ -316,6 +319,9 @@ class panbaiducom_HOME(object):
         self.timestamp = timestamp
 
     def get_dlink(self, i):
+        if not hasattr(self, 'dsign'):
+            self.get_dsign()
+
         while True:
             params = {
                 "channel": "chunlei",
