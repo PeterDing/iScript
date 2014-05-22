@@ -6,7 +6,7 @@
 
 - *[L]* xiami.py - 下载或播放高品质虾米音乐(xiami.com)
 
-- *[L]* pan.baidu.com.py - 百度网盘的下载和播放
+- *[L]* pan.baidu.com.py - 百度网盘的下载、上传、播放
 
 - *[L]* 115.py - 115网盘的下载和播放
 
@@ -95,13 +95,15 @@
 
 ---
 
-### pan.baidu.com.py - 百度网盘的下载和播放
+### pan.baidu.com.py - 百度网盘的下载、上传、播放
 
 1. 依赖
 
         wget, aria2
 
         python2-requests (https://github.com/kennethreitz/requests)
+        
+        requests-toolbelt (https://github.com/sigmavirus24/requests-toolbelt)
 
         mpv (http://mpv.io)
 
@@ -109,21 +111,30 @@
 
 2. 使用说明
 
-    在源码中填入百度账户username和password后，可以递归下载自己的网盘文件。
+    在源码中填入百度账户username和password后，可以递归下载、上传、播放自己的网盘文件。
 
-    分享的网盘连接中只支持单个文件的下载。
+    他人分享的有密码网盘连接，只支持单个的下载。
 
     下载工具默认为wget, 可用参数-a num选用aria2
 
     对所有文件，默认执行下载，如要播放媒体文件，加参数-p。
 
     下载的文件，保存在当前目录下。
+    
+    上传模式默认是 c (续传)。
 
     cookies保存在 ~/.bp.cookies
+    
+    上传数据保存在 ~/.bp.pickle
     
     关于播放操作:
     
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+    
+    命令:
+    
+        d 或 download url1 url2 ..         下载
+        u 或 upload localpath remotepath   上传 
     
     参数:
 
@@ -133,47 +144,57 @@
         -f number, --from_ number      从第几个开始下载，eg: -f 42
         -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
         -l amount, --limit amount      下载速度限制，eg: -l 100k
+        -m {o,c}, ----uploadmode {o,c} 上传模式:  o --> 重新上传. c --> 连续上传.
 
 3. 用法
 
     \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.badiu.com.py')
 
-        # 下载自己网盘中的*单个文件*
-        bp http://pan.baidu.com/disk/home#dir/path=/path/to/filename
-        bp http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename
+    下载:
+    
+        # 下载自己网盘中的*单个或多个文件*
+        bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2 ..
+        bp d http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename1 http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename2 ..
         # or
-        bp path=/path/to/filename
-        bp path%3D%2Fpath%2Fto%2Ffilename
+        bp d path=/path/to/filename1 path=/path/to/filename2
+        bp d path%3D%2Fpath%2Fto%2Ffilename1 path%3D%2Fpath%2Fto%2Ffilename2
 
-        # 递归下载自己网盘中的*文件夹*
-        bp http://pan.baidu.com/disk/home#dir/path=/path/to/directory
-        bp http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory
+        # 递归下载自己网盘中的*单个或多个文件夹*
+        bp d http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2 ..
+        bp d http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory1 http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory2 ..
         # or
-        bp path=/path/to/directory
-        bp path%3D%2Fpath%2Fto%2Fdirectory
+        bp d path=/path/to/directory1 path=/path/to/directory2 ..
+        bp d path%3D%2Fpath%2Fto%2Fdirectory1 path%3D%2Fpath%2Fto%2Fdirectory2 ..
 
-        # 下载别人分享的*单个文件*
-        bp http://pan.baidu.com/s/1o64pFnW
-        bp http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284
+        # 下载别人分享的*单个或多个文件*
+        bp d http://pan.baidu.com/s/1o6psfnxx ..
+        bp d http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284 ..
 
         # 下载别人加密分享的*单个文件*，密码参数-s
-        bp -s vuej http://pan.baidu.com/s/1i3FVlw5
+        bp d http://pan.baidu.com/s/1i3FVlw5  -s vuej
 
         # 下载用aria2, url 是上面的
-        bp -a url
-        bp -a -s [secret] url
+        bp d url -a
+        bp d url -s [secret] -a
 
-    播放
+    播放:
 
         # url 是上面的
-        bp -p url
-        bp -s [secret] -p url
+        bp d url -p
+        bp d url -s [secret] -p
+        
+    上传:
+    
+        bp u localpath remotepath [-m [o, c]]
+        # 上传模式:  o --> 重传. c --> 续传.
 
 4. 参考:
 
 > https://gist.github.com/HououinRedflag/6191023
 
 > https://github.com/banbanchs/pan-baidu-download/blob/master/bddown_core.py
+
+> https://github.com/houtianze/bypy
 
 ---
 
