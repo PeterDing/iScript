@@ -220,7 +220,11 @@ class panbaiducom_HOME(object):
         }
         url = 'http://pan.baidu.com/api/list'
         j = ss.get(url, params=p, headers=theaders).json()
-        return j
+        elif j['errno'] != 0:
+            print s % (91, '  error: get_infos'), '--', j
+            sys.exit(1)
+        else:
+            return j
 
     def get_infos(self):
         dir_loop = [self.path]
@@ -246,7 +250,7 @@ class panbaiducom_HOME(object):
                         t = t[1:] if t[0] == '/' else t
                         t =  os.path.join(os.getcwd(), t)
                         if not i.has_key('dlink'):
-                            i['dlink'] = self.get_dlink(i)
+                            i['dlink'] = self._get_dlink(i)
                         infos = {
                             'file': t,
                             'dir_': os.path.split(t)[0],
@@ -257,9 +261,6 @@ class panbaiducom_HOME(object):
                         }
                         nn += 1
                         self.download(infos)
-            elif j['errno'] != 0:
-                print s % (91, '  error: get_infos'), '--', j
-                sys.exit(1)
             elif not j['list']:
                 self.path, server_filename = os.path.split(self.path)
                 params['dir'] = self.path
@@ -270,7 +271,7 @@ class panbaiducom_HOME(object):
                             if i['isdir']: break
                             t =  os.path.join(os.getcwd(), server_filename)
                             if not i.has_key('dlink'):
-                                i['dlink'] = self.get_dlink(i)
+                                i['dlink'] = self._get_dlink(i)
                             infos = {
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
@@ -281,7 +282,7 @@ class panbaiducom_HOME(object):
                             self.download(infos)
                             break
 
-    def get_dsign(self):
+    def _get_dsign(self):
         url = 'http://pan.baidu.com/disk/home'
         r = ss.get(url)
         html = r.content
@@ -322,9 +323,9 @@ class panbaiducom_HOME(object):
         self.dsign = sign2(sign3, sign1)
         self.timestamp = timestamp
 
-    def get_dlink(self, i):
+    def _get_dlink(self, i):
         if not hasattr(self, 'dsign'):
-            self.get_dsign()
+            self._get_dsign()
 
         while True:
             params = {
@@ -348,7 +349,7 @@ class panbaiducom_HOME(object):
                 dlink = j['dlink'][0]['dlink'].encode('utf8')
                 return dlink
             else:
-                self.get_dsign()
+                self._get_dsign()
 
     @staticmethod
     def download(infos):
