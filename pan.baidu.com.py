@@ -220,7 +220,7 @@ class panbaiducom_HOME(object):
         }
         url = 'http://pan.baidu.com/api/list'
         j = ss.get(url, params=p, headers=theaders).json()
-        elif j['errno'] != 0:
+        if j['errno'] != 0:
             print s % (91, '  error: get_infos'), '--', j
             sys.exit(1)
         else:
