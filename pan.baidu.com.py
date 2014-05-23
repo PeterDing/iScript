@@ -263,8 +263,7 @@ class panbaiducom_HOME(object):
                         self.download(infos)
             elif not j['list']:
                 self.path, server_filename = os.path.split(self.path)
-                params['dir'] = self.path
-                j = ss.get(url, params=params).json()
+                j = self._get_file_list(self.path)
                 if j['errno'] == 0 and j['list']:
                     for i in j['list']:
                         if i['server_filename'].encode('utf8') == server_filename:
