@@ -200,16 +200,18 @@ class panbaiducom_HOME(object):
             c = {'user': username, 'cookies': ss.cookies.get_dict()}
             g.write(json.dumps(c, indent=4, sort_keys=True))
 
-    def get_infos(self):
+    def _get_file_list(self, dir_):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
-        ss.headers.update(t)
+        theaders = headers
+        theaders.update(t)
 
-        params = {
+        p = {
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
             "num": 10000,   ## max amount of listed file at one page
             "t": int(time.time()*1000),
+            "dir": dir_,
             "page": 1,
             #"desc": 1,   ## reversely
             "order": "name", ## sort by name, or size, time
@@ -217,13 +219,15 @@ class panbaiducom_HOME(object):
             #"bdstoken": token
         }
         url = 'http://pan.baidu.com/api/list'
+        j = ss.get(url, params=p, headers=theaders).json()
+        return j
 
+    def get_infos(self):
         dir_loop = [self.path]
         base_dir = '' if os.path.split(self.path)[0] == '/' \
             else os.path.split(self.path)[0]
         for d in dir_loop:
-            params['dir'] = d
-            j = ss.get(url, params=params).json()
+            j = self._get_file_list(d)
             if j['errno'] == 0 and j['list']:
                 if args.type_:
                     j['list'] = [x for x in j['list'] if x['isdir'] \
@@ -681,13 +685,44 @@ class panbaiducom_HOME(object):
                     print s % (93, '  |-- reupload.')
                     self.upload_datas[lpath]['is_over'] = False
 
+    def _make_dir(self, dir_):
+        t = {'Referer':'http://pan.baidu.com/disk/home'}
+        theaders = headers
+        theaders.update(t)
+
+        p = {
+            "a": "commit",
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            #"bdstoken": token
+        }
+        data = {
+            "path": dir_,
+            "isdir": 1,
+            "size": "",
+            "block_list": [],
+            "method": "post"
+        }
+        url = 'http://pan.baidu.com/api/create'
+        r = ss.post(url, params=p, data=data, headers=theaders)
+        if not r.ok:
+            print s % (91, '  !! Error at _make_dir')
+
     def _upload_dir(self, lpath, rpath):
-        dir_ = os.path.split(lpath)[-1]
-        rpath = os.path.join(rpath, dir_)
+        base_dir = os.path.split(lpath)[0]
         for a, b, c in os.walk(lpath):
+            for path in b:
+                localpath = os.path.join(a, path)
+                t = localpath.replace(base_dir + '/', '')
+                remotepath = os.path.join(rpath, t)
+                self._make_dir(remotepath)
             for path in c:
-                filepath = os.path.join(a, path)
-                self._upload_file(filepath, rpath)
+                localpath = os.path.join(a, path)
+                t = localpath.replace(base_dir + '/', '')
+                t = os.path.split(t)[0]
+                remotepath = os.path.join(rpath, t)
+                self._upload_file(localpath, remotepath)
 
     def upload(self, localpath, remotepath):
         lpath = localpath
