@@ -22,6 +22,8 @@
 
 - *[L]* torrent2magnet.py - 种子转磁力
 
+- *[L]* ed2k_search.py - 基于 donkey4u.com 的emule搜索
+
 - *[L]* 91porn.py - 下载或播放91porn
 
 - *[L]* ThunderLixianExporter.user.js - A fork of https://github.com/binux/ThunderLixianExporter - 增加了mpv和mplayer的导出。
@@ -241,7 +243,7 @@
 
 3. 用法
 
-    \# pan115 是115.py的马甲 (alias pan115='python2 /path/to/pan.badiu.com.py')
+    \# pan115 是115.py的马甲 (alias pan115='python2 /path/to/115.py')
 
         # 递归下载自己网盘中的*文件夹*
         pan115 http://115.com/?cid=xxxxxxxxxxxx&offset=0&mode=wangpan
@@ -310,7 +312,7 @@
         yp sid%3D%2Fpath%2Fto%2Fdirectory
 
         # 下载用aria2, url 是上面的
-        bp -a url
+        yp -a url
 
 4. 参考:
 
@@ -347,7 +349,7 @@
 
 3. 用法
 
-    \# bm 是music.baidu.com.py的马甲 (alias xm='python2 /path/to/music.baidu.com.py')
+    \# bm 是music.baidu.com.py的马甲 (alias bm='python2 /path/to/music.baidu.com.py')
 
         # 下载专辑
         bm http://music.baidu.com/album/115032005
@@ -457,7 +459,7 @@
 
 3. 用法
 
-    \# tm是tumblr.py的马甲 (alias vx='python2 /path/to/tumblr.py')
+    \# tm是tumblr.py的马甲 (alias tm='python2 /path/to/tumblr.py')
 
         tm http://sosuperawesome.tumblr.com/
 
@@ -467,7 +469,7 @@
 
 用法
 
-        unzip.py azipfile.zip
+        python2 unzip.py azipfile.zip
 
 代码来自以下连接，我改了一点。
 
@@ -484,18 +486,33 @@
 
     将一个目录下的所有torrent转换成magnet，并保存于当前目录的magnet_link文件中。
 
-2. 用法
+3. 用法
 
-    \# ttm是torrent2magnet.py的马甲 (alias vx='python2 /path/to/torrent2magnet.py')
+    \# ttm是torrent2magnet.py的马甲 (alias ttm='python3 /path/to/torrent2magnet.py')
 
         ttm /path/to/directory
 
-3. 参考
+4. 参考
 
 代码来自以下连接，我改了一点。
 
 > https://github.com/repolho/torrent2magnet
 
+---
+
+### ed2k_search.py - 基于 donkey4u.com 的emule搜索
+
+1. 依赖
+        python2
+
+2. 用法
+
+    \# ed 是ed2k_search.py的马甲 (alias ed='python2 /path/to/ed2k_search.py')
+
+        ed this is a keyword
+        or
+        ed "this is a keyword"
+        
 ---
 
 ### 91porn.py - 下载或播放91porn
