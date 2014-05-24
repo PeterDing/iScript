@@ -430,20 +430,15 @@ class panbaiducom_HOME(object):
         else:
             pass
 
-    def exists(self, filepath):
-        url = 'http://pan.baidu.com/api/filemanager'
-
+    def meta(self, file_list):
         p = {
             "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
-            "opera": "rename"
+            "app_id": "250528",
+            "method": "filemetas",
+            "blocks": 1
         }
-
-        data = '[{"path": "%s", "newname": "%s"}]' \
-            % (filepath, os.path.split(filepath)[-1])
-        data = 'filelist=' + urllib.quote_plus(data)
-
+        data = {'target': json.dumps(file_list)}
+        url = 'http://pan.baidu.com/api/filemetas'
         r = ss.post(url, params=p, data=data, verify=False)
         if r.ok:
             if r.json()['errno']:
@@ -685,38 +680,9 @@ class panbaiducom_HOME(object):
                     print s % (93, '  |-- reupload.')
                     self.upload_datas[lpath]['is_over'] = False
 
-    def _make_dir(self, dir_):
-        t = {'Referer':'http://pan.baidu.com/disk/home'}
-        theaders = headers
-        theaders.update(t)
-
-        p = {
-            "a": "commit",
-            "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
-            #"bdstoken": token
-        }
-        data = {
-            "path": dir_,
-            "isdir": 1,
-            "size": "",
-            "block_list": [],
-            "method": "post"
-        }
-        url = 'http://pan.baidu.com/api/create'
-        r = ss.post(url, params=p, data=data, headers=theaders)
-        if not r.ok:
-            print s % (91, '  !! Error at _make_dir')
-
     def _upload_dir(self, lpath, rpath):
         base_dir = os.path.split(lpath)[0]
         for a, b, c in os.walk(lpath):
-            for path in b:
-                localpath = os.path.join(a, path)
-                t = localpath.replace(base_dir + '/', '')
-                remotepath = os.path.join(rpath, t)
-                self._make_dir(remotepath)
             for path in c:
                 localpath = os.path.join(a, path)
                 t = localpath.replace(base_dir + '/', '')
