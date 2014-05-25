@@ -27,7 +27,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; " \
@@ -77,13 +77,13 @@ class nrop19(object):
                     }
                     self.download(infos)
                 else:
-                    print s % (91, '  Error at get(apiurl)')
+                    print s % (1, 91, '  Error at get(apiurl)')
             else:
-                print s % (91, '  You are blocked')
+                print s % (1, 91, '  You are blocked')
 
     def download(self, infos):
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['file'])
+        col = s % (2, num + 90, infos['file'])
         print '\n  ++ 正在下载: %s' % col
 
         cookies = '; '.join(['%s=%s' % (i, ii) for i, ii in ss.cookies.items()])
@@ -104,14 +104,14 @@ class nrop19(object):
             print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
                 '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                 % (status, wget_exit_status_info))
-            print s % (91, '  ===> '), cmd
+            print s % (1, 91, '  ===> '), cmd
             sys.exit(1)
         else:
             os.rename('%s.tmp' % infos['file'], infos['file'])
 
     def play(self, infos):
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['name'])
+        col = s % (2, num + 90, infos['name'])
         print '\n  ++ play: %s' % col
 
         cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \

@@ -31,7 +31,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; " \
@@ -57,12 +57,12 @@ class tumblr(object):
             os.makedirs(self.infos['dir_'])
             self.json_path = os.path.join(self.infos['dir_'], 'json.json')
             self.offset = 0
-            print s % (92, '\n   ## begin'), 'offset = %s' % self.offset
+            print s % (1, 92, '\n   ## begin'), 'offset = %s' % self.offset
         else:
             self.json_path = os.path.join(self.infos['dir_'], 'json.json')
             if os.path.exists(self.json_path):
                 self.offset = json.loads(open(self.json_path).read())['offset'] - 20
-                print s % (92, '\n   ## begin'), 'offset = %s' % self.offset
+                print s % (1, 92, '\n   ## begin'), 'offset = %s' % self.offset
             else:
                 self.offset = 0
 
@@ -89,7 +89,7 @@ class tumblr(object):
                 r = ss.get(self.url, params=params, timeout=10)
                 break
             except Exception as e:
-                print s % (91, '  !! Error, ss.get'), e
+                print s % (1, 91, '  !! Error, ss.get'), e
                 time.sleep(5)
         if r.ok:
             j = r.json()
@@ -109,10 +109,10 @@ class tumblr(object):
                         index += 1
                         self.infos['photos'].append(t)
             else:
-                print s % (92, '\n   --- job over ---')
+                print s % (1, 92, '\n   --- job over ---')
                 sys.exit(0)
         else:
-            print s % (91, '\n   !! Error, get_infos')
+            print s % (1, 91, '\n   !! Error, get_infos')
             print r.status_code, r.content
             sys.exit(1)
 
@@ -120,7 +120,7 @@ class tumblr(object):
         def run(i):
             #if not os.path.exists(i['filepath']):
             num = random.randint(0, 7) % 7
-            col = s % (num + 90, i['filepath'])
+            col = s % (1, num + 90, i['filepath'])
             print '\n  ++ 正在下载: %s' % col
 
             cmd = 'wget -c -T 4 -q -O "%s.tmp" ' \
@@ -134,7 +134,7 @@ class tumblr(object):
                 print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
                     '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                     % (status, wget_exit_status_info))
-                print s % (91, '  ===> '), cmd
+                print s % (1, 91, '  ===> '), cmd
                 sys.exit(1)
             else:
                 os.rename('%s.tmp' % i['filepath'], i['filepath'])

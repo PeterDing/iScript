@@ -59,7 +59,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookies')
 upload_datas_path = os.path.join(os.path.expanduser('~'), '.bp.pickle')
@@ -88,10 +88,10 @@ class panbaiducom_HOME(object):
         def loginandcheck():
             self.login()
             if self.check_login():
-                print s % (92, '  -- login success\n')
+                print s % (1, 92, '  -- login success\n')
             else:
-                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (91, '  !! maybe this app is down.')
+                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (1, 91, '  !! maybe this app is down.')
                 sys.exit(1)
 
         if os.path.exists(cookie_file):
@@ -101,7 +101,7 @@ class panbaiducom_HOME(object):
                 if not self.check_login():
                     loginandcheck()
             else:
-                print s % (91, '\n  ++  username changed, then relogin')
+                print s % (1, 91, '\n  ++  username changed, then relogin')
                 loginandcheck()
         else:
             loginandcheck()
@@ -121,25 +121,25 @@ class panbaiducom_HOME(object):
         with open(path, 'w') as g:
             data = urllib.urlopen(url).read()
             g.write(data)
-        print "  ++ 验证码已经保存至", s % (91, path)
-        input_code = raw_input(s % (92, "  请输入看到的验证码: "))
+        print "  ++ 验证码已经保存至", s % (1, 91, path)
+        input_code = raw_input(s % (2, 92, "  请输入看到的验证码: "))
         return input_code
 
     def check_login(self):
-        print s % (97, '\n  -- check_login')
+        print s % (1, 97, '\n  -- check_login')
         url = 'http://www.baidu.com/home/msg/data/personalcontent'
         j = ss.get(url)
         if 'errNo":"0' in j.text:
-            print s % (92, '  -- check_login success\n')
+            print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
             self.save_cookies()
             return True
         else:
-            print s % (91, '  -- check_login fail\n')
+            print s % (1, 91, '  -- check_login fail\n')
             return False
 
     def login(self):
-        print s % (97, '\n  -- login')
+        print s % (1, 97, '\n  -- login')
 
         # Check if we have to deal with verify codes
         params = {
@@ -221,7 +221,7 @@ class panbaiducom_HOME(object):
         url = 'http://pan.baidu.com/api/list'
         j = ss.get(url, params=p, headers=theaders).json()
         if j['errno'] != 0:
-            print s % (91, '  error: get_infos'), '--', j
+            print s % (1, 91, '  error: get_infos'), '--', j
             sys.exit(1)
         else:
             return j
@@ -360,10 +360,10 @@ class panbaiducom_HOME(object):
                 return 0
 
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['file'])
+        col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
+        print '\n  ++ 正在下载: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         if args.aria2c:
             if args.limit:
@@ -397,7 +397,7 @@ class panbaiducom_HOME(object):
             print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
                 '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                  % (status, wget_exit_status_info))
-            print s % (91, '  ===> '), cmd
+            print s % (1, 91, '  ===> '), cmd
             sys.exit(1)
         else:
             os.rename('%s.tmp' % infos['file'], infos['file'])
@@ -405,11 +405,11 @@ class panbaiducom_HOME(object):
     @staticmethod
     def play(infos):
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['name'])
+        col = s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ play: #', s % (97, infos['nn']), '/', \
-            s % (97, infos['total_file']), '#', col
+        print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', \
+            s % (1, 97, infos['total_file']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
             cmd = 'mplayer -really-quiet -cache 8140 ' \
@@ -444,10 +444,10 @@ class panbaiducom_HOME(object):
             if r.json()['errno']:
                 return False
         else:
-            print s % (91, '  !! Error at exists')
+            print s % (1, 91, '  !! Error at exists')
 
     def _rapidupload_file(self, lpath, rpath):
-        print '  |-- upload_function:', s % (97, '_rapidupload_file')
+        print '  |-- upload_function:', s % (1, 97, '_rapidupload_file')
         slice_md5 = md5.new(open(lpath, 'rb').read(256 * OneK)).hexdigest()
         with open(lpath, "rb") as f:
             buf = f.read(OneM)
@@ -485,7 +485,7 @@ class panbaiducom_HOME(object):
             return r.json()
 
     def _upload_one_file(self, lpath, rpath):
-        print '  |-- upload_function:', s % (97, '_upload_one_file')
+        print '  |-- upload_function:', s % (1, 97, '_upload_one_file')
         p = {
             "method": "upload",
             "app_id": "250528",
@@ -560,7 +560,7 @@ class panbaiducom_HOME(object):
             elif t > MaxSliceSize * MaxSlicePieces:
                 n += 1
             else:
-                print s % (91, '  !! file is too big, uploading is not supported.')
+                print s % (1, 91, '  !! file is too big, uploading is not supported.')
                 sys.exit(1)
 
         return pieces, slice
@@ -576,13 +576,13 @@ class panbaiducom_HOME(object):
                 elif self.__current_file_size <= MaxSliceSize * MaxSlicePieces:
                     return '_upload_file_slices'
                 else:
-                    print s % (91, '  !! Error: size of file is too big.')
+                    print s % (1, 91, '  !! Error: size of file is too big.')
                     return 'None'
         else:
             return '_upload_one_file'
 
     def _upload_file(self, lpath, rpath):
-        print s % (94, '  ++ uploading:'), lpath
+        print s % (2, 94, '  ++ uploading:'), lpath
 
         __current_file_size = os.path.getsize(lpath)
         self.__current_file_size = __current_file_size
@@ -605,7 +605,7 @@ class panbaiducom_HOME(object):
                 m = self.upload_datas[lpath]['upload_function']
                 if m == '_upload_file_slices':
                     time.sleep(2)
-                    print '  |-- upload_function:', s % (97, '_upload_file_slices')
+                    print '  |-- upload_function:', s % (1, 97, '_upload_file_slices')
                     pieces, slice = self._get_pieces_slice()
                     f = open(lpath, 'rb')
                     current_piece_point = len(self.upload_datas[lpath]['slice_md5s'])
@@ -619,21 +619,21 @@ class panbaiducom_HOME(object):
                                 if result == ENoError:
                                     break
                                 else:
-                                    print s % (91, '  |-- slice_md5 does\'n match, retry.')
+                                    print s % (1, 91, '  |-- slice_md5 does\'n match, retry.')
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
                             self.save_upload_datas()
                             percent = round(100*((piece + 1.0) / pieces), 2)
-                            print s % (97, '  |-- upload: %s%s' % (percent, '%')), piece + 1, '/', pieces
+                            print s % (1, 97, '  |-- upload: %s%s' % (percent, '%')), piece + 1, '/', pieces
                     result = self._combine_file(lpath, rpath)
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         del self.upload_datas[lpath]['slice_md5s']
                         self.save_upload_datas()
-                        print s % (92, '  |-- success.\n')
+                        print s % (1, 92, '  |-- success.\n')
                         break
                     else:
-                        print s % (91, '  !! Error at _combine_file')
+                        print s % (1, 91, '  !! Error at _combine_file')
 
                 elif m == '_upload_one_file':
                     time.sleep(2)
@@ -642,10 +642,10 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         self.save_upload_datas()
-                        print s % (92, '  |-- success.\n')
+                        print s % (1, 92, '  |-- success.\n')
                         break
                     else:
-                        print s % (91, '  !! Error: _upload_one_file is fall, retry.')
+                        print s % (1, 91, '  !! Error: _upload_one_file is fall, retry.')
 
                 elif m == '_rapidupload_file':
                     time.sleep(2)
@@ -654,10 +654,10 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         self.save_upload_datas()
-                        print s % (92, '  |-- RapidUpload: Success.\n')
+                        print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
-                        print s % (93, '  |-- can\'t be RapidUploaded, ' \
+                        print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
                             'now trying normal uploading.')
                         upload_function = self._get_upload_function(rapidupload_is_fall=True)
                         self.upload_datas[lpath]['upload_function'] = upload_function
@@ -666,18 +666,18 @@ class panbaiducom_HOME(object):
                                 self.upload_datas[lpath]['slice_md5s'] = []
 
                 else:
-                    print s % (91, '  !! Error: size of file is too big.')
+                    print s % (1, 91, '  !! Error: size of file is too big.')
                     break
 
             else:
                 if args.uploadmode == 'c':
                     if rpath in self.upload_datas[lpath]['remotepaths']:
-                        print s % (92, '  |-- file was uploaded.\n')
+                        print s % (1, 92, '  |-- file was uploaded.\n')
                         break
                     else:
                         self.upload_datas[lpath]['is_over'] = False
                 elif args.uploadmode == 'o':
-                    print s % (93, '  |-- reupload.')
+                    print s % (1, 93, '  |-- reupload.')
                     self.upload_datas[lpath]['is_over'] = False
 
     def _upload_dir(self, lpath, rpath):
@@ -701,7 +701,7 @@ class panbaiducom_HOME(object):
         if os.path.exists(lpath):
             pass
         else:
-            print s % (91, '  !! Error: localpath doesn\'t exist')
+            print s % (1, 91, '  !! Error: localpath doesn\'t exist')
             sys.exit(1)
 
         self.upload_datas_path = upload_datas_path
@@ -717,7 +717,7 @@ class panbaiducom_HOME(object):
         elif os.path.isfile(lpath):
             self._upload_file(lpath, rpath)
         else:
-            print s % (91, '  !! Error: localpath ?')
+            print s % (1, 91, '  !! Error: localpath ?')
             sys.exit(1)
 
     def save_upload_datas(self):
@@ -737,12 +737,12 @@ class panbaiducom(object):
         r = ss.get(self.url)
         if 'init' in r.url:
             if not self.secret:
-                self.secret = raw_input(s % (92, "  请输入提取密码: "))
+                self.secret = raw_input(s % (2, 92, "  请输入提取密码: "))
             data = 'pwd=%s' % self.secret
             url = "%s&t=%d" % (r.url.replace('init', 'verify'), int(time.time()))
             r = ss.post(url, data=data)
             if r.json()['errno']:
-                print s % (91, "  !! 提取密码错误\n")
+                print s % (2, 91, "  !! 提取密码错误\n")
                 sys.exit(1)
 
     def get_params(self):
@@ -814,7 +814,7 @@ class panbaiducom(object):
                     panbaiducom_HOME.download(self.infos)
                 break
             else:
-                print s % ('  !! Error at get_infos2, can\'t get dlink')
+                print s % (1, '  !! Error at get_infos2, can\'t get dlink')
 
     def do(self):
         self.secret_or_not()
@@ -825,8 +825,8 @@ class panbaiducom(object):
         self.get_infos2()
 
 def sighandler(signum, frame):
-    print s % (91, "  !! Signal %s received, Abort" % signum)
-    print s % (91, "  !! Frame: %s" % frame)
+    print s % (1, 91, "  !! Signal %s received, Abort" % signum)
+    print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
 def main(xxx):
@@ -846,7 +846,7 @@ def main(xxx):
 
     if xxx[0] == 'u' or xxx[0] == 'upload':
         if len(xxx) != 3:
-            print s % (91, '  !! 参数错误\n  upload localpath remotepath\n' \
+            print s % (1, 91, '  !! 参数错误\n  upload localpath remotepath\n' \
                 '  u upload localpath remotepath')
             sys.exit(1)
         x = panbaiducom_HOME()
@@ -856,7 +856,7 @@ def main(xxx):
 
     elif xxx[0] == 'd' or xxx[0] == 'download':
         if len(xxx) < 2:
-            print s % (91, '  !! 参数错误\n download url1 url2 ..\n' \
+            print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
         urls = [url.replace('wap/link', 'share/link') for url in xxx[1:]]
@@ -872,9 +872,9 @@ def main(xxx):
                 x = panbaiducom(url)
                 x.do()
             else:
-                print s % (91, '  !!! url 地址不正确.'), url
+                print s % (2, 91, '  !!! url 地址不正确.'), url
     else:
-        print s % (91, '  !! 命令错误\n')
+        print s % (2, 91, '  !! 命令错误\n')
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='download from pan.baidu.com')

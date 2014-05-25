@@ -16,7 +16,7 @@ from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
 
 parser = HTMLParser()
-s = u'\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 
 email    = ''     # vip账号支持高品质音乐下载
@@ -174,10 +174,10 @@ class xiami(object):
         def loginandcheck():
             self.login()
             if self.check_login():
-                print s % (92, '  -- login success\n')
+                print s % (1, 92, '  -- login success\n')
             else:
-                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (91, '  !! maybe this app is down.')
+                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (1, 91, '  !! maybe this app is down.')
                 sys.exit(1)
 
         if os.path.exists(cookie_file):
@@ -187,25 +187,25 @@ class xiami(object):
                 if not self.check_login():
                     loginandcheck()
             else:
-                print s % (91, '\n  ++  email changed, then relogin')
+                print s % (1, 91, '\n  ++  email changed, then relogin')
                 loginandcheck()
         else:
             loginandcheck()
 
     def check_login(self):
-        print s % (97, '\n  -- check_login')
+        print s % (1, 97, '\n  -- check_login')
         url = 'http://www.xiami.com/task/signin'
         r = ss.get(url)
         if r.content:
-            print s % (92, '  -- check_login success\n')
+            print s % (1, 92, '  -- check_login success\n')
             self.save_cookies()
             return True
         else:
-            print s % (91, '  -- login fail, please check email and password\n')
+            print s % (1, 91, '  -- login fail, please check email and password\n')
             return False
 
     def login(self):
-        print s % (97, '\n  -- login')
+        print s % (1, 97, '\n  -- login')
 
         #validate = self.get_validate()
         data = {
@@ -226,8 +226,8 @@ class xiami(object):
         with open(path, 'w') as g:
             data = ss.get(url).content
             g.write(data)
-        print "  ++ 验证码已经保存至", s % (91, path)
-        print s % (92, u'  请输入验证码:')
+        print "  ++ 验证码已经保存至", s % (2, 91, path)
+        print s % (2, 92, u'  请输入验证码:')
         validate = raw_input()
         return validate
 
@@ -246,7 +246,7 @@ class xiami(object):
                 durl = decry(row, encryed_url)
                 return durl
             except Exception as e:
-                print s % (91, '   \\\n    \\-- Error, get_durl --'), e
+                print s % (1, 91, '   \\\n    \\-- Error, get_durl --'), e
                 time.sleep(5)
 
     def record(self, id_):
@@ -264,7 +264,7 @@ class xiami(object):
                     if self.cover_data[:5] != '<?xml':
                         return self.cover_data
                 except Exception as e:
-                    print s % (91, '   \\\n   \\-- Error, get_cover --'), e
+                    print s % (1, 91, '   \\\n   \\-- Error, get_cover --'), e
                     time.sleep(5)
 
     def get_lyric(self, lyric_url):
@@ -309,34 +309,34 @@ class xiami(object):
     def url_parser(self):
         if '/showcollect/' in self.url:
             self.showcollect_id = re.search(r'/showcollect/id/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析精选集信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析精选集信息 ...'))
             self.download_collect()
         elif '/album/' in self.url:
             self.album_id = re.search(r'/album/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析专辑信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
             self.download_album()
         elif '/artist/' in self.url:
             self.artist_id = re.search(r'/artist/(\d+)', self.url).group(1)
             code = raw_input('  >> 输入 a 下载该艺术家所有专辑.\n' \
                 '  >> 输入 t 下载该艺术家top 20歌曲.\n  >> ')
             if code == 'a':
-                print(s % (92, u'\n  -- 正在分析艺术家专辑信息 ...'))
+                print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                 self.download_artist_albums()
             elif code == 't':
-                print(s % (92, u'\n  -- 正在分析艺术家top20信息 ...'))
+                print(s % (2, 92, u'\n  -- 正在分析艺术家top20信息 ...'))
                 self.download_artist_top_20_songs()
             else:
-                print(s % (92, u'  --> Over'))
+                print(s % (1, 92, u'  --> Over'))
         elif '/song/' in self.url:
             self.song_id = re.search(r'/song/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析歌曲信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
             self.download_song()
         elif '/u/' in self.url:
             self.user_id = re.search(r'/u/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析用户歌曲库信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
             self.download_user_songs()
         else:
-            print(s % (91, u'   请正确输入虾米网址.'))
+            print(s % (2, 91, u'   请正确输入虾米网址.'))
 
     def get_song_info(self, album_description, z, cd_serial_auth, i):
         song_info = {}
@@ -446,7 +446,7 @@ class xiami(object):
     def download_song(self):
         logging.info('url -> http://www.xiami.com/song/%s' % self.song_id)
         song_info = self.get_song_infos(self.song_id)
-        print(s % (97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
             if not args.play else ''
         self.song_infos = [song_info]
         logging.info('directory: %s' % os.getcwd())
@@ -457,7 +457,7 @@ class xiami(object):
         logging.info('url -> http://www.xiami.com/album/%s' % self.album_id)
         self.song_infos = self.get_album_infos(self.album_id)
         amount_songs = unicode(len(self.song_infos))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(self.song_infos))
@@ -471,7 +471,7 @@ class xiami(object):
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         amount_songs = unicode(len(j['collect']['songs']))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(j['collect']['songs']))
@@ -507,7 +507,7 @@ class xiami(object):
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         amount_songs = unicode(len(j['songs']))
-        print(s % (97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(j['songs']))
@@ -546,13 +546,13 @@ class xiami(object):
 
     def display_infos(self, i):
         print '\n  ----------------'
-        print '  >>', s % (94, i['file_name'])
-        print '  >>', s % (95, i['album_name'])
-        print '  >>', s % (92, 'http://www.xiami.com/song/%s' % i['song_id'])
+        print '  >>', s % (2, 94, i['file_name'])
+        print '  >>', s % (2, 95, i['album_name'])
+        print '  >>', s % (2, 92, 'http://www.xiami.com/song/%s' % i['song_id'])
         if i['durl_is_H']:
-            print '  >>', s % (98, '     < High rate >')
+            print '  >>', s % (1, 97, '     < High rate >')
         else:
-            print '  >>', s % (98, '     < Low rate >')
+            print '  >>', s % (1, 97, '     < Low rate >')
         print ''
 
     def get_mp3_quality(self, durl):
@@ -584,7 +584,7 @@ class xiami(object):
         ii = 1
         for i in self.song_infos:
             num = random.randint(0, 100) % 7
-            col = s % (num + 90, i['file_name'])
+            col = s % (2, num + 90, i['file_name'])
             t = modificate_file_name_for_wget(i['file_name'])
             file_name = os.path.join(dir_, t)
             if os.path.exists(file_name):  ## if file exists, no get_durl
@@ -610,7 +610,7 @@ class xiami(object):
                     logging.info(u'  #%s/%s [%s] -> %s' \
                         % (n, amount_songs, mp3_quality, i['file_name']))
                 if mp3_quality == 'L':
-                    print s % (91, ' !!! Warning: '), 'gaining LOW quality mp3 link.'
+                    print s % (1, 91, ' !!! Warning: '), 'gaining LOW quality mp3 link.'
                 wget = self.template_wgets % (file_name_for_wget, durl)
                 wget = wget.encode('utf8')
                 status = os.system(wget)
@@ -621,7 +621,7 @@ class xiami(object):
                     logging.info('  ########### work is over ###########\n')
                     print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
                         '(%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
-                    print s % (91, '  ===> '), wget
+                    print s % (1, 91, '  ===> '), wget
                     sys.exit(1)
                 else:
                     os.rename('%s.tmp' % file_name, file_name)
@@ -639,7 +639,7 @@ def main(url):
 if __name__ == '__main__':
     log_file = os.path.join(os.path.expanduser('~'), '.Xiami.log')
     logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s')
-    print(s % (91, u'\n  程序运行日志在 %s' % log_file))
+    print(s % (2, 91, u'\n  程序运行日志在 %s' % log_file))
     p = argparse.ArgumentParser(description='downloading any xiami.com')
     p.add_argument('url', help='any url of xiami.com')
     p.add_argument('-p', '--play', action='store_true', \

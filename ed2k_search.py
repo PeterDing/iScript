@@ -6,7 +6,7 @@ import urllib
 import re
 import argparse
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 opener = urllib.urlopen
 
@@ -29,13 +29,13 @@ class ed2k_search(object):
         if infos:
             self.display(infos)
         else:
-            print s % (91, '  !! You are not Lucky, geting nothing.')
+            print s % (1, 91, '  !! You are not Lucky, geting nothing.')
             sys.exit(1)
 
     def display(self, infos):
-        template = '  -- size: ' + s % (97, '%s') \
-            + '\n  -- seed: ' + s % (91, '%s') \
-            + '\n  -- ed2k: ' + s % (92, '%s') \
+        template = '  -- size: ' + s % (1, 97, '%s') \
+            + '\n  -- seed: ' + s % (1, 91, '%s') \
+            + '\n  -- ed2k: ' + s % (2, 92, '%s') \
             + '\n  ----------------------------\n'
 
         for i in infos:
@@ -47,7 +47,7 @@ class ed2k_search(object):
         while True:
             url = self.url % page
             self.get_infos(url)
-            nx = raw_input(s % (93, '  next page?') + ' (N/y): ')
+            nx = raw_input(s % (5, 93, '  next page?') + ' (N/y): ')
             if nx in ('Y', 'y'):
                 page += 1
             else:

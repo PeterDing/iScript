@@ -15,7 +15,7 @@ import select
 from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TCOM,TCON,TSST,WXXX,TSRC
 from HTMLParser import HTMLParser
 parser = HTMLParser()
-s = u'\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; \
@@ -102,7 +102,7 @@ class baidu_music(object):
                 return cover_data
             if i >= 10:
                 logging.info("  |--> Error: can't get cover image")
-                print s % (91, "  |--> Error: can't get cover image")
+                print s % (1, 91, "  |--> Error: can't get cover image")
                 sys.exit(0)
             i += 1
 
@@ -119,14 +119,14 @@ class baidu_music(object):
     def url_parser(self):
         if '/album/' in self.url:
             self.album_id = re.search(r'/album/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析专辑信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
             self.get_album_infos()
         elif '/song/' in self.url:
             self.song_id = re.search(r'/song/(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析歌曲信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
             self.get_song_infos()
         else:
-            print(s % (91, u'   请正确输入baidu网址.'))
+            print(s % (2, 91, u'   请正确输入baidu网址.'))
 
     def get_song_infos(self):
         logging.info('url -> http://music.baidu.com/song/%s' % self.song_id)
@@ -175,9 +175,9 @@ class baidu_music(object):
 
     def display_infos(self, i):
         print '\n  ----------------'
-        print '  >>', s % (94, i['file_name'])
-        print '  >>', s % (95, i['album_name'])
-        print '  >>', s % (92, 'http://music.baidu.com/song/%s' % i['song_id'])
+        print '  >>', s % (2, 94, i['file_name'])
+        print '  >>', s % (2, 95, i['album_name'])
+        print '  >>', s % (2, 92, 'http://music.baidu.com/song/%s' % i['song_id'])
         print ''
 
     def play(self):
@@ -199,7 +199,7 @@ class baidu_music(object):
         if dir_ != cwd:
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
-        print(s % (97, u'\n  >> ' + str(csongs) + u' 首歌曲将要下载.'))
+        print(s % (2, 97, u'\n  >> ' + str(csongs) + u' 首歌曲将要下载.'))
         logging.info('directory: %s' % dir_)
         logging.info('total songs: %d' % csongs)
         ii = 1
@@ -212,7 +212,7 @@ class baidu_music(object):
             file_name_for_wget = file_name.replace('`', '\`')
             if 'zhangmenshiting.baidu.com' in i['durl']:
                 num = random.randint(0,100) % 7
-                col = s % (num + 90, i['file_name'])
+                col = s % (2, num + 90, i['file_name'])
                 print(u'\n  ++ 正在下载: %s' % col)
                 logging.info('  #%d -> %s' % (ii, i['file_name'].encode('utf8')))
                 wget = self.template_wgets % (file_name_for_wget, i['durl'])
@@ -231,7 +231,7 @@ class baidu_music(object):
                 ii += 1
                 #time.sleep(10)
             else:
-                print s % (91, '  !! Oops, you are unlucky, the song is not from zhangmenshiting.baidu.com')
+                print s % (1, 91, '  !! Oops, you are unlucky, the song is not from zhangmenshiting.baidu.com')
 
 def main(url):
     x = baidu_music(url)
@@ -244,7 +244,7 @@ def main(url):
 if __name__ == '__main__':
     log_file = os.path.join(os.path.expanduser('~'), '.baidu.music.log')
     logging.basicConfig(filename=log_file, level=10, format='%(asctime)s %(message)s')
-    print(s % (91, u'程序运行日志在 %s' % log_file))
+    print(s % (2, 91, u'程序运行日志在 %s' % log_file))
     p = argparse.ArgumentParser(description='downloading any music.baidu.com')
     p.add_argument('url', help='any url of music.baidu.com')
     p.add_argument('-f', '--flac', action='store_true', help='download flac')

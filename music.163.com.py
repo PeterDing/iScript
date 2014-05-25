@@ -17,7 +17,7 @@ from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
 
 parser = HTMLParser()
-s = u'\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 ############################################################
 # music.163.com api
@@ -134,7 +134,7 @@ class neteaseMusic(object):
                     if self.cover_data[:5] != '<?xml':
                         return self.cover_data
                 except Exception as e:
-                    print s % (91, '   \\\n   \\-- Error, get_cover --'), e
+                    print s % (1, 91, '   \\\n   \\-- Error, get_cover --'), e
                     time.sleep(5)
 
     def modified_id3(self, file_name, info):
@@ -159,7 +159,7 @@ class neteaseMusic(object):
     def url_parser(self):
         if 'playlist' in self.url:
             self.playlist_id = re.search(r'playlist.+?(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析歌单信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析歌单信息 ...'))
             self.download_playlist()
         elif 'toplist' in self.url:
             t = re.search(r'toplist.+?(\d+)', self.url)
@@ -167,34 +167,34 @@ class neteaseMusic(object):
                 self.playlist_id = t.group(1)
             else:
                 self.playlist_id = '3779629'
-            print(s % (92, u'\n  -- 正在分析排行榜信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析排行榜信息 ...'))
             self.download_playlist()
         elif 'album' in self.url:
             self.album_id = re.search(r'album.+?(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析专辑信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
             self.download_album()
         elif 'artist' in self.url:
             self.artist_id = re.search(r'artist.+?(\d+)', self.url).group(1)
             code = raw_input('\n  >> 输入 a 下载该艺术家所有专辑.\n' \
                 '  >> 输入 t 下载该艺术家 Top 50 歌曲.\n  >> ')
             if code == 'a':
-                print(s % (92, u'\n  -- 正在分析艺术家专辑信息 ...'))
+                print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                 self.download_artist_albums()
             elif code == 't':
-                print(s % (92, u'\n  -- 正在分析艺术家 Top 50 信息 ...'))
+                print(s % (2, 92, u'\n  -- 正在分析艺术家 Top 50 信息 ...'))
                 self.download_artist_top_50_songs()
             else:
-                print(s % (92, u'  --> Over'))
+                print(s % (1, 92, u'  --> Over'))
         elif 'song' in self.url:
             self.song_id = re.search(r'song.+?(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析歌曲信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
             self.download_song()
         elif 'dj' in self.url:
             self.dj_id = re.search(r'dj.+?(\d+)', self.url).group(1)
-            print(s % (92, u'\n  -- 正在分析DJ节目信息 ...'))
+            print(s % (2, 92, u'\n  -- 正在分析DJ节目信息 ...'))
             self.download_dj()
         else:
-            print(s % (91, u'   请正确输入music.163.com网址.'))
+            print(s % (2, 91, u'   请正确输入music.163.com网址.'))
 
     def get_song_info(self, i):
         z = z_index(i['album']['size']) if i['album'].get('size') else 1
@@ -239,7 +239,7 @@ class neteaseMusic(object):
         logging.info('directory: %s' % os.getcwd())
         logging.info('total songs: %d' % 1)
         if not noprint:
-            print(s % (97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
+            print(s % (2, 97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
                 if not args.play else ''
         self.get_song_infos(songs)
         self.download(self.amount_songs, n)
@@ -254,7 +254,7 @@ class neteaseMusic(object):
         logging.info('total songs: %d' % len(songs))
         logging.info('url -> http://music.163.com/album/%s' % self.album_id)
         self.amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
         self.download(self.amount_songs)
@@ -273,7 +273,7 @@ class neteaseMusic(object):
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songs))
         self.amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         n = 1
         self.get_song_infos(songs)
@@ -290,7 +290,7 @@ class neteaseMusic(object):
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songs))
         self.amount_songs = unicode(len(songs))
-        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.get_song_infos(songs)
         self.download(self.amount_songs)
@@ -316,7 +316,7 @@ class neteaseMusic(object):
         logging.info('directory: %s' % self.dir_)
         logging.info('total songs: %d' % len(songids))
         self.amount_songs = unicode(len(songids))
-        print(s % (97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
+        print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         n = 1
         for sid in songids:
@@ -328,10 +328,10 @@ class neteaseMusic(object):
     def display_infos(self, i):
         q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
         print '\n  ----------------'
-        print '  >>', s % (94, i['file_name'])
-        print '  >>', s % (95, i['album_name'])
-        print '  >>', s % (92, 'http://music.163.com/song/%s' % i['song_id'])
-        print '  >>', s % (97, 'MP3-Quality'), ':', s % (92, q[i['mp3_quality']])
+        print '  >>', s % (2, 94, i['file_name'])
+        print '  >>', s % (2, 95, i['album_name'])
+        print '  >>', s % (2, 92, 'http://music.163.com/song/%s' % i['song_id'])
+        print '  >>', s % (2, 97, 'MP3-Quality'), ':', s % (1, 92, q[i['mp3_quality']])
         print ''
 
     def play(self, amount_songs, n=None):
@@ -355,7 +355,7 @@ class neteaseMusic(object):
         ii = 1
         for i in self.song_infos:
             num = random.randint(0, 100) % 7
-            col = s % (num + 90, i['file_name'])
+            col = s % (2, num + 90, i['file_name'])
             t = modificate_file_name_for_wget(i['file_name'])
             file_name = os.path.join(dir_, t)
             if os.path.exists(file_name):  ## if file exists, no get_durl
@@ -389,7 +389,7 @@ class neteaseMusic(object):
                     logging.info('  ########### work is over ###########\n')
                     print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
                         '(%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
-                    print s % (91, '  ===> '), wget
+                    print s % (1, 91, '  ===> '), wget
                     sys.exit(1)
                 else:
                     os.rename('%s.tmp' % file_name, file_name)
@@ -406,7 +406,7 @@ def main(url):
 if __name__ == '__main__':
     log_file = os.path.join(os.path.expanduser('~'), '.163music.log')
     logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s')
-    print(s % (91, u'\n  程序运行日志在 %s' % log_file))
+    print(s % (2, 91, u'\n  程序运行日志在 %s' % log_file))
     p = argparse.ArgumentParser(description='downloading any music.163.com')
     p.add_argument('url', help='any url of music.163.com')
     p.add_argument('-p', '--play', action='store_true', \

@@ -35,7 +35,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.115.cookies')
 
@@ -61,10 +61,10 @@ class pan115(object):
         def loginandcheck():
             self.login()
             if self.check_login():
-                print s % (92, '  -- login success\n')
+                print s % (1, 92, '  -- login success\n')
             else:
-                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (91, '  !! maybe this app is down.')
+                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (1, 91, '  !! maybe this app is down.')
                 sys.exit(1)
 
         if os.path.exists(cookie_file):
@@ -74,25 +74,25 @@ class pan115(object):
                 if not self.check_login():
                     loginandcheck()
             else:
-                print s % (91, '\n  ++ account changed, then relogin')
+                print s % (1, 91, '\n  ++ account changed, then relogin')
                 loginandcheck()
         else:
             loginandcheck()
 
     def check_login(self):
-        print s % (97, '\n  -- check_login')
+        print s % (1, 97, '\n  -- check_login')
         url = 'http://msg.115.com/?ac=unread'
         j = ss.get(url)
         if '"code"' not in j.text:
-            print s % (92, '  -- check_login success\n')
+            print s % (1, 92, '  -- check_login success\n')
             self.save_cookies()
             return True
         else:
-            print s % (91, '  -- check_login fail\n')
+            print s % (1, 91, '  -- check_login fail\n')
             return False
 
     def login(self):
-        print s % (97, '\n  -- login')
+        print s % (1, 97, '\n  -- login')
 
         def get_ssopw(ssoext):
             p = sha.new(password).hexdigest()
@@ -200,7 +200,7 @@ class pan115(object):
                             nn += 1
                             self.download(infos)
                 else:
-                    print s % (91, '  error: get_infos')
+                    print s % (1, 91, '  error: get_infos')
                     sys.exit(0)
             dir_loop1 = dir_loop2
             dir_loop2 = []
@@ -216,10 +216,10 @@ class pan115(object):
                 return 0
 
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['file'])
+        col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
+        print '\n  ++ 正在下载: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         if args.aria2c:
             # 115 普通用户只能有4下载通道。
@@ -254,7 +254,7 @@ class pan115(object):
             print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
                 '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                  % (status, wget_exit_status_info))
-            print s % (91, '  ===> '), cmd
+            print s % (1, 91, '  ===> '), cmd
             sys.exit(1)
         else:
             os.rename('%s.tmp' % infos['file'], infos['file'])
@@ -262,10 +262,10 @@ class pan115(object):
     @staticmethod
     def play(infos):
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['name'])
+        col = s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ play: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
+        print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
             cmd = 'mplayer -really-quiet -cache 8140 ' \
@@ -317,9 +317,9 @@ class pan115(object):
         r = ss.post(url, data=data)
         j = r.json()
         if j['info_hash']:
-            print s % (92, '  ++ add task success.')
+            print s % (1, 92, '  ++ add task success.')
         else:
-            print s % (91, '  !! Error: %s' % j['error_msg'])
+            print s % (1, 91, '  !! Error: %s' % j['error_msg'])
             sys.exit()
 
         data = {
@@ -332,8 +332,8 @@ class pan115(object):
         r = ss.post(url, data=data)
         j = r.json()
         percentDone = j['tasks'][0]['percentDone']
-        print s % (97, '  ++ %s' % j['tasks'][0]['name'])
-        print s % (92, '  %s%s Done' % (percentDone, '%'))
+        print s % (1, 97, '  ++ %s' % j['tasks'][0]['name'])
+        print s % (1, 92, '  %s%s Done' % (percentDone, '%'))
 
     def do(self, pc):
         dlink = self.get_dlink(pc)
@@ -359,7 +359,7 @@ def main(url):
             x.init()
             x.do(pc)
         else:
-            print s % (91, '  can\'t find pickcode.')
+            print s % (1, 91, '  can\'t find pickcode.')
     elif 'cid=' in url:
         cid = re.search(r'cid=(\d+)', url)
         cid = cid.group(1) if cid else '0'
@@ -371,7 +371,7 @@ def main(url):
         x.init()
         x.addtask(url)
     else:
-        print s % (91, '  请正确输入自己的115地址。')
+        print s % (2, 91, '  请正确输入自己的115地址。')
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='download from 115.com reversely')

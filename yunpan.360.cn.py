@@ -35,7 +35,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[1;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.360.cookies')
 
@@ -62,10 +62,10 @@ class yunpan360(object):
         def loginandcheck():
             self.login()
             if self.check_login():
-                print s % (92, '  -- login success\n')
+                print s % (1, 92, '  -- login success\n')
             else:
-                print s % (91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (91, '  !! maybe this app is down.')
+                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
+                print s % (1, 91, '  !! maybe this app is down.')
                 sys.exit(1)
 
         if os.path.exists(cookie_file):
@@ -75,7 +75,7 @@ class yunpan360(object):
                 if not self.check_login():
                     loginandcheck()
             else:
-                print s % (91, '\n  ++  username changed, then relogin')
+                print s % (1, 91, '\n  ++  username changed, then relogin')
                 loginandcheck()
         else:
             loginandcheck()
@@ -89,24 +89,24 @@ class yunpan360(object):
             return '/'
 
     def check_login(self):
-        print s % (97, '\n  -- check_login')
+        print s % (1, 97, '\n  -- check_login')
         url = 'http://yunpan.360.cn/user/login?st=774'
         r = ss.get(url)
         self.save_cookies()
 
         if r.ok:
-            print s % (92, '  -- check_login success\n')
+            print s % (1, 92, '  -- check_login success\n')
 
             # get apihost
             self.apihost = re.search(r'http://(.+?)/', r.url).group(1).encode('utf8')
             self.save_cookies()
             return True
         else:
-            print s % (91, '  -- check_login fail\n')
+            print s % (1, 91, '  -- check_login fail\n')
             return False
 
     def login(self):
-        print s % (97, '\n  -- login')
+        print s % (1, 97, '\n  -- login')
 
         # get token
         params = {
@@ -226,7 +226,7 @@ class yunpan360(object):
                         nn += 1
                         self.download(infos)
             else:
-                print s % (91, '  error: get_infos')
+                print s % (1, 91, '  error: get_infos')
                 sys.exit(0)
 
     @staticmethod
@@ -241,10 +241,10 @@ class yunpan360(object):
                 return 0
 
         num = random.randint(0, 7) % 7
-        col = s % (num + 90, infos['file'])
+        col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ 正在下载: #', s % (97, infos['nn']), '/', s % (97, infos['total_file']), '#', col
+        print '\n  ++ 正在下载: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         cookie = '; '.join(['%s=%s' % (x, y) for x, y in ss.cookies.items()]).encode('utf8')
         if args.aria2c:
@@ -285,7 +285,7 @@ class yunpan360(object):
             print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
                 '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                  % (status, wget_exit_status_info))
-            print s % (91, '  ===> '), cmd
+            print s % (1, 91, '  ===> '), cmd
             sys.exit(1)
         else:
             os.rename('%s.tmp' % infos['file'], infos['file'])
