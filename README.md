@@ -4,29 +4,29 @@
 
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
-- *[L]* xiami.py - 下载或播放高品质虾米音乐(xiami.com)
+- *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
-- *[L]* pan.baidu.com.py - 百度网盘的下载、上传、播放
+- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放
 
-- *[L]* 115.py - 115网盘的下载和播放
+- *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
-- *[L]* yunpan.360.cn.py - 360网盘的下载
+- *[L]* [yunpan.360.cn.py](#yunpan.360.cn.py) - 360网盘的下载
 
-- *[L]* music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
+- *[L]* [music.baidu.com.py](#music.baidu.com.py) - 下载或播放高品质百度音乐(music.baidu.com)
 
-- *[L]* music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
+- *[L]* [music.163.com.py](#music.163.com.py) - 下载或播放高品质网易音乐(music.163.com)
 
-- *[L]* tumblr.py - 下载某个tumblr.com的所有图片
+- *[L]* [tumblr.py](#tumblr.py) - 下载某个tumblr.com的所有图片
 
-- *[L]* unzip.py - 解决linux下unzip乱码的问题
+- *[L]* [unzip.py](#unzip.py) - 解决linux下unzip乱码的问题
 
-- *[L]* torrent2magnet.py - 种子转磁力
+- *[L]* [torrent2magnet.py](#torrent2magnet.py) - 种子转磁力
 
-- *[L]* ed2k_search.py - 基于 donkey4u.com 的emule搜索
+- *[L]* [ed2k_search.py](#ed2k_search.py) - 基于 donkey4u.com 的emule搜索
 
-- *[L]* 91porn.py - 下载或播放91porn
+- *[L]* [91porn.py](#91porn.py) - 下载或播放91porn
 
-- *[L]* ThunderLixianExporter.user.js - A fork of https://github.com/binux/ThunderLixianExporter - 增加了mpv和mplayer的导出。
+- *[L]* [ThunderLixianExporter.user.js](#ThunderLixianExporter.user.js) - A fork of https://github.com/binux/ThunderLixianExporter - 增加了mpv和mplayer的导出。
 
 - 待续
 
@@ -34,6 +34,7 @@
 
 ---
 
+<a name="xiami.py"></a>
 ### xiami.py - 下载或播放高品质虾米音乐(xiami.com)
 
 1. 依赖
@@ -97,6 +98,7 @@
 
 ---
 
+<a name="pan.baidu.com.py"></a>
 ### pan.baidu.com.py - 百度网盘的下载、上传、播放
 
 1. 依赖
@@ -200,6 +202,7 @@
 
 ---
 
+<a name="115.py"></a>
 ### 115.py - 115网盘的下载和播放
 
 1. 依赖
@@ -268,6 +271,7 @@
 
 ---
 
+<a name="yunpan.360.cn.py"></a>
 ### yunpan.360.cn.py - 360网盘的下载
 
 1. 依赖
@@ -320,6 +324,7 @@
 
 ---
 
+<a name="music.baidu.com.py"></a>
 ### music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
 1. 依赖
@@ -368,6 +373,7 @@
 
 ---
 
+<a name="music.163.com.py"></a>
 ### music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
 
 1. 依赖
@@ -430,6 +436,7 @@
 
 ---
 
+<a name="tumblr.py"></a>
 ### tumblr.py - 下载某个tumblr.com的所有图片
 
 1. 依赖
@@ -465,6 +472,7 @@
 
 ---
 
+<a name="unzip.py"></a>
 ### unzip.py - 解决linux下unzip乱码的问题
 
 用法
@@ -477,6 +485,7 @@
 
 ---
 
+<a name="torrent2magnet.py"></a>
 ### torrent2magnet.py - 种子转磁力
 
 1. 依赖
@@ -500,6 +509,7 @@
 
 ---
 
+<a name="ed2k_search.py"></a>
 ### ed2k_search.py - 基于 donkey4u.com 的emule搜索
 
 1. 依赖
@@ -515,6 +525,7 @@
         
 ---
 
+<a name="91porn.py"></a>
 ### 91porn.py - 下载或播放91porn
 
 > 警告: 18岁以下者，请自觉远离。
@@ -557,6 +568,7 @@
 
 ---
 
+<a name="ThunderLixianExporter.user.js"></a>
 ### ThunderLixianExporter.user.js - A fork of https://github.com/binux/ThunderLixianExporter
 
 一个github.com/binux的迅雷离线导出脚本的fork。
