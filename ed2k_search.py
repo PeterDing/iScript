@@ -13,6 +13,7 @@ opener = urllib.urlopen
 class ed2k_search(object):
     def __init__(self, keyword=''):
         self.url = "http://donkey4u.com/search/%s?page=%s&mode=list" % (keyword, '%s')
+        print ''
 
     def get_infos(self, url):
         r = opener(url)
@@ -33,9 +34,10 @@ class ed2k_search(object):
             sys.exit(1)
 
     def display(self, infos):
-        template = '  -- size: ' + s % (1, 97, '%s') \
-            + '\n  -- seed: ' + s % (1, 91, '%s') \
-            + '\n  -- ed2k: ' + s % (2, 92, '%s') \
+        template = '  size: ' + s % (1, 97, '%s') \
+            + '  seed: ' + s % (1, 91, '%s') \
+            + '\n  ----------------------------' \
+            + '\n  ' + s % (2, 92, '%s') \
             + '\n  ----------------------------\n'
 
         for i in infos:
@@ -50,6 +52,7 @@ class ed2k_search(object):
             nx = raw_input(s % (5, 93, '  next page?') + ' (N/y): ')
             if nx in ('Y', 'y'):
                 page += 1
+                print ''
             else:
                 sys.exit(1)
 
