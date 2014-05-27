@@ -194,6 +194,7 @@
         # 上传模式:  o --> 重传. c --> 续传.
         
     转存:
+    
         bp s url remotepath [-s secret]
         # url是他人分享的连接
         bp s http://pan.baidu.com/s/xxxxxxxx /save
