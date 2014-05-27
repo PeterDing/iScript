@@ -196,7 +196,8 @@
     转存:
     
         bp s url remotepath [-s secret]
-        # url是他人分享的连接
+        # url是他人分享的连接, 如: http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx, http://pan.baidu.com/s/xxxxxxxx
+        bp s http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx /save
         bp s http://pan.baidu.com/s/xxxxxxxx /save
         bp s http://pan.baidu.com/s/xxxxxxxx /save -s xxxx
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /save -s xxxx
