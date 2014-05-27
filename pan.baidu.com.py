@@ -15,7 +15,6 @@ import random
 import select
 import base64
 import md5
-import binascii
 from zlib import crc32
 import StringIO
 import signal
@@ -128,8 +127,8 @@ class panbaiducom_HOME(object):
     def check_login(self):
         print s % (1, 97, '\n  -- check_login')
         url = 'http://www.baidu.com/home/msg/data/personalcontent'
-        j = ss.get(url)
-        if 'errNo":"0' in j.text:
+        r = ss.get(url)
+        if 'errNo":"0' in r.content:
             print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
             self.save_cookies()
@@ -219,7 +218,8 @@ class panbaiducom_HOME(object):
             #"bdstoken": token
         }
         url = 'http://pan.baidu.com/api/list'
-        j = ss.get(url, params=p, headers=theaders).json()
+        r = ss.get(url, params=p, headers=theaders)
+        j = r.json()
         if j['errno'] != 0:
             print s % (1, 91, '  error: get_infos'), '--', j
             sys.exit(1)
@@ -430,7 +430,33 @@ class panbaiducom_HOME(object):
         else:
             pass
 
-    def meta(self, file_list):
+    def _make_dir(self, dir_):
+        t = {'Referer':'http://pan.baidu.com/disk/home'}
+        theaders = headers
+        theaders.update(t)
+
+        p = {
+            "a": "commit",
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "bdstoken": self.bdstoken
+        }
+        data = {
+            "path": dir_,
+            "isdir": 1,
+            "size": "",
+            "block_list": [],
+            "method": "post"
+        }
+        url = 'http://pan.baidu.com/api/create'
+        r = ss.post(url, params=p, data=data, headers=theaders)
+        j = r.json()
+        if j['errno'] != 0:
+            print s % (1, 91, '  !! Error at _make_dir')
+            sys.exit(1)
+
+    def _meta(self, file_list):
         p = {
             "channel": "chunlei",
             "app_id": "250528",
@@ -440,11 +466,11 @@ class panbaiducom_HOME(object):
         data = {'target': json.dumps(file_list)}
         url = 'http://pan.baidu.com/api/filemetas'
         r = ss.post(url, params=p, data=data, verify=False)
-        if r.ok:
-            if r.json()['errno']:
-                return False
+        j = r.json()
+        if j['errno'] == 0:
+            return j
         else:
-            print s % (1, 91, '  !! Error at exists')
+            return False
 
     def _rapidupload_file(self, lpath, rpath):
         print '  |-- upload_function:', s % (1, 97, '_rapidupload_file')
@@ -724,26 +750,129 @@ class panbaiducom_HOME(object):
         f = open(self.upload_datas_path, 'wb')
         pk.dump(self.upload_datas, f)
 
+    ##################################################################
+    # for saving shares
+
+    def _share_transfer(self, info):
+        meta = self._meta([info['remotepath'].encode('utf8')])
+        if not meta:
+            self._make_dir(info['remotepath'].encode('utf8'))
+
+        theaders = headers
+        theaders.update({'Referer': 'http://pan.baidu.com/share/link?shareid=%s&uk=%s' \
+            % (self.shareid, self.uk)})
+
+        p = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "ondup": "overwrite",
+            "async": 1,
+            "from": self.uk,
+            "shareid": self.shareid,
+            "bdstoken": self.bdstoken
+        }
+        data = "path=" + urllib.quote_plus(info['remotepath'].encode('utf8')) + \
+            '&' + "filelist=" + urllib.quote_plus('["%s"]' % info['path'].encode('utf8'))
+
+        url = 'http://pan.baidu.com/share/transfer'
+        r = ss.post(url, params=p, data=data, headers=theaders, verify=False)
+        j = r.json()
+        if j['errno'] == 0:
+            return ENoError
+        else:
+            return j['errno']
+
+    def _get_share_list(self, info):
+        p = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "num": 10000,
+            "dir": info['path'].encode('utf8'),
+            "t": int(time.time()*1000),
+            "uk": self.uk,
+            "shareid": self.shareid,
+            #"desc": 1,   ## reversely
+            "order": "name", ## sort by name, or size, time
+            "_": int(time.time()*1000),
+            "bdstoken": self.bdstoken
+        }
+        url = 'http://pan.baidu.com/share/list'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j['errno'] != 0:
+            print s % (1, 91, '  !! Error at _get_share_list')
+            sys.exit(1)
+        rpath = '/'.join([info['remotepath'], os.path.split(info['path'])[-1]])
+        for x in xrange(len(j['list'])):
+            j['list'][x]['remotepath'] = rpath
+
+        return j['list']
+
+    def _get_share_infos(self, url, remotepath, infos):
+        r = ss.get(url)
+        html = r.content
+
+        self.uk = re.search(r'FileUtils.share_uk="(.+?)"', html).group(1)
+        self.shareid = re.search(r'FileUtils.share_id="(.+?)"', html).group(1)
+        self.bdstoken = re.search(r'FileUtils.bdstoken="(.+?)"', html).group(1)
+
+        isdirs = [int(x) for x in re.findall(r'\\"isdir\\":\\"(\d)\\"', html)]
+        paths = [json.loads('"%s"' % x.replace('\\\\', '\\')) \
+            for x in re.findall(r'\\"path\\":\\"(.+?)\\",\\"', html)]
+        z = zip(isdirs, paths)
+        if not infos:
+            infos = [{
+                'isdir': x,
+                'path': y,
+                'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]
+            } for x, y in z]
+
+        return infos
+
+    def save_share(self, url, remotepath, infos=None):
+        infos = self._get_share_infos(url, remotepath, infos)
+        for info in infos:
+            print s % (1, 97, '  ++ transfer:'), info['path']
+            result = self._share_transfer(info)
+            if result == ENoError:
+                pass
+            elif result == 12:
+                print s % (1, 91, '  |-- file had existed.')
+                sys.exit()
+            elif result == -33:
+                if info['isdir']:
+                    print s % (1, 93, '  |-- over transferring limit.')
+                    infos += self._get_share_list(info)
+                else:
+                    print s % (1, 91, '  !! Error: can\'t transfer file')
+            else:
+                print s % (1, 91, '  !! Error at save_share, errno:'), result
+                sys.exit(1)
+
+    @staticmethod
+    def _secret_or_not(url):
+        r = ss.get(url)
+        if 'init' in r.url:
+            if not args.secret:
+                secret = raw_input(s % (2, 92, "  请输入提取密码: "))
+            else:
+                secret = args.secret
+            data = 'pwd=%s' % secret
+            url = "%s&t=%d" % (r.url.replace('init', 'verify'), int(time.time()))
+            r = ss.post(url, data=data)
+            if r.json()['errno']:
+                print s % (2, 91, "  !! 提取密码错误\n")
+                sys.exit(1)
+
     def do(self):
         self.get_infos()
 
 class panbaiducom(object):
     def __init__(self, url):
         self.url = url
-        self.secret = args.secret
         self.infos = {}
-
-    def secret_or_not(self):
-        r = ss.get(self.url)
-        if 'init' in r.url:
-            if not self.secret:
-                self.secret = raw_input(s % (2, 92, "  请输入提取密码: "))
-            data = 'pwd=%s' % self.secret
-            url = "%s&t=%d" % (r.url.replace('init', 'verify'), int(time.time()))
-            r = ss.post(url, data=data)
-            if r.json()['errno']:
-                print s % (2, 91, "  !! 提取密码错误\n")
-                sys.exit(1)
 
     def get_params(self):
         r = ss.get(self.url)
@@ -817,7 +946,7 @@ class panbaiducom(object):
                 print s % (1, '  !! Error at get_infos2, can\'t get dlink')
 
     def do(self):
-        self.secret_or_not()
+        panbaiducom_HOME._secret_or_not(self.url)
         self.get_params()
         self.get_infos()
 
@@ -847,7 +976,7 @@ def main(xxx):
     if xxx[0] == 'u' or xxx[0] == 'upload':
         if len(xxx) != 3:
             print s % (1, 91, '  !! 参数错误\n  upload localpath remotepath\n' \
-                '  u upload localpath remotepath')
+                '  u localpath remotepath')
             sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
@@ -873,13 +1002,30 @@ def main(xxx):
                 x.do()
             else:
                 print s % (2, 91, '  !!! url 地址不正确.'), url
+    elif xxx[0] == 's' or xxx[0] == 'save':
+        if len(xxx) != 3:
+            print s % (1, 91, '  !! 参数错误\n save url remotepath\n' \
+                ' s url remotepath')
+            sys.exit(1)
+        x = panbaiducom_HOME(xxx[1])
+        x.init()
+        remotepath = xxx[2].decode('utf8')
+        infos = []
+        if x.path != '/':
+            infos.append({'isdir': 1, 'path': x.path.decode('utf8'), \
+            'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
+        else:
+            infos = None
+        url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[1]).group(1)
+        x._secret_or_not(url)
+        x.save_share(url, remotepath, infos=infos)
     else:
         print s % (2, 91, '  !! 命令错误\n')
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description='download from pan.baidu.com')
+    p = argparse.ArgumentParser(description='download, upload, play, save from pan.baidu.com')
     p.add_argument('xxx', type=str, nargs='*', \
-        help='命令和参数.\nd, download\turl\nu, upload localpath remotepath')
+        help='命令和参数. 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('-a', '--aria2c', action='store', default=None, \
         type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', \
