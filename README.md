@@ -6,7 +6,7 @@
 
 - *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
-- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放
+- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存
 
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
@@ -99,7 +99,7 @@
 ---
 
 <a name="pan.baidu.com.py"></a>
-### pan.baidu.com.py - 百度网盘的下载、上传、播放
+### pan.baidu.com.py - 百度网盘的下载、上传、播放、转存
 
 1. 依赖
 
@@ -115,9 +115,9 @@
 
 2. 使用说明
 
-    在源码中填入百度账户username和password后，可以递归下载、上传、播放自己的网盘文件。
+    在源码中填入百度账户username和password后，可以递归下载、上传、播放自己的网盘文件和转存他人分享的网盘文件。
 
-    他人分享的有密码网盘连接，只支持单个的下载。
+    他人分享的网盘连接，只支持单个的下载。
 
     下载工具默认为wget, 可用参数-a num选用aria2
 
@@ -137,8 +137,9 @@
     
     命令:
     
-        d 或 download url1 url2 ..         下载
-        u 或 upload localpath remotepath   上传 
+        d 或 download url1 url2 ..              下载
+        u 或 upload localpath remotepath        上传 
+        s 或 save url remotepath [-s secret]    转存
     
     参数:
 
@@ -191,6 +192,13 @@
     
         bp u localpath remotepath [-m [o, c]]
         # 上传模式:  o --> 重传. c --> 续传.
+        
+    转存:
+        bp s url remotepath [-s secret]
+        # url是他人分享的连接
+        bp s http://pan.baidu.com/s/xxxxxxxx /save
+        bp s http://pan.baidu.com/s/xxxxxxxx /save -s xxxx
+        bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /save -s xxxx
 
 4. 参考:
 
