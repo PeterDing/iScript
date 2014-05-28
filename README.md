@@ -162,19 +162,15 @@
     
         # 下载自己网盘中的*单个或多个文件*
         bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2 ..
-        bp d http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename1 http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Ffilename2 ..
         # or
-        bp d path=/path/to/filename1 path=/path/to/filename2
-        bp d path%3D%2Fpath%2Fto%2Ffilename1 path%3D%2Fpath%2Fto%2Ffilename2
+        bp d /path/to/filename1 /path/to/filename2 ..
 
         # 递归下载自己网盘中的*单个或多个文件夹*
         bp d http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2 ..
-        bp d http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory1 http://pan.baidu.com/disk/home#dir/path%3D%2Fpath%2Fto%2Fdirectory2 ..
         # or
-        bp d path=/path/to/directory1 path=/path/to/directory2 ..
-        bp d path%3D%2Fpath%2Fto%2Fdirectory1 path%3D%2Fpath%2Fto%2Fdirectory2 ..
+        bp d /path/to/directory1 /path/to/directory2 ..
 
-        # 下载别人分享的*单个或多个文件*
+        # 下载别人分享的*单个文件*
         bp d http://pan.baidu.com/s/1o6psfnxx ..
         bp d http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284 ..
 

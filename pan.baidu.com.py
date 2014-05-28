@@ -1031,9 +1031,11 @@ def main(xxx):
             print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
-        urls = [url.replace('wap/link', 'share/link') for url in xxx[1:]]
+        urls = xxx[1:]
         for url in urls:
-            if '/disk/' in url or 'path' in url:
+            if url[0] == '/':
+                url = 'path=%s' % url
+            if '/disk/home' in url or 'path' in url:
                 x = panbaiducom_HOME(url)
                 x.init()
                 x.do()
@@ -1041,10 +1043,12 @@ def main(xxx):
                 x = panbaiducom(url)
                 x.do2()
             elif 'yun.baidu.com' in url or 'pan.baidu.com' in url:
+                url = url.replace('wap/link', 'share/link')
                 x = panbaiducom(url)
                 x.do()
             else:
                 print s % (2, 91, '  !!! url 地址不正确.'), url
+
     elif xxx[0] == 's' or xxx[0] == 'save':
         if len(xxx) != 3:
             print s % (1, 91, '  !! 参数错误\n save url remotepath\n' \
@@ -1062,6 +1066,7 @@ def main(xxx):
         url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[1]).group(1)
         x._secret_or_not(url)
         x.save_share(url, remotepath, infos=infos)
+
     elif xxx[0] == 'f' or xxx[0] == 'find':
         if len(xxx) < 2:
             print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
