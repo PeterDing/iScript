@@ -125,6 +125,8 @@
 
     下载的文件，保存在当前目录下。
     
+    搜索时，默认在 /。
+    
     上传模式默认是 c (续传)。
 
     cookies保存在 ~/.bp.cookies
@@ -140,6 +142,7 @@
         d 或 download url1 url2 ..              下载
         u 或 upload localpath remotepath        上传 
         s 或 save url remotepath [-s secret]    转存
+        f 或 find keyword ... [directory]       搜索
     
     参数:
 
@@ -201,6 +204,12 @@
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save -s xxxx
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /path/to/save -s xxxx
+        
+    搜索:
+    
+        bp f keyword
+        bp f "this is one keyword" /path/to/search
+        bp f this is also a keyword
 
 4. 参考:
 

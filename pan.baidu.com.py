@@ -866,6 +866,49 @@ class panbaiducom_HOME(object):
                 print s % (2, 91, "  !! 提取密码错误\n")
                 sys.exit(1)
 
+    #######################################################################
+    # for finding files
+
+    def _search(self, keyword, directory):
+        p = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "dir": directory if directory else "",
+            "key": keyword,
+            "recursion": "",
+            #"timeStamp": "0.15937364846467972",
+            #"bdstoken": ,
+        }
+        url = 'http://pan.baidu.com/api/search'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j['errno'] == 0:
+            return j['list']
+        else:
+            print s % (1, 91, '  !! Error at _search')
+            sys.exit(1)
+
+    def _find_display(self, info):
+        # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+        def sizeof_fmt(num):
+            for x in ['','KB','MB','GB']:
+                if num < 1024.0:
+                    return "%3.1f%s" % (num, x)
+                num /= 1024.0
+            return "%3.1f%s" % (num, 'TB')
+
+        isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
+        size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
+        path = s % (2, 92, info['path']) if info['isdir'] else info['path']
+        template = '  %s %s %s\n' % (isdir, size, path)
+        print template
+
+    def find(self, keyword, directory=None):
+        infos = self._search(keyword, directory)
+        for info in infos:
+            self._find_display(info)
+
     def do(self):
         self.get_infos()
 
@@ -1019,6 +1062,20 @@ def main(xxx):
         url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[1]).group(1)
         x._secret_or_not(url)
         x.save_share(url, remotepath, infos=infos)
+    elif xxx[0] == 'f' or xxx[0] == 'find':
+        if len(xxx) < 2:
+            print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
+                ' f keyword [directory]')
+            sys.exit(1)
+        x = panbaiducom_HOME()
+        x.init()
+        if xxx[-1][0] == '/':
+            keyword = ' '.join(xxx[1:-1])
+            directory = xxx[-1]
+            x.find(keyword, directory)
+        else:
+            keyword = ' '.join(xxx[1:])
+            x.find(keyword)
     else:
         print s % (2, 91, '  !! 命令错误\n')
 
