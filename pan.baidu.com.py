@@ -911,11 +911,19 @@ class panbaiducom_HOME(object):
                 num /= 1024.0
             return "%3.1f%s" % (num, 'TB')
 
-        isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
-        size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
-        path = s % (2, 92, info['path']) if info['isdir'] else info['path']
-        template = '  %s %s %s' % (isdir, size, path)
-        print template
+        if args.ls_color == 'on':
+            isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
+            size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
+            path = s % (2, 92, info['path'].encode('utf8')) \
+                if info['isdir'] else info['path'].encode('utf8')
+            template = '  %s %s %s' % (isdir, size, path)
+            print template
+        elif args.ls_color == 'off':
+            isdir = 'd' if info['isdir'] else '-'
+            size = sizeof_fmt(info['size']).rjust(7)
+            path = info['path'].encode('utf8')
+            template = '  %s %s %s' % (isdir, size, path)
+            print template
 
     def find(self, keyword, directory=None):
         infos = self._search(keyword, directory)
@@ -1207,6 +1215,8 @@ def main(argv):
     # for ls
     p.add_argument('-R', '--ls_recursively', action='store_true', \
         help='递归 ls')
+    p.add_argument('-c', '--ls_color', action='store', default='on', \
+        choices=['on', 'off'], type=str, help='递归 ls')
     global args
     args = p.parse_args(argv[2:])
     comd = argv[1]

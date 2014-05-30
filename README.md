@@ -154,14 +154,15 @@
     
     参数:
 
-        -a num, --aria2c num           aria2c分段下载数量: eg: -a 10
-        -p, --play                     play with mpv
-        -s SECRET, --secret SECRET     提取密码
-        -f number, --from_ number      从第几个开始下载，eg: -f 42
-        -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
-        -l amount, --limit amount      下载速度限制，eg: -l 100k
-        -m {o,c}, ----uploadmode {o,c} 上传模式:  o --> 重新上传. c --> 连续上传.
-        -R, --ls_recursively           递归 ls
+        -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
+        -p, --play                          play with mpv
+        -s SECRET, --secret SECRET          提取密码
+        -f number, --from_ number           从第几个开始下载，eg: -f 42
+        -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
+        -l amount, --limit amount           下载速度限制，eg: -l 100k
+        -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
+        -R, --ls_recursively                递归 ls
+        -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
 3. 用法
 
