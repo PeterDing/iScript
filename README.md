@@ -99,7 +99,7 @@
 ---
 
 <a name="pan.baidu.com.py"></a>
-### pan.baidu.com.py - 百度网盘的下载、上传、播放、转存
+### pan.baidu.com.py - 百度网盘的下载、上传、播放、转存、文件操作
 
 1. 依赖
 
@@ -161,6 +161,7 @@
         -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
         -l amount, --limit amount      下载速度限制，eg: -l 100k
         -m {o,c}, ----uploadmode {o,c} 上传模式:  o --> 重新上传. c --> 连续上传.
+        -R, --ls_recursively           递归 ls
 
 3. 用法
 
