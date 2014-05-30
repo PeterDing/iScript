@@ -199,6 +199,22 @@ class panbaiducom_HOME(object):
             c = {'user': username, 'cookies': ss.cookies.get_dict()}
             g.write(json.dumps(c, indent=4, sort_keys=True))
 
+    def _get_bdstoken(self):
+        if hasattr(self, 'bdstoken'):
+            return self.bdstoken
+
+        url = 'http://pan.baidu.com'
+        r = ss.get(url)
+        html = r.content
+
+        t = re.search(r'bdstoken="(.+?)"', html)
+        if t:
+            bdstoken = t.group(1)
+            return bdstoken
+        else:
+            print s % (1, 91, '  !! Error at _get_bdstoken')
+            sys.exit(1)
+
     def _get_file_list(self, dir_):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
         theaders = headers
@@ -431,16 +447,12 @@ class panbaiducom_HOME(object):
             pass
 
     def _make_dir(self, dir_):
-        t = {'Referer':'http://pan.baidu.com/disk/home'}
-        theaders = headers
-        theaders.update(t)
-
         p = {
             "a": "commit",
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
-            "bdstoken": self.bdstoken
+            "bdstoken": self._get_bdstoken()
         }
         data = {
             "path": dir_,
@@ -450,7 +462,7 @@ class panbaiducom_HOME(object):
             "method": "post"
         }
         url = 'http://pan.baidu.com/api/create'
-        r = ss.post(url, params=p, data=data, headers=theaders)
+        r = ss.post(url, params=p, data=data)
         j = r.json()
         if j['errno'] != 0:
             print s % (1, 91, '  !! Error at _make_dir')
@@ -461,7 +473,8 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "app_id": "250528",
             "method": "filemetas",
-            "blocks": 1
+            "blocks": 0,  # 0 or 1
+            #"bdstoken": self._get_bdstoken()
         }
         data = {'target': json.dumps(file_list)}
         url = 'http://pan.baidu.com/api/filemetas'
@@ -608,7 +621,7 @@ class panbaiducom_HOME(object):
             return '_upload_one_file'
 
     def _upload_file(self, lpath, rpath):
-        print s % (2, 94, '  ++ uploading:'), lpath
+        print s % (1, 94, '  ++ uploading:'), lpath
 
         __current_file_size = os.path.getsize(lpath)
         self.__current_file_size = __current_file_size
@@ -770,7 +783,7 @@ class panbaiducom_HOME(object):
             "async": 1,
             "from": self.uk,
             "shareid": self.shareid,
-            "bdstoken": self.bdstoken
+            "bdstoken": self._get_bdstoken()
         }
         data = "path=" + urllib.quote_plus(info['remotepath'].encode('utf8')) + \
             '&' + "filelist=" + urllib.quote_plus('["%s"]' % info['path'].encode('utf8'))
@@ -796,7 +809,7 @@ class panbaiducom_HOME(object):
             #"desc": 1,   ## reversely
             "order": "name", ## sort by name, or size, time
             "_": int(time.time()*1000),
-            "bdstoken": self.bdstoken
+            "bdstoken": self._get_bdstoken()
         }
         url = 'http://pan.baidu.com/share/list'
         r = ss.get(url, params=p)
@@ -901,13 +914,164 @@ class panbaiducom_HOME(object):
         isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
         size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
         path = s % (2, 92, info['path']) if info['isdir'] else info['path']
-        template = '  %s %s %s\n' % (isdir, size, path)
+        template = '  %s %s %s' % (isdir, size, path)
         print template
 
     def find(self, keyword, directory=None):
         infos = self._search(keyword, directory)
         for info in infos:
             self._find_display(info)
+
+    ##############################################################
+    # for ls
+    def _ls_display(self, infos, dir_=None):
+        if dir_:
+            print dir_ + ':'
+            for info in infos:
+                self._find_display(info)
+        else:
+            self._find_display(infos)
+
+    def _ls_directory(self, path):
+        directorys = [path.decode('utf8')]
+        y = 1
+        for dir_ in directorys:
+            infos = self._get_file_list(dir_.encode('utf8'))['list']
+            self._ls_display(infos, dir_)
+            if args.ls_recursively:
+                subdirs = [i['path'] for i in infos if i['isdir']]
+                directorys[y:y] = subdirs
+                y += 1
+            print ''
+
+    def ls(self, paths):
+        for path in paths:
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    self._ls_directory(path)
+                else:
+                    self._ls_display(meta['info'][0])
+            else:
+                print s % (1, 91, '  !! path is not existed.\n'), \
+                    ' --------------\n ', path
+
+    ###############################################################
+    # for file operate
+    def _exist(self, list_):
+        meta = self._meta(list_)
+        if not meta:
+            print s % (1, 91, '  !! Error at _exist, some paths are not existed.')
+            sys.exit(1)
+
+    def _filemanager(self, opera, data):
+        p = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "opera": opera,
+            "bdstoken": self._get_bdstoken(),
+        }
+        url = 'http://pan.baidu.com/api/filemanager'
+        r = ss.post(url, params=p, data=data)
+        j = r.json()
+        if j['errno'] == 0:
+            print s % (1, 92, '  ++ success.')
+        else:
+            print s % (1, 91, '  !! Error at filemanager')
+
+    def move(self, paths, remotepath):
+        self._exist(paths)
+
+        meta = self._meta([remotepath])
+        if not meta:
+            self._make_dir(remotepath)
+        elif not meta['info'][0]['isdir']:
+            print s % (1, 91, '  !! Error at move:'), remotepath, s % (1, 91, 'is a file.')
+            sys.exit(1)
+
+        t = [{
+                'path': i,
+                'dest': remotepath,
+                'newname': os.path.basename(i)
+        } for i in paths]
+        data = 'filelist=' + urllib.quote_plus(json.dumps(t))
+        self._filemanager('move', data)
+
+    def copy(self, paths, remotepath):
+        self._exist(paths)
+
+        t = None
+        if len(paths) != 1:
+            meta = self._meta([remotepath])
+            if not meta:
+                self._make_dir(remotepath)
+            elif not meta['info'][0]['isdir']:
+                print s % (1, 91, '  !! Error at move:'), remotepath, s % (1, 91, 'is a file.')
+                sys.exit(1)
+
+            t = [{
+                    'path': i,
+                    'dest': remotepath,
+                    'newname': os.path.basename(i)
+            } for i in paths]
+        else:
+            meta = self._meta([remotepath])
+            if not meta:
+                base_dir = os.path.split(remotepath)[0]
+                meta = self._meta([base_dir])
+                if not meta:
+                    self._make_dir(base_dir)
+                elif not meta['info'][0]['isdir']:
+                    print s % (1, 91, '  !! Error at move:'), remotepath, s % (1, 91, 'is a file.')
+                    sys.exit(1)
+                t = [{
+                        'path': i,
+                        'dest':base_dir,
+                        'newname': os.path.basename(remotepath)
+                } for i in paths]
+            elif not meta['info'][0]['isdir']:
+                print s % (1, 91, '  !! Error at move:'), remotepath, s % (1, 91, 'is a file.')
+                sys.exit(1)
+            else:
+                t = [{
+                        'path': i,
+                        'dest': remotepath,
+                        'newname': os.path.basename(i)
+                } for i in paths]
+
+        data = 'filelist=' + urllib.quote_plus(json.dumps(t))
+        self._filemanager('copy', data)
+
+    def remove(self, paths):
+        self._exist(paths)
+
+        data = 'filelist=' + urllib.quote_plus(json.dumps(paths))
+        self._filemanager('delete', data)
+
+    def rename(self, path, remotepath):
+        self._exist([path])
+
+        meta = self._meta([remotepath])
+        if meta:
+            print s % (1, 91, '  !! Error at rename:'), remotepath, s % (1, 91, 'is existed.')
+            sys.exit(1)
+
+        base_dir = os.path.split(remotepath)[0]
+        meta = self._meta([base_dir])
+        if not meta:
+            self._make_dir(base_dir)
+        elif not meta['info'][0]['isdir']:
+            print s % (1, 91, '  !! Error at rename:'), base_dir, s % (1, 91, 'is a file.')
+            sys.exit(1)
+
+        t = [{
+                'path': path,
+                'dest': base_dir,
+                'newname': os.path.basename(remotepath)
+        }]
+        data = 'filelist=' + urllib.quote_plus(json.dumps(t))
+        self._filemanager('move', data)
 
     def do(self):
         self.get_infos()
@@ -1001,7 +1165,7 @@ def sighandler(signum, frame):
     print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
-def main(xxx):
+def main(argv):
     signal.signal(signal.SIGBUS, sighandler)
     signal.signal(signal.SIGHUP, sighandler)
     # https://stackoverflow.com/questions/108183/how-to-prevent-sigpipes-or-handle-them-properly
@@ -1016,78 +1180,12 @@ def main(xxx):
     signal.signal(signal.SIGSEGV, sighandler)
     signal.signal(signal.SIGTERM, sighandler)
 
-    if xxx[0] == 'u' or xxx[0] == 'upload':
-        if len(xxx) != 3:
-            print s % (1, 91, '  !! 参数错误\n  upload localpath remotepath\n' \
-                '  u localpath remotepath')
-            sys.exit(1)
-        x = panbaiducom_HOME()
-        x.init()
-        x.upload(xxx[1], xxx[2])
-        return
-
-    elif xxx[0] == 'd' or xxx[0] == 'download':
-        if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
-                '  d url1 url2 ..')
-            sys.exit(1)
-        urls = xxx[1:]
-        for url in urls:
-            if url[0] == '/':
-                url = 'path=%s' % url
-            if '/disk/home' in url or 'path' in url:
-                x = panbaiducom_HOME(url)
-                x.init()
-                x.do()
-            elif 'baidu.com/pcloud/album/file' in url:
-                x = panbaiducom(url)
-                x.do2()
-            elif 'yun.baidu.com' in url or 'pan.baidu.com' in url:
-                url = url.replace('wap/link', 'share/link')
-                x = panbaiducom(url)
-                x.do()
-            else:
-                print s % (2, 91, '  !!! url 地址不正确.'), url
-
-    elif xxx[0] == 's' or xxx[0] == 'save':
-        if len(xxx) != 3:
-            print s % (1, 91, '  !! 参数错误\n save url remotepath\n' \
-                ' s url remotepath')
-            sys.exit(1)
-        x = panbaiducom_HOME(xxx[1])
-        x.init()
-        remotepath = xxx[2].decode('utf8')
-        infos = []
-        if x.path != '/':
-            infos.append({'isdir': 1, 'path': x.path.decode('utf8'), \
-            'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
-        else:
-            infos = None
-        url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[1]).group(1)
-        x._secret_or_not(url)
-        x.save_share(url, remotepath, infos=infos)
-
-    elif xxx[0] == 'f' or xxx[0] == 'find':
-        if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
-                ' f keyword [directory]')
-            sys.exit(1)
-        x = panbaiducom_HOME()
-        x.init()
-        if xxx[-1][0] == '/':
-            keyword = ' '.join(xxx[1:-1])
-            directory = xxx[-1]
-            x.find(keyword, directory)
-        else:
-            keyword = ' '.join(xxx[1:])
-            x.find(keyword)
-    else:
-        print s % (2, 91, '  !! 命令错误\n')
-
-if __name__ == '__main__':
-    p = argparse.ArgumentParser(description='download, upload, play, save from pan.baidu.com')
+    ######################################################
+    # for argparse
+    p = argparse.ArgumentParser(description='about pan.baidu.com.' \
+        ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', \
-        help='命令和参数. 用法见 https://github.com/PeterDing/iScript')
+        help='命令对象.')
     p.add_argument('-a', '--aria2c', action='store', default=None, \
         type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', \
@@ -1106,5 +1204,119 @@ if __name__ == '__main__':
     p.add_argument('-m', '--uploadmode', action='store', \
         default='c', type=str, choices=['o', 'c'], \
         help='上传模式: o --> 重传. c --> 续传.')
-    args = p.parse_args()
-    main(args.xxx)
+    # for ls
+    p.add_argument('-R', '--ls_recursively', action='store_true', \
+        help='递归 ls')
+    global args
+    args = p.parse_args(argv[2:])
+    comd = argv[1]
+    xxx = args.xxx
+    #######################################################
+
+    if comd == 'u' or comd == 'upload':
+        if len(xxx) != 2:
+            print s % (1, 91, '  !! 参数错误\n  upload localpath remotepath\n' \
+                '  u localpath remotepath')
+            sys.exit(1)
+        x = panbaiducom_HOME()
+        x.init()
+        x.upload(xxx[0], xxx[1])
+        return
+
+    elif comd == 'd' or comd == 'download':
+        if len(xxx) < 1:
+            print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
+                '  d url1 url2 ..')
+            sys.exit(1)
+        urls = xxx
+        for url in urls:
+            if url[0] == '/':
+                url = 'path=%s' % url
+            if '/disk/home' in url or 'path' in url:
+                x = panbaiducom_HOME(url)
+                x.init()
+                x.do()
+            elif 'baidu.com/pcloud/album/file' in url:
+                x = panbaiducom(url)
+                x.do2()
+            elif 'yun.baidu.com' in url or 'pan.baidu.com' in url:
+                url = url.replace('wap/link', 'share/link')
+                x = panbaiducom(url)
+                x.do()
+            else:
+                print s % (2, 91, '  !!! url 地址不正确.'), url
+
+    elif comd == 's' or comd == 'save':
+        if len(xxx) != 2:
+            print s % (1, 91, '  !! 参数错误\n save url remotepath\n' \
+                ' s url remotepath')
+            sys.exit(1)
+        x = panbaiducom_HOME(xxx[0])
+        x.init()
+        remotepath = xxx[1].decode('utf8')
+        infos = []
+        if x.path != '/':
+            infos.append({'isdir': 1, 'path': x.path.decode('utf8'), \
+            'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
+        else:
+            infos = None
+        url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
+        x._secret_or_not(url)
+        x.save_share(url, remotepath, infos=infos)
+
+    elif comd == 'f' or comd == 'find':
+        if len(xxx) < 1:
+            print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
+                ' f keyword [directory]')
+            sys.exit(1)
+        x = panbaiducom_HOME()
+        x.init()
+        if xxx[-1][0] == '/':
+            keyword = ' '.join(xxx[:-1])
+            directory = xxx[-1]
+            x.find(keyword, directory)
+        else:
+            keyword = ' '.join(xxx)
+            x.find(keyword)
+
+    elif comd == 'mv' or comd == 'move' \
+        or comd == 'rm' or comd == 'remove' \
+        or comd == 'cp' or comd == 'copy' \
+        or comd == 'rn' or comd == 'rename' \
+        or comd == 'l' or comd == 'ls':
+        if len(xxx) < 1:
+            print s % (1, 91, '  !! 参数错误\n move path1 path2 .. /path/to/directory\n' \
+                ' mv path1 path2 .. /path/to/directory\n' \
+                ' remove path1 path2 ..\n' \
+                ' rm path1 path2 ..\n' \
+                ' rename path new_path\n' \
+                ' rn path new_path\n' \
+                ' rename path new_path\n' \
+                ' cp path1 path2 /copy/to/directory\n' \
+                ' cp path /copy/to/existed_directory/newname\n' \
+                ' l path1 path2 ..\n' \
+                ' ls path1 path2 ..\n')
+            sys.exit(1)
+        e = True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! path is incorrect.')
+            sys.exit(1)
+        x = panbaiducom_HOME()
+        x.init()
+        if comd == 'mv' or comd == 'move':
+            x.move(xxx[:-1], xxx[-1])
+        elif comd == 'rm' or comd == 'remove':
+            x.remove(xxx)
+        elif comd == 'cp' or comd == 'copy':
+            x.copy(xxx[:-1], xxx[-1])
+        elif comd == 'rn' or comd == 'rename':
+            x.rename(xxx[0], xxx[1])
+        elif comd == 'l' or comd == 'ls':
+            x.ls(xxx)
+
+    else:
+        print s % (2, 91, '  !! 命令错误\n')
+
+if __name__ == '__main__':
+    argv = sys.argv
+    main(argv)

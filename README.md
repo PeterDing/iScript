@@ -6,7 +6,7 @@
 
 - *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
-- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存
+- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
 
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
@@ -137,12 +137,20 @@
     
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
     
+    <a name="cmd"></a>
     命令:
     
-        d 或 download url1 url2 ..              下载
-        u 或 upload localpath remotepath        上传 
-        s 或 save url remotepath [-s secret]    转存
-        f 或 find keyword ... [directory]       搜索
+        d  或 download url1 url2 ..                    下载
+        u  或 upload localpath remotepath              上传 
+        s  或 save url remotepath [-s secret]          转存
+        f  或 find keyword ... [directory]             搜索
+        l  或 ls path1 path2 ..                        ls
+        rn 或 rename path new_path                     重命名
+        rm 或 remove path1 path2 ..                    删除
+        mv 或 move path1 path2 .. /path/to/directory   移动
+        cp 或 copy path /path/to/directory_or_file     复制
+        cp 或 copy path1 path2 .. /path/to/directory   复制
+          
     
     参数:
 
@@ -206,6 +214,10 @@
         bp f keyword
         bp f "this is one keyword" /path/to/search
         bp f this is also a keyword
+        
+    ls、重命名、移动、删除、复制:
+    
+    见[命令](#cmd)
 
 4. 参考:
 
