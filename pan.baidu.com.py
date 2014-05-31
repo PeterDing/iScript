@@ -215,7 +215,7 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _get_bdstoken')
             sys.exit(1)
 
-    def _get_file_list(self, dir_):
+    def _get_file_list(self, order, desc, dir_):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
         theaders = headers
         theaders.update(t)
@@ -228,11 +228,12 @@ class panbaiducom_HOME(object):
             "t": int(time.time()*1000),
             "dir": dir_,
             "page": 1,
-            #"desc": 1,   ## reversely
-            "order": "name", ## sort by name, or size, time
+            "desc": 1,   ## reversely
+            "order": order, ## sort by name, or size, time
             "_": int(time.time()*1000)
             #"bdstoken": token
         }
+        if not desc: del p['desc']
         url = 'http://pan.baidu.com/api/list'
         r = ss.get(url, params=p, headers=theaders)
         j = r.json()
@@ -247,7 +248,7 @@ class panbaiducom_HOME(object):
         base_dir = '' if os.path.split(self.path)[0] == '/' \
             else os.path.split(self.path)[0]
         for d in dir_loop:
-            j = self._get_file_list(d)
+            j = self._get_file_list('name', None, d)
             if j['errno'] == 0 and j['list']:
                 if args.type_:
                     j['list'] = [x for x in j['list'] if x['isdir'] \
@@ -279,7 +280,7 @@ class panbaiducom_HOME(object):
                         self.download(infos)
             elif not j['list']:
                 self.path, server_filename = os.path.split(self.path)
-                j = self._get_file_list(self.path)
+                j = self._get_file_list('name', None, self.path)
                 if j['errno'] == 0 and j['list']:
                     for i in j['list']:
                         if i['server_filename'].encode('utf8') == server_filename:
@@ -914,8 +915,11 @@ class panbaiducom_HOME(object):
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
-            path = s % (2, 92, info['path'].encode('utf8')) \
-                if info['isdir'] else info['path'].encode('utf8')
+            base_dir, filename = os.path.split(info['path'])
+            path = os.path.join(s % (2, 95, base_dir.encode('utf8'))
+                if base_dir != '/' else '/', \
+                filename.encode('utf8') \
+                if not info['isdir'] else s % (2, 92, filename.encode('utf8')))
             template = '  %s %s %s' % (isdir, size, path)
             print template
         elif args.ls_color == 'off':
@@ -940,11 +944,11 @@ class panbaiducom_HOME(object):
         else:
             self._find_display(infos)
 
-    def _ls_directory(self, path):
+    def _ls_directory(self, order, desc, path):
         directorys = [path.decode('utf8')]
         y = 1
         for dir_ in directorys:
-            infos = self._get_file_list(dir_.encode('utf8'))['list']
+            infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
             self._ls_display(infos, dir_)
             if args.ls_recursively:
                 subdirs = [i['path'] for i in infos if i['isdir']]
@@ -952,12 +956,12 @@ class panbaiducom_HOME(object):
                 y += 1
             print ''
 
-    def ls(self, paths):
+    def ls(self, order, desc, paths):
         for path in paths:
             meta = self._meta([path])
             if meta:
                 if meta['info'][0]['isdir']:
-                    self._ls_directory(path)
+                    self._ls_directory(order, desc, path)
                 else:
                     self._ls_display(meta['info'][0])
             else:
@@ -1293,7 +1297,10 @@ def main(argv):
         or comd == 'rm' or comd == 'remove' \
         or comd == 'cp' or comd == 'copy' \
         or comd == 'rn' or comd == 'rename' \
-        or comd == 'l' or comd == 'ls':
+        or comd == 'l' or comd == 'll' \
+        or comd == 'ln' or comd == 'lnn'\
+        or comd == 'ls' or comd == 'lss' \
+        or comd == 'lt' or comd == 'ltt':
         if len(xxx) < 1:
             print s % (1, 91, '  !! 参数错误\n move path1 path2 .. /path/to/directory\n' \
                 ' mv path1 path2 .. /path/to/directory\n' \
@@ -1321,8 +1328,18 @@ def main(argv):
             x.copy(xxx[:-1], xxx[-1])
         elif comd == 'rn' or comd == 'rename':
             x.rename(xxx[0], xxx[1])
-        elif comd == 'l' or comd == 'ls':
-            x.ls(xxx)
+        elif comd == 'l' or comd == 'ln':
+            x.ls('name', None, xxx)
+        elif comd == 'll' or comd == 'lnn':
+            x.ls('name', 1, xxx)
+        elif comd == 'lt':
+            x.ls('time', None, xxx)
+        elif comd == 'ltt':
+            x.ls('time', 1, xxx)
+        elif comd == 'ls':
+            x.ls('size', None, xxx)
+        elif comd == 'lss':
+            x.ls('size', 1, xxx)
 
     else:
         print s % (2, 91, '  !! 命令错误\n')

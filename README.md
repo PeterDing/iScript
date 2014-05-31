@@ -115,7 +115,7 @@
 
 2. 使用说明
 
-    在源码中填入百度账户username和password后，可以递归下载、上传、播放自己的网盘文件和转存他人分享的网盘文件。
+    在源码中填入百度账户 username, password 后使用。
 
     他人分享的网盘连接，只支持单个的下载。
 
@@ -144,13 +144,19 @@
         u  或 upload localpath remotepath              上传 
         s  或 save url remotepath [-s secret]          转存
         f  或 find keyword ... [directory]             搜索
-        l  或 ls path1 path2 ..                        ls
         rn 或 rename path new_path                     重命名
         rm 或 remove path1 path2 ..                    删除
         mv 或 move path1 path2 .. /path/to/directory   移动
         cp 或 copy path /path/to/directory_or_file     复制
         cp 或 copy path1 path2 .. /path/to/directory   复制
-          
+        l path1 path2 ..                               ls by name
+        ll path1 path2 ..                              ls by name 反序
+        ln path1 path2 ..                              ls by name
+        lnn path1 path2 ..                             ls by name 反序
+        lt path1 path2 ..                              ls by time
+        ltt path1 path2 ..                             ls by time 反序
+        ls path1 path2 ..                              ls by size
+        lss path1 path2 ..                             ls by size 反序
     
     参数:
 
