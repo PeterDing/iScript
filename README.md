@@ -149,6 +149,7 @@
         mv 或 move path1 path2 .. /path/to/directory   移动
         cp 或 copy path /path/to/directory_or_file     复制
         cp 或 copy path1 path2 .. /path/to/directory   复制
+        
         l path1 path2 ..                               ls by name
         ll path1 path2 ..                              ls by name 反序
         ln path1 path2 ..                              ls by name
@@ -157,6 +158,11 @@
         ltt path1 path2 ..                             ls by time 反序
         ls path1 path2 ..                              ls by size
         lss path1 path2 ..                             ls by size 反序
+        
+        # sl 是以上ls命令中的一个.
+        # 以下是只ls文件或文件夹
+        sl -t f path1 path2 ..                         ls files
+        sl -t d path1 path2 ..                         ls directorys
     
     参数:
 
@@ -165,6 +171,7 @@
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始下载，eg: -f 42
         -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
+                                            或 l -t f (文件); l -t d (文件夹)
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
         -R, --ls_recursively                递归 ls

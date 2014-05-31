@@ -912,6 +912,15 @@ class panbaiducom_HOME(object):
                 num /= 1024.0
             return "%3.1f%s" % (num, 'TB')
 
+        if args.type_ == 'f':
+            if info['isdir']:
+                return
+        elif args.type_ == 'd':
+            if not info['isdir']:
+                return
+        else:
+            pass
+
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
@@ -1209,7 +1218,7 @@ def main(argv):
         help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
         default=None, type=str, \
-        help='要下载的文件的后缀，eg: -t mp3')
+        help='要下载的文件的后缀，eg: -t mp3. 或者ls 文件(f)、文件夹(d)的参数')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
     # for upload
