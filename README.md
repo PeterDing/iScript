@@ -4,6 +4,8 @@
 
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
+> windows用户可在babun (https://github.com/babun/babun) 下运行。
+
 - *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
 - *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
