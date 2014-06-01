@@ -411,7 +411,7 @@ class panbaiducom_HOME(object):
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
             wget_exit_status_info = wget_es[status]
-            print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
+            print('\n\n ---###   \x1b[1;91mERROR\x1b[0m ==> '\
                 '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
                  % (status, wget_exit_status_info))
             print s % (1, 91, '  ===> '), cmd
