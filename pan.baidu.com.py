@@ -384,18 +384,18 @@ class panbaiducom_HOME(object):
 
         if args.aria2c:
             if args.limit:
-                cmd = 'aria2c -c -s%s ' \
+                cmd = 'aria2c -c -x %s -s %s ' \
                     '--max-download-limit %s ' \
                     '-o "%s.tmp" -d "%s" \
                     --user-agent "%s" ' \
                     '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.aria2c, args.limit, infos['name'], \
+                    % (args.aria2c, args.aria2c, args.limit, infos['name'], \
                     infos['dir_'], headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -s%s ' \
+                cmd = 'aria2c -c -x %s -s %s ' \
                     '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
                     '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.aria2c, infos['name'], infos['dir_'], headers['User-Agent'], \
+                    % (args.aria2c, args.aria2c, infos['name'], infos['dir_'], headers['User-Agent'], \
                         infos['dlink'])
         else:
             if args.limit:
