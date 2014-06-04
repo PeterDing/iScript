@@ -49,7 +49,7 @@ class ed2k_search(object):
         while True:
             url = self.url % page
             self.get_infos(url)
-            nx = raw_input(s % (5, 93, '  next page?') + ' (N/y): ')
+            nx = raw_input(s % (1, 93, '  next page?') + ' (N/y): ')
             if nx in ('Y', 'y'):
                 page += 1
                 print ''

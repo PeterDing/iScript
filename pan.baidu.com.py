@@ -392,7 +392,7 @@ class panbaiducom_HOME(object):
                     % (args.aria2c, args.limit, infos['name'], \
                     infos['dir_'], headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -x%s -s%s ' \
+                cmd = 'aria2c -c -s%s ' \
                     '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
                     '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
                     % (args.aria2c, infos['name'], infos['dir_'], headers['User-Agent'], \
