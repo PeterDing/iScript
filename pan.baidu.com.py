@@ -474,6 +474,7 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "app_id": "250528",
             "method": "filemetas",
+            #"dlink": 1,
             "blocks": 0,  # 0 or 1
             #"bdstoken": self._get_bdstoken()
         }
