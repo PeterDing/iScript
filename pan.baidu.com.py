@@ -267,7 +267,7 @@ class panbaiducom_HOME(object):
                         t = t[1:] if t[0] == '/' else t
                         t =  os.path.join(os.getcwd(), t)
                         if not i.has_key('dlink'):
-                            i['dlink'] = self._get_dlink(i)
+                            i['dlink'] = self._get_dlink2(i)
                         infos = {
                             'file': t,
                             'dir_': os.path.split(t)[0],
@@ -287,7 +287,7 @@ class panbaiducom_HOME(object):
                             if i['isdir']: break
                             t =  os.path.join(os.getcwd(), server_filename)
                             if not i.has_key('dlink'):
-                                i['dlink'] = self._get_dlink(i)
+                                i['dlink'] = self._get_dlink2(i)
                             infos = {
                                 'file': t,
                                 'dir_': os.path.split(t)[0],
@@ -366,6 +366,11 @@ class panbaiducom_HOME(object):
                 return dlink
             else:
                 self._get_dsign()
+
+    def _get_dlink2(self, i):
+        j = self._meta([i['path'].encode('utf8')])
+        if j:
+            return j['info'][0]['dlink'].encode('utf8')
 
     @staticmethod
     def download(infos):
@@ -474,7 +479,7 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "app_id": "250528",
             "method": "filemetas",
-            #"dlink": 1,
+            "dlink": 1,
             "blocks": 0,  # 0 or 1
             #"bdstoken": self._get_bdstoken()
         }
