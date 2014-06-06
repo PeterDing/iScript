@@ -371,6 +371,9 @@ class panbaiducom_HOME(object):
         j = self._meta([i['path'].encode('utf8')])
         if j:
             return j['info'][0]['dlink'].encode('utf8')
+        else:
+            print s % (1, 91, '  !! Error at _get_dlink2')
+            sys.exit(1)
 
     @staticmethod
     def download(infos):
