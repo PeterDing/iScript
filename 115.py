@@ -315,6 +315,11 @@ class pan115(object):
         }
         url = 'http://115.com/lixian/?ct=lixian&ac=add_task_url'
         r = ss.post(url, data=data)
+        if not r.ok:
+            print s % (1, 91, '  !! Error at addtask')
+            print r.content
+            sys.exit(1)
+
         j = r.json()
         if j['info_hash']:
             print s % (1, 92, '  ++ add task success.')
