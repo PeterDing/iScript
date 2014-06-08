@@ -214,8 +214,10 @@
         
     上传:
     
-        bp u localpath remotepath [-m [o, c]]
-        # 上传模式:  o --> 重传. c --> 续传.
+        bp u localpath1 localpath2 .. remotepath [-m [o, c]]
+        # 上传模式:
+        # o --> 重传
+        # c --> 续传 (默认)
         
     转存:
     

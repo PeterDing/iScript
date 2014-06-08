@@ -739,20 +739,7 @@ class panbaiducom_HOME(object):
                 remotepath = os.path.join(rpath, t)
                 self._upload_file(localpath, remotepath)
 
-    def upload(self, localpath, remotepath):
-        lpath = localpath
-        if localpath[0] == '~':
-            lpath = os.path.expanduser(localpath)
-        else:
-            lpath = os.path.abspath(localpath)
-        rpath = remotepath if remotepath[0] == '/' else '/' + remotepath
-
-        if os.path.exists(lpath):
-            pass
-        else:
-            print s % (1, 91, '  !! Error: localpath doesn\'t exist')
-            sys.exit(1)
-
+    def upload(self, localpaths, remotepath):
         self.upload_datas_path = upload_datas_path
         self.upload_datas = {}
         if os.path.exists(self.upload_datas_path):
@@ -761,13 +748,28 @@ class panbaiducom_HOME(object):
             if upload_datas:
                 self.upload_datas = upload_datas
 
-        if os.path.isdir(lpath):
-            self._upload_dir(lpath, rpath)
-        elif os.path.isfile(lpath):
-            self._upload_file(lpath, rpath)
-        else:
-            print s % (1, 91, '  !! Error: localpath ?')
-            sys.exit(1)
+        for localpath in localpaths:
+            lpath = localpath
+            if localpath[0] == '~':
+                lpath = os.path.expanduser(localpath)
+            else:
+                lpath = os.path.abspath(localpath)
+            rpath = remotepath if remotepath[0] == '/' else '/' + remotepath
+
+            if os.path.exists(lpath):
+                pass
+            else:
+                print s % (1, 91, '  !! Error: localpath doesn\'t exist')
+                print s % (1, 91, '  ==>'), lpath
+                continue
+
+            if os.path.isdir(lpath):
+                self._upload_dir(lpath, rpath)
+            elif os.path.isfile(lpath):
+                self._upload_file(lpath, rpath)
+            else:
+                print s % (1, 91, '  !! Error: localpath ?')
+                sys.exit(1)
 
     def save_upload_datas(self):
         f = open(self.upload_datas_path, 'wb')
@@ -1246,14 +1248,13 @@ def main(argv):
     #######################################################
 
     if comd == 'u' or comd == 'upload':
-        if len(xxx) != 2:
-            print s % (1, 91, '  !! 参数错误\n  upload localpath remotepath\n' \
-                '  u localpath remotepath')
+        if len(xxx) < 2:
+            print s % (1, 91, '  !! 参数错误\n  upload localpath1 localpath2 .. remotepath\n' \
+                '  u localpath1 localpath2 .. remotepath')
             sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
-        x.upload(xxx[0], xxx[1])
-        return
+        x.upload(xxx[:-1], xxx[-1])
 
     elif comd == 'd' or comd == 'download':
         if len(xxx) < 1:
