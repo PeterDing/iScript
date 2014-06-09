@@ -125,11 +125,11 @@ class panbaiducom_HOME(object):
         return input_code
 
     def check_login(self):
-        print s % (1, 97, '\n  -- check_login')
+        #print s % (1, 97, '\n  -- check_login')
         url = 'http://www.baidu.com/home/msg/data/personalcontent'
         r = ss.get(url)
         if 'errNo":"0' in r.content:
-            print s % (1, 92, '  -- check_login success\n')
+            #print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
             self.save_cookies()
             return True
@@ -1211,6 +1211,38 @@ def main(argv):
     signal.signal(signal.SIGINT, sighandler)
     signal.signal(signal.SIGSEGV, sighandler)
     signal.signal(signal.SIGTERM, sighandler)
+
+    if len(argv) <= 1:
+        usage = """
+ usage: https://github.com/PeterDing/iScript#pan.baidu.com.py
+
+ 命令:
+ d  或 download url1 url2 ..                    下载
+ u  或 upload localpath remotepath              上传
+ s  或 save url remotepath [-s secret]          转存
+ f  或 find keyword ... [directory]             搜索
+ rn 或 rename path new_path                     重命名
+ rm 或 remove path1 path2 ..                    删除
+ mv 或 move path1 path2 .. /path/to/directory   移动
+ cp 或 copy path /path/to/directory_or_file     复制
+ cp 或 copy path1 path2 .. /path/to/directory   复制
+
+ l path1 path2 ..                               ls by name
+ ll path1 path2 ..                              ls by name 反序
+ ln path1 path2 ..                              ls by name
+ lnn path1 path2 ..                             ls by name 反序
+ lt path1 path2 ..                              ls by time
+ ltt path1 path2 ..                             ls by time 反序
+ ls path1 path2 ..                              ls by size
+ lss path1 path2 ..                             ls by size 反序
+
+ # sl 是以上ls命令中的一个.
+ # 以下是只ls文件或文件夹
+ sl -t f path1 path2 ..                         ls files
+ sl -t d path1 path2 ..                         ls directorys
+        """
+        print usage
+        sys.exit()
 
     ######################################################
     # for argparse
