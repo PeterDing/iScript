@@ -878,6 +878,7 @@ class panbaiducom_HOME(object):
 
     @staticmethod
     def _secret_or_not(url):
+        ss.headers['Referer'] = 'http://pan.baidu.com'
         r = ss.get(url)
         if 'init' in r.url:
             if not args.secret:
@@ -889,6 +890,121 @@ class panbaiducom_HOME(object):
             r = ss.post(url, data=data)
             if r.json()['errno']:
                 print s % (2, 91, "  !! 提取密码错误\n")
+                sys.exit(1)
+
+    #######################################################################
+    # for saveing inbox shares
+
+    def _share_inbox_transfer(self, info, burl):
+        meta = self._meta([info['remotepath'].encode('utf8')])
+        if not meta:
+            self._make_dir(info['remotepath'].encode('utf8'))
+
+        p = "channel=chunlei&" + "clienttype=0&" + "web=1&" + \
+            "path=%s&" % urllib.quote_plus(info['remotepath'].encode('utf8')) + \
+            "object_array=%s&" % urllib.quote_plus('["%s"]' % info['object_id'].encode('utf8')) + \
+            "fsid_array=%s&" % urllib.quote_plus('[%s]' % info['fs_id']) + \
+            "session_id=%s&" % self.session_id + \
+            "founder_uk=%s&" % self.founder_uk + \
+            "bdstoken=%s" % self._get_bdstoken()
+
+        url = 'http://pan.baidu.com/inbox/object/transfer?' + p
+        r = ss.get(url)
+        j = r.json()
+        if j['errno'] == 0:
+            return ENoError
+        else:
+            return j['errno']
+
+    def _get_share_inbox_list(self, info):
+        p = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "object_id": info['object_id'],
+            "object_status": info['object_status'],
+            "fs_id": info['fs_id'],
+            "path": info['path'],
+            "server_filename": info['server_filename'],
+            "size": info['size'],
+            "server_mtime": info['server_mtime'],
+            "server_ctime": info['server_ctime'],
+            "local_mtime": info['local_mtime'],
+            "local_ctime": info['local_ctime'],
+            "isdir": info['isdir'],
+            "category": info['category'],
+            "founder_uk": self.founder_uk,
+            "session_id": self.session_id,
+            "bdstoken": self._get_bdstoken(),
+        }
+        if info.get('ori_path'): p.update({"ori_path": info['ori_path']})
+        if info.get('dir_ref'): p.update({"dir_ref": info['dir_ref']})
+        if info.get('md5'): p.update({"md5": ""})
+        if info.get('create_time'): p.update({"create_time": "1402299935"})
+        if info.get('update_time'): p.update({"update_time": "1402299935"})
+        if info.get('last_time'): p.update({"last_time": ""})
+
+        url = 'http://pan.baidu.com/inbox/object/unpanfileinfo'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j['errno'] != 0:
+            print s % (1, 91, '  !! Error at _get_share_inbox_list')
+            sys.exit(1)
+        rpath = '/'.join([info['remotepath'], os.path.split(info['path'])[-1]])
+        for x in xrange(len(j['list'])):
+            j['list'][x]['remotepath'] = rpath
+        return j['list']
+
+    def _get_share_inbox_infos(self, url, remotepath, infos):
+        r = ss.get(url)
+        html = r.content
+
+        self.founder_uk = re.search(r'FileUtils.founder_uk=(\d+)', html).group(1)
+        self.session_id = re.search(r'FileUtils.session_id="(.+?)"', html).group(1)
+        self.bdstoken = re.search(r'bdstoken="(.+?)"', html).group(1)
+
+        p = {
+            "session_id": self.session_id,
+            "founder_uk": self.founder_uk,
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "bdstoken": self._get_bdstoken(),
+        }
+        url = 'http://pan.baidu.com/inbox/object/unpanfileinfo'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j['errno'] == 0:
+            for x in xrange(len(j['list'])):
+                rpath = '/'.join([remotepath, os.path.split(j['list'][x]['path'])[-1]])
+                j['list'][x]['remotepath'] = rpath
+            return j['list']
+        else:
+            print s % (1, 91, '  !! Error at _get_share_inbox_infos')
+            sys.exit()
+
+
+    def save_inbox_share(self, url, remotepath, infos=None):
+        ss.headers['Referer'] = 'http://pan.baidu.com'
+        remotepath = remotepath if remotepath[-1] != '/' else remotepath[:-1]
+        infos = self._get_share_inbox_infos(url, remotepath, infos)
+        for info in infos:
+            print s % (1, 97, '  ++ transfer:'), info['path']
+            result = self._share_inbox_transfer(info, url)
+            if result == ENoError:
+                pass
+            elif result == 12:
+                print s % (1, 91, '  |-- file had existed.')
+                sys.exit()
+            #elif result == -33:
+            elif result == 1:
+                if info['isdir']:
+                    print s % (1, 93, '  |-- over transferring limit.')
+                    infos += self._get_share_inbox_list(info)
+                else:
+                    print s % (1, 91, '  !! Error: can\'t transfer file')
+            else:
+                print s % (1, 91, '  !! Error at save_inbox_share, errno:'), result
                 sys.exit(1)
 
     #######################################################################
@@ -956,6 +1072,7 @@ class panbaiducom_HOME(object):
 
     ##############################################################
     # for ls
+
     def _ls_display(self, infos, dir_=None):
         if dir_:
             print dir_ + ':'
@@ -990,6 +1107,7 @@ class panbaiducom_HOME(object):
 
     ###############################################################
     # for file operate
+
     def _exist(self, list_):
         meta = self._meta(list_)
         if not meta:
@@ -1212,8 +1330,7 @@ def main(argv):
     signal.signal(signal.SIGSEGV, sighandler)
     signal.signal(signal.SIGTERM, sighandler)
 
-    if len(argv) <= 1:
-        usage = """
+    usage = """
  usage: https://github.com/PeterDing/iScript#pan.baidu.com.py
 
  命令:
@@ -1241,6 +1358,7 @@ def main(argv):
  sl -t f path1 path2 ..                         ls files
  sl -t d path1 path2 ..                         ls directorys
         """
+    if len(argv) <= 1:
         print usage
         sys.exit()
 
@@ -1325,9 +1443,13 @@ def main(argv):
             'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
         else:
             infos = None
-        url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
-        x._secret_or_not(url)
-        x.save_share(url, remotepath, infos=infos)
+        if '/inbox/' in xxx[0]:
+            url = xxx[0]
+            x.save_inbox_share(url, remotepath, infos=infos)
+        else:
+            url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
+            x._secret_or_not(url)
+            x.save_share(url, remotepath, infos=infos)
 
     elif comd == 'f' or comd == 'find':
         if len(xxx) < 1:
