@@ -228,6 +228,8 @@
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save -s xxxx
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /path/to/save -s xxxx
         
+        bp s http://pan.baidu.com/inbox/i/xxxxxxxx /path/to/save
+        
     搜索:
     
         bp f keyword
