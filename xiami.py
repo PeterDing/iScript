@@ -556,10 +556,10 @@ class xiami(object):
         print ''
 
     def get_mp3_quality(self, durl):
-        if 'm3.file.xiami.com' in durl:
-            return 'H'
+        if 'm3.file.xiami.com' in durl or 'm6.file.xiami.com' in durl:
+            return True
         else:
-            return 'L'
+            return False
 
     def play(self, nnn=None, nn=None):
         for i in self.song_infos:
