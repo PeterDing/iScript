@@ -337,7 +337,7 @@ class pan115(object):
         r = ss.post(url, data=data)
         j = r.json()
         percentDone = j['tasks'][0]['percentDone']
-        print s % (1, 97, '  -- %s' % j['tasks'][0]['name'])
+        print s % (1, 97, '  ++ %s' % j['tasks'][0]['name'])
         print s % (1, 92, '  %s%s Done' % (percentDone, '%'))
 
     def do(self, pc):
