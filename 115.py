@@ -80,11 +80,11 @@ class pan115(object):
             loginandcheck()
 
     def check_login(self):
-        print s % (1, 97, '\n  -- check_login')
+        #print s % (1, 97, '\n  -- check_login')
         url = 'http://msg.115.com/?ac=unread'
         j = ss.get(url)
         if '"code"' not in j.text:
-            print s % (1, 92, '  -- check_login success\n')
+            #print s % (1, 92, '  -- check_login success\n')
             self.save_cookies()
             return True
         else:
@@ -337,7 +337,7 @@ class pan115(object):
         r = ss.post(url, data=data)
         j = r.json()
         percentDone = j['tasks'][0]['percentDone']
-        print s % (1, 97, '  ++ %s' % j['tasks'][0]['name'])
+        print s % (1, 97, '  -- %s' % j['tasks'][0]['name'])
         print s % (1, 92, '  %s%s Done' % (percentDone, '%'))
 
     def do(self, pc):

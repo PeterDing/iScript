@@ -89,13 +89,13 @@ class yunpan360(object):
             return '/'
 
     def check_login(self):
-        print s % (1, 97, '\n  -- check_login')
+        #print s % (1, 97, '\n  -- check_login')
         url = 'http://yunpan.360.cn/user/login?st=774'
         r = ss.get(url)
         self.save_cookies()
 
         if r.ok:
-            print s % (1, 92, '  -- check_login success\n')
+            #print s % (1, 92, '  -- check_login success\n')
 
             # get apihost
             self.apihost = re.search(r'http://(.+?)/', r.url).group(1).encode('utf8')
