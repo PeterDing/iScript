@@ -193,11 +193,11 @@ class xiami(object):
             loginandcheck()
 
     def check_login(self):
-        print s % (1, 97, '\n  -- check_login')
+        #print s % (1, 97, '\n  -- check_login')
         url = 'http://www.xiami.com/task/signin'
         r = ss.get(url)
         if r.content:
-            print s % (1, 92, '  -- check_login success\n')
+            #print s % (1, 92, '  -- check_login success\n')
             self.save_cookies()
             return True
         else:
