@@ -10,6 +10,8 @@
 
 - *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
 
+- *[L]* [mute_torrent.py](#mute_torrent.py) - 以数字改bt种子(torrent)中的文件名 - 过滤敏.感.词
+
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
 - *[L]* [yunpan.360.cn.py](#yunpan.360.cn.py) - 360网盘的下载
@@ -247,6 +249,27 @@
 > https://github.com/banbanchs/pan-baidu-download/blob/master/bddown_core.py
 
 > https://github.com/houtianze/bypy
+
+---
+
+<a name="mute_torrent.py"></a>
+### mute_torrent.py - 以数字改bt种子(torrent)中的文件名 - 过滤敏.感.词
+
+1. 依赖
+
+        bencode (https://github.com/bittorrent/bencode)
+
+2. 使用说明
+
+    用于净网时期的 baidu, xunlei
+    
+    > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
+    
+3. 用法
+
+    \# mt 是mute_torrent.py的马甲 (alias mt='python2 /path/to/mute_torrent.py')
+    
+        mt path1 path2 ..
 
 ---
 
