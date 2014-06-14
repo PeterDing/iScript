@@ -183,7 +183,7 @@ def main(argv):
             string = x.get_torrent(hh)
             if string:
                 tpath = os.path.join(new_torrents_dir, hh + '.torrent')
-                if args.nomote:
+                if args.nomute:
                     print s % (1, 97, '  ++ only magnet to torrent:'), 'magnet:?xt=urn:btih:%s' % hh
                     with open(tpath, 'w') as g:
                         g.write(string)
