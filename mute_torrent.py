@@ -56,9 +56,15 @@ class mute_torrent(object):
             if i not in ['files', 'piece length', 'pieces', 'name', 'length']:
                 del dstring['info'][i]
             elif 'name' in i:
-                t = dstring['info'][i].decode('utf8')
-                t = t[::-1].encode('utf8')   # reverse name
-                dstring['info'][i] = t
+                if dstring['info'].get('files'):
+                    t = dstring['info'][i].decode('utf8')
+                    t = t[::-1].encode('utf8')   # reverse name
+                    dstring['info'][i] = t
+                else:
+                    ext = os.path.splitext(dstring['info'][i])[-1]
+                    ext = self._check_ext(ext)
+                    name = '0' + ext
+                    dstring['info'][i] = name
 
         ## delete comment and creator
         for i in dstring.keys():
