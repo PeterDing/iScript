@@ -554,7 +554,6 @@ class panbaiducom_HOME(object):
         else:
             sys.exit(1)
 
-
     def _combine_file(self, lpath, rpath):
         p = {
             "method": "createsuperfile",
@@ -640,6 +639,7 @@ class panbaiducom_HOME(object):
         if self.upload_datas.has_key(lpath):
             if __current_file_size != self.upload_datas[lpath]['size']:
                 self.upload_datas[lpath]['is_over'] = False
+                self.upload_datas[lpath]['size'] = __current_file_size
             self.upload_datas[lpath]['upload_function'] = upload_function
         else:
             self.upload_datas[lpath] = {

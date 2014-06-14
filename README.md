@@ -253,7 +253,7 @@
 ---
 
 <a name="mute_torrent.py"></a>
-### mute_torrent.py - 以数字改bt种子(torrent)中的文件名 - 过滤敏.感.词
+### mute_torrent.py - 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
 
 1. 依赖
 
@@ -263,13 +263,23 @@
 
     用于净网时期的 baidu, xunlei
     
+    磁力连接转种子，用的是
+    
+        http://www.btspread.com
+        https://torcache.net
+        https://zoink.it
+        
+    如果有更好的种子库，请提交issue
+    
     > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
     
 3. 用法
 
     \# mt 是mute_torrent.py的马甲 (alias mt='python2 /path/to/mute_torrent.py')
     
+        mt magnet_link1 magnet_link2 ..
         mt path1 path2 ..
+        mt magnet_link1 path1 ..
 
 ---
 
