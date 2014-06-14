@@ -287,6 +287,10 @@
         # 用torrage.com
         mt magnet_link1 path1 .. -p 127.0.0.1:8087
 
+4. 参考:
+
+> http://blog.chinaunix.net/uid-28450123-id-4051635.html
+
 ---
 
 <a name="115.py"></a>
