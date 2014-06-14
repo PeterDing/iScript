@@ -267,8 +267,10 @@
     磁力连接转种子，用的是
     
         http://www.btspread.com
-        https://torcache.net
-        https://zoink.it
+        http://torcache.net
+        http://zoink.it
+        http://torrage.com
+        # 用torrage.com需要设置代理, eg: -p 127.0.0.1:8087
         
     如果有更好的种子库，请提交issue
     
@@ -281,6 +283,9 @@
         mt magnet_link1 magnet_link2 ..
         mt path1 path2 ..
         mt magnet_link1 path1 ..
+        
+        # 用torrage.com
+        mt magnet_link1 path1 .. -p 127.0.0.1:8087
 
 ---
 

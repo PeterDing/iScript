@@ -6,6 +6,7 @@ import os
 import sys
 import re
 import requests
+import argparse
 
 ############################################################
 headers = {
@@ -22,6 +23,7 @@ ss.headers.update(headers)
 
 s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 new_torrents_dir = os.path.join(os.getcwd(), 'new_torrents')
+letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789']
 
 class mute_torrent(object):
     def transfer(self, string, tpath):
@@ -36,31 +38,34 @@ class mute_torrent(object):
         for fl in dstring['info']['files']:
             filename = fl['path'][-1]
             ext = os.path.splitext(filename)[-1]
+            ext = self._check_ext(ext)
             path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
                 + ['%s%s' % (file_index, ext)]
             file_index += 1
-            #print path
             fl['path'] = path
+
+            for item in fl.keys():
+                if item not in ['path', 'length', 'filehash', 'ed2k']:
+                    del fl[item]
+
             files.append(fl)
+            dstring['info']['files'] = files
 
         ## change top directory
-        for i in dstring['info']:
-            if 'name' in i:
+        for i in dstring['info'].keys():
+            if i not in ['files', 'piece length', 'pieces', 'name']:
+                del dstring['info'][i]
+            elif 'name' in i:
                 t = dstring['info'][i].decode('utf8')
                 t = t[::-1].encode('utf8')   # reverse name
                 dstring['info'][i] = t
 
         ## delete comment and creator
         for i in dstring.keys():
-            if 'comment' in i:
+            if i not in ['creation date', 'announce', 'info', 'encoding']:
                 del dstring[i]
 
-            elif 'created by' in i:
-                del dstring[i]
-
-        dstring['info']['files'] = files
         c = bencode.bencode(dstring)
-
         with open(tpath, 'w') as g:
             g.write(c)
 
@@ -72,45 +77,89 @@ class mute_torrent(object):
         else:
             return self.dir_dict[dir_]
 
+    def _check_ext(self, ext):
+        if len(ext) > 4:
+            return ''
+
+        for e in ext:
+            if e not in letters:
+                return ''
+
+        return ext
+
     def get_torrent(self, hh):
-        print s % (1, 93, '  ++ get torrent from web')
+        print s % (1, 93, '\n  ++ get torrent from web')
 
-        ## first with https://zoink.it
-        print s % (1, 94, '  --> try:'), 'https://zoink.it'
-        url = 'https://torcache.net/torrent/%s.torrent' % hh
-        r = ss.get(url, verify=False)
-        if r.ok:
-            return r.content
-        else:
-            print s % (1, 91, '  -- not get.')
-
-        ## 2nd, with https://zoink.it
-        print s % (1, 94, '  --> try:'), 'https://torcache.net'
-        url = 'https://torcache.net/torrent/%s.torrent' % hh
-        r = ss.get(url, verify=False)
-        if r.ok:
-            return r.content
-        else:
-            print s % (1, 91, '  -- not get.')
-
-        ## 3rd, with http://www.btspread.com
-        print s % (1, 94, '  --> try:'), 'http://www.btspread.com'
-        #ss.get('http://www.btspread.com/')
-        url = 'http://www.btspread.com/torrent/detail/hash/%s' % hh
-        r = ss.get(url)
-        if r.ok:
-            html = r.content
-            durl = re.search(r'"(http://www.btspread.com/torrent/download/key/.+?)"', html).group(1)
-            r = ss.get(durl)
-            if r.ok and r.content:
-                print s % (1, 92, '  ++ get torrent.')
+        ## with https://zoink.it
+        if args.proxy:
+            print s % (1, 94, '  >>> try:'), 'https://torrage.com'
+            proxies = {
+                'http': args.proxy if args.proxy.startswith('http://') \
+                else 'http://' + args.proxy
+            }
+            url = 'http://torrage.com/torrent/%s.torrent' % hh
+            r = ss.get(url, proxies=proxies)
+            if r.ok:
                 return r.content
             else:
                 print s % (1, 91, '  -- not get.')
 
+        ## with https://zoink.it
+        print s % (1, 94, '  >>> try:'), 'https://zoink.it'
+        url = 'http://torcache.net/torrent/%s.torrent' % hh
+        r = ss.get(url, verify=False)
+        if r.ok:
+            return r.content
+        else:
+            print s % (1, 91, '  -- not get.')
+
+        ## with https://zoink.it
+        print s % (1, 94, '  --> try:'), 'https://torcache.net'
+        url = 'http://torcache.net/torrent/%s.torrent' % hh
+        r = ss.get(url, verify=False)
+        if r.ok:
+            return r.content
+        else:
+            print s % (1, 91, '  -- not get.')
+
+        ## with http://www.btspread.com
+        print s % (1, 94, '  >>> try:'), 'http://www.btspread.com'
+        print s % (1, 93, '  this will take a while, please be patient.')
+        #ss.get('http://www.btspread.com/')
+        url = 'http://www.btspread.com/convert/magnet'
+        data = {
+            "magnetLinkInput": "Converting",
+            "magnetLink": "magnet:?xt=urn:btih:%s" % hh
+        }
+        #url = 'http://www.btspread.com/torrent/detail/hash/%s' % hh
+        r = ss.post(url, data=data)
+        if r.ok:
+            html = r.content
+            durl = re.search(r'"(http://www.btspread.com/torrent/download/key/.+?)"', html)
+            if durl:
+                durl = durl.group(1)
+                r = ss.get(durl)
+                if r.ok and r.content:
+                    print s % (1, 92, '  ++ get torrent.')
+                    return r.content
+                else:
+                    print s % (1, 91, '  -- not get.')
+
         return False
 
-def main(xxx):
+def main(argv):
+    ######################################################
+    # for argparse
+    p = argparse.ArgumentParser(description='mute magnet or torrent' \
+        ' 用法见 https://github.com/PeterDing/iScript')
+    p.add_argument('xxx', type=str, nargs='*', \
+        help='命令对象.')
+    p.add_argument('-p', '--proxy', action='store', default=None, \
+        type=str, help='proxy for torrage.com, eg: 127.0.0.1:8087')
+    global args
+    args = p.parse_args(argv[1:])
+    xxx = args.xxx
+
     if not os.path.exists(new_torrents_dir):
         os.mkdir(new_torrents_dir)
 
@@ -129,7 +178,7 @@ def main(xxx):
                 print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
                 x.transfer(string, tpath)
             else:
-                print s % (1, 91, '  !! Can\'t get torrent from web.'), path
+                print s % (1, 91, 'Can\'t get torrent from web.'), path
 
         elif os.path.exists(path):
             if os.path.isdir(path):
@@ -152,6 +201,6 @@ def main(xxx):
             print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
 
 if __name__ == '__main__':
-    print s % (1, 92, '  new torrents are at'), new_torrents_dir
-    xxx = sys.argv
-    main(xxx)
+    print s % (1, 92, '  new torrents are at'), new_torrents_dir, '\n'
+    argv = sys.argv
+    main(argv)
