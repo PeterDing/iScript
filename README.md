@@ -10,7 +10,7 @@
 
 - *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
 
-- *[L]* [mute_torrent.py](#mute_torrent.py) - 以数字改bt种子(torrent)中的文件名 - 过滤敏.感.词
+- *[L]* [mute_torrent.py](#mute_torrent.py) - 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
 
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
