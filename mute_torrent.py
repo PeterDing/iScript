@@ -129,7 +129,7 @@ def main(xxx):
                 print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
                 x.transfer(string, tpath)
             else:
-                print s % (1, 91, 'Can\'t get torrent from web.'), path
+                print s % (1, 91, '  !! Can\'t get torrent from web.'), path
 
         elif os.path.exists(path):
             if os.path.isdir(path):
