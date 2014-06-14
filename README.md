@@ -10,7 +10,7 @@
 
 - *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
 
-- *[L]* [mute_torrent.py](#mute_torrent.py) - 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
+- *[L]* [mute_torrent.py](#mute_torrent.py) - magnet2torrent & 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
 
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
@@ -253,7 +253,7 @@
 ---
 
 <a name="mute_torrent.py"></a>
-### mute_torrent.py - 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
+### mute_torrent.py - magnet2torrent & 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
 
 1. 依赖
 
@@ -263,6 +263,8 @@
 2. 使用说明
 
     用于净网时期的 baidu, xunlei
+    
+    也看不改bt种子(torrent)中的文件名,直接得到原种子(torrent)
     
     磁力连接转种子，用的是
     
@@ -276,6 +278,13 @@
     
     > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
     
+    参数:
+            
+		-p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087
+		-d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
+		-n, --nomute                            用magnet,只下载torrent,不转变
+
+    
 3. 用法
 
     \# mt 是mute_torrent.py的马甲 (alias mt='python2 /path/to/mute_torrent.py')
@@ -283,9 +292,13 @@
         mt magnet_link1 magnet_link2 ..
         mt path1 path2 ..
         mt magnet_link1 path1 ..
+        mt magnet_link1 path1 .. -d /path/to/save
         
         # 用torrage.com
         mt magnet_link1 path1 .. -p 127.0.0.1:8087
+        
+        # only magnet to torrent
+        mt magnet_link1 magnet_link2 .. -n
 
 4. 参考:
 

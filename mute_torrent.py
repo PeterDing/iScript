@@ -22,7 +22,6 @@ ss = requests.session()
 ss.headers.update(headers)
 
 s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
-new_torrents_dir = os.path.join(os.getcwd(), 'new_torrents')
 letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789']
 
 class mute_torrent(object):
@@ -35,25 +34,26 @@ class mute_torrent(object):
         file_index = 0
 
         ## change files' name
-        for fl in dstring['info']['files']:
-            filename = fl['path'][-1]
-            ext = os.path.splitext(filename)[-1]
-            ext = self._check_ext(ext)
-            path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                + ['%s%s' % (file_index, ext)]
-            file_index += 1
-            fl['path'] = path
+        if dstring['info'].get('files'):
+            for fl in dstring['info']['files']:
+                filename = fl['path'][-1]
+                ext = os.path.splitext(filename)[-1]
+                ext = self._check_ext(ext)
+                path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
+                    + ['%s%s' % (file_index, ext)]
+                file_index += 1
+                fl['path'] = path
 
-            for item in fl.keys():
-                if item not in ['path', 'length', 'filehash', 'ed2k']:
-                    del fl[item]
+                for item in fl.keys():
+                    if item not in ['path', 'length', 'filehash', 'ed2k']:
+                        del fl[item]
 
-            files.append(fl)
-            dstring['info']['files'] = files
+                files.append(fl)
+                dstring['info']['files'] = files
 
         ## change top directory
         for i in dstring['info'].keys():
-            if i not in ['files', 'piece length', 'pieces', 'name']:
+            if i not in ['files', 'piece length', 'pieces', 'name', 'length']:
                 del dstring['info'][i]
             elif 'name' in i:
                 t = dstring['info'][i].decode('utf8')
@@ -148,6 +148,8 @@ class mute_torrent(object):
         return False
 
 def main(argv):
+    new_torrents_dir = os.path.join(os.getcwd(), 'new_torrents')
+
     ######################################################
     # for argparse
     p = argparse.ArgumentParser(description='mute magnet or torrent' \
@@ -155,13 +157,19 @@ def main(argv):
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
     p.add_argument('-p', '--proxy', action='store', default=None, \
-        type=str, help='proxy for torrage.com, eg: 127.0.0.1:8087')
+        type=str, help='proxy for torrage.com, eg: -p 127.0.0.1:8087')
+    p.add_argument('-d', '--directory', action='store', default=new_torrents_dir, \
+        type=str, help='改变的torrents保存的路径, eg: -d /path/to/save')
+    p.add_argument('-n', '--nomute', action='store_true', \
+        help='用magnet,只下载torrent,不转变')
     global args
     args = p.parse_args(argv[1:])
     xxx = args.xxx
 
+    new_torrents_dir = args.directory
     if not os.path.exists(new_torrents_dir):
         os.mkdir(new_torrents_dir)
+    print s % (1, 92, '  new torrents are at'), new_torrents_dir, '\n'
 
     x = mute_torrent()
 
@@ -175,8 +183,13 @@ def main(argv):
             string = x.get_torrent(hh)
             if string:
                 tpath = os.path.join(new_torrents_dir, hh + '.torrent')
-                print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
-                x.transfer(string, tpath)
+                if args.nomote:
+                    print s % (1, 97, '  ++ only magnet to torrent:'), 'magnet:?xt=urn:btih:%s' % hh
+                    with open(tpath, 'w') as g:
+                        g.write(string)
+                else:
+                    print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
+                    x.transfer(string, tpath)
             else:
                 print s % (1, 91, 'Can\'t get torrent from web.'), path
 
@@ -201,6 +214,5 @@ def main(argv):
             print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
 
 if __name__ == '__main__':
-    print s % (1, 92, '  new torrents are at'), new_torrents_dir, '\n'
     argv = sys.argv
     main(argv)
