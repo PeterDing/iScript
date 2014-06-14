@@ -46,7 +46,9 @@ class mute_torrent(object):
         ## change top directory
         for i in dstring['info']:
             if 'name' in i:
-                dstring['info'][i] = 'tasks'
+                t = dstring['info'][i].decode('utf8')
+                t = t[::-1].encode('utf8')   # reverse name
+                dstring['info'][i] = t
 
         ## delete comment and creator
         for i in dstring.keys():
