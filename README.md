@@ -257,6 +257,7 @@
 
 1. 依赖
 
+        python2-requests (https://github.com/kennethreitz/requests)
         bencode (https://github.com/bittorrent/bencode)
 
 2. 使用说明
