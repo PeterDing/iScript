@@ -98,20 +98,23 @@ class mute_torrent(object):
 
         ## with https://zoink.it
         if args.proxy:
-            print s % (1, 94, '  >>> try:'), 'https://torrage.com'
+            print s % (1, 94, '  >>> try:'), 'http://torrage.com'
             proxies = {
                 'http': args.proxy if args.proxy.startswith('http://') \
                 else 'http://' + args.proxy
             }
             url = 'http://torrage.com/torrent/%s.torrent' % hh
-            r = ss.get(url, proxies=proxies)
-            if r.ok:
-                return r.content
-            else:
-                print s % (1, 91, '  -- not get.')
+            try:
+                r = ss.get(url, proxies=proxies)
+                if r.ok:
+                    return r.content
+                else:
+                    print s % (1, 91, '  -- not get.')
+            except:
+                print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with https://zoink.it
-        print s % (1, 94, '  >>> try:'), 'https://zoink.it'
+        print s % (1, 94, '  >>> try:'), 'http://zoink.it'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
         r = ss.get(url, verify=False)
         if r.ok:
@@ -120,7 +123,7 @@ class mute_torrent(object):
             print s % (1, 91, '  -- not get.')
 
         ## with https://zoink.it
-        print s % (1, 94, '  --> try:'), 'https://torcache.net'
+        print s % (1, 94, '  --> try:'), 'http://torcache.net'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
         r = ss.get(url, verify=False)
         if r.ok:
@@ -162,7 +165,7 @@ def main(argv):
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
-    p.add_argument('-p', '--proxy', action='store', default=None, \
+    p.add_argument('-p', '--proxy', action='store', default='127.0.0.1:8087', \
         type=str, help='proxy for torrage.com, eg: -p 127.0.0.1:8087')
     p.add_argument('-d', '--directory', action='store', default=new_torrents_dir, \
         type=str, help='改变的torrents保存的路径, eg: -d /path/to/save')
