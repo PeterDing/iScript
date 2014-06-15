@@ -282,6 +282,7 @@
             
 		-p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087
 		-d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
+		-m NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
 		-n, --nomute                            用magnet,只下载torrent,不转变
 
     
