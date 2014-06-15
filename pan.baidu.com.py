@@ -238,7 +238,7 @@ class panbaiducom_HOME(object):
         r = ss.get(url, params=p, headers=theaders)
         j = r.json()
         if j['errno'] != 0:
-            print s % (1, 91, '  error: get_infos'), '--', j
+            print s % (1, 91, '  error: _get_file_list'), '--', j
             sys.exit(1)
         else:
             return j
