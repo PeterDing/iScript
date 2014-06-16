@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 import random
+import select
 
 s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
