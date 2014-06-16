@@ -64,9 +64,9 @@
     下载的MP3默认添加id3 tags，保存在当前目录下。
 
     日志保存在 ~/.Xiami.log, cookies保存在 ~/.Xiami.cookies。
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
 3. 用法
@@ -112,7 +112,7 @@
         wget, aria2
 
         python2-requests (https://github.com/kennethreitz/requests)
-        
+
         requests-toolbelt (https://github.com/sigmavirus24/requests-toolbelt)
 
         mpv (http://mpv.io)
@@ -130,22 +130,22 @@
     对所有文件，默认执行下载，如要播放媒体文件，加参数-p。
 
     下载的文件，保存在当前目录下。
-    
+
     搜索时，默认在 /。
-    
+
     上传模式默认是 c (续传)。
 
     cookies保存在 ~/.bp.cookies
-    
+
     上传数据保存在 ~/.bp.pickle
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
-    
+
     <a name="cmd"></a>
     命令:
-    
+
         d  或 download url1 url2 ..                    下载
         u  或 upload localpath remotepath              上传 
         s  或 save url remotepath [-s secret]          转存
@@ -155,7 +155,7 @@
         mv 或 move path1 path2 .. /path/to/directory   移动
         cp 或 copy path /path/to/directory_or_file     复制
         cp 或 copy path1 path2 .. /path/to/directory   复制
-        
+
         l path1 path2 ..                               ls by name
         ll path1 path2 ..                              ls by name 反序
         ln path1 path2 ..                              ls by name
@@ -164,12 +164,12 @@
         ltt path1 path2 ..                             ls by time 反序
         ls path1 path2 ..                              ls by size
         lss path1 path2 ..                             ls by size 反序
-        
+
         # sl 是以上ls命令中的一个.
         # 以下是只ls文件或文件夹
         sl -t f path1 path2 ..                         ls files
         sl -t d path1 path2 ..                         ls directorys
-    
+
     参数:
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
@@ -188,7 +188,7 @@
     \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.badiu.com.py')
 
     下载:
-    
+
         # 下载自己网盘中的*单个或多个文件*
         bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2 ..
         # or
@@ -215,33 +215,33 @@
         # url 是上面的
         bp d url -p
         bp d url -s [secret] -p
-        
+
     上传:
-    
+
         bp u localpath1 localpath2 .. remotepath [-m [o, c]]
         # 上传模式:
         # o --> 重传
         # c --> 续传 (默认)
-        
+
     转存:
-    
+
         bp s url remotepath [-s secret]
         # url是他人分享的连接, 如: http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx, http://pan.baidu.com/s/xxxxxxxx
         bp s http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx /path/to/save
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save -s xxxx
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /path/to/save -s xxxx
-        
+
         bp s http://pan.baidu.com/inbox/i/xxxxxxxx /path/to/save
-        
+
     搜索:
-    
+
         bp f keyword
         bp f "this is one keyword" /path/to/search
         bp f this is also a keyword
-        
+
     ls、重命名、移动、删除、复制:
-    
+
     见[命令](#cmd)
 
 4. 参考:
@@ -265,41 +265,41 @@
 2. 使用说明
 
     用于净网时期的 baidu, xunlei
-    
+
     也看不改bt种子(torrent)中的文件名,直接得到原种子(torrent)
-    
+
     磁力连接转种子，用的是
-    
+
         http://www.btspread.com
         http://torcache.net
         http://zoink.it
         http://torrage.com
         # 用torrage.com需要设置代理, eg: -p 127.0.0.1:8087
-        
-    如果有更好的种子库，请提交issue
-    
-    > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
-    
-    参数:
-            
-		-p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087
-		-d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
-		-m NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
-		-n, --nomute                            用magnet,只下载torrent,不转变
 
-    
+    如果有更好的种子库，请提交issue
+
+    > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
+
+    参数:
+
+        -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087
+        -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
+        -m NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
+        -n, --nomute                            用magnet,只下载torrent,不转变
+
+
 3. 用法
 
     \# mt 是mute_torrent.py的马甲 (alias mt='python2 /path/to/mute_torrent.py')
-    
+
         mt magnet_link1 magnet_link2 ..
         mt path1 path2 ..
         mt magnet_link1 path1 ..
         mt magnet_link1 path1 .. -d /path/to/save
-        
+
         # 用torrage.com
         mt magnet_link1 path1 .. -p 127.0.0.1:8087
-        
+
         # only magnet to torrent
         mt magnet_link1 magnet_link2 .. -n
 
@@ -325,7 +325,7 @@
 2. 使用说明
 
     !!! 脚本是用于下载自己的115网盘文件，不支持他人分享文件。
-    
+
     !!! 非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。
 
     在源码中填入115账户account和password后，可以*递归下载*自己的网盘文件。
@@ -337,11 +337,11 @@
     下载的文件，保存在当前目录下。
 
     cookies保存在 ~/.115.cookies
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
-    
+
     参数:
 
         -a, --aria2c                   download with aria2c
@@ -363,7 +363,7 @@
 
         # 下载用aria2, url 是上面的
         pan115 -a url
-        
+
         # 增加离线下载
         pan115 -d "magnet:?xt=urn:btih:757fc565c56462b28b4f9c86b21ac753500eb2a7&dn=archlinux-2014.04.01-dual.iso"
 
@@ -391,9 +391,9 @@
 2. 使用说明
 
     在源码中填入yunpan.360.com账户username和password后，可以递归下载自己的网盘文件。
-    
+
     !!!!!!  万恶的360不支持断点续传   !!!!!!
-    
+
     由于上面的原因，不能播放媒体文件。
 
     只支持自己的\*文件夹\*的递归下载。
@@ -403,7 +403,7 @@
     下载的文件，保存在当前目录下。
 
     cookies保存在 ~/.360.cookies
-    
+
     参数:
 
         -a, --aria2c                   download with aria2c
@@ -445,18 +445,18 @@
 2. 使用说明
 
     默认执行下载，如要播放，加参数-p。
-    
+
     参数：
-        
+
         -f, --flac  download flac
         -i, --high  download 320, default
         -l, --low   download 128
         -p, --play  play with mpv
 
     下载的MP3默认添加id3 tags，保存在当前目录下。
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
 3. 用法
@@ -502,9 +502,9 @@
     下载的MP3默认添加id3 tags，保存在当前目录下。
 
     日志保存在 ~/.163music.log。
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
 3. 用法
@@ -525,7 +525,7 @@
 
         # 下载DJ节目
         nm http://music.163.com/#/dj?id=675051
-        
+
         # 下载排行榜
         nm http://music.163.com/#/discover/toplist?id=11641012
 
@@ -553,36 +553,38 @@
         python2-requests (https://github.com/kennethreitz/requests)
 
         mpv (http://mpv.io)
-        
+
 2. 使用说明
 
     flvxz.com 视频解析
-    
+
+    !!! 不提供视频合并操作
+
     支持的网站:
-    
+
         """
         已知支持120个以上视频网站，覆盖大多数国内视频站点，少量国外视频站点
-                                                              """
+                                                                        """
                                                        -- flvxz.com
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
-    
+
 3. 用法
 
     \# fl是flvxz_cl.py的马甲 (alias fl='python2 /path/to/flvxz_cl.py')
-    
+
     下载:
-    
+
         fl http://v.youku.com/v_show/id_XNTI2Mzg4NjAw.html
         fl http://www.tudou.com/albumplay/Lqfme5hSolM/tJ_Gl3POz7Y.html
-        
+
     播放:
-    
+
         # url 是上面的
         fl url -p
-        
+
 4. 相关脚本:
 
 > https://github.com/iambus/youku-lixian
@@ -610,16 +612,16 @@
     默认开5个进程，如需改变用参数-p [num]。
 
     下载的文件，保存在当前目录下。
-    
+
     默认下载原图。
-    
+
     支持连续下载，下载进度储存在下载文件夹内的 json.json。
-    
+
     参数:
 
-		-p PROCESSES, --processes PROCESSES      指定多进程数,默认为5个,最多为20个 eg: -p 20
-		-c, --check           尝试修复未下载成功的图片
-		-t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
+        -p PROCESSES, --processes PROCESSES      指定多进程数,默认为5个,最多为20个 eg: -p 20
+        -c, --check           尝试修复未下载成功的图片
+        -t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
 
 3. 用法
 
@@ -679,7 +681,7 @@
         ed this is a keyword
         or
         ed "this is a keyword"
-        
+
 ---
 
 <a name="91porn.py"></a>
@@ -704,9 +706,9 @@
     默认执行下载，如要播放媒体文件，加参数-p。
 
     下载的文件，保存在当前目录下。
-    
+
     关于播放操作:
-    
+
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
 3. 用法
@@ -715,7 +717,7 @@
 
         pn url # 91porn.com(或其镜像) 视频的url
 
-    播放
+    播放:
 
         pn -p url
 
