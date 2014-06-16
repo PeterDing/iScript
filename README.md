@@ -20,6 +20,8 @@
 
 - *[L]* [music.163.com.py](#music.163.com.py) - 下载或播放高品质网易音乐(music.163.com)
 
+- *[L]* [flvxz_cl.py](#flvxz_cl.py) - flvxz.com 视频解析 client - 支持下载、播放
+
 - *[L]* [tumblr.py](#tumblr.py) - 下载某个tumblr.com的所有图片
 
 - *[L]* [unzip.py](#unzip.py) - 解决linux下unzip乱码的问题
@@ -538,6 +540,56 @@
 > https://github.com/yanunon/NeteaseCloudMusic/wiki/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90API%E5%88%86%E6%9E%90
 
 > http://s3.music.126.net/s/2/core.js
+
+---
+
+<a name="flvxz_cl.py"></a>
+### flvxz_cl.py - flvxz.com 视频解析 client - 支持下载、播放
+
+1. 依赖
+
+        wget
+
+        python2-requests (https://github.com/kennethreitz/requests)
+
+        mpv (http://mpv.io)
+        
+2. 使用说明
+
+    flvxz.com 视频解析
+    
+    支持的网站:
+    
+        """
+        已知支持120个以上视频网站，覆盖大多数国内视频站点，少量国外视频站点
+                                                              """
+                                                       -- flvxz.com
+    
+    关于播放操作:
+    
+    > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+    
+3. 用法
+
+    \# fl是flvxz_cl.py的马甲 (alias fl='python2 /path/to/flvxz_cl.py')
+    
+    下载:
+    
+        fl http://v.youku.com/v_show/id_XNTI2Mzg4NjAw.html
+        fl http://www.tudou.com/albumplay/Lqfme5hSolM/tJ_Gl3POz7Y.html
+        
+    播放:
+    
+        # url 是上面的
+        fl url -p
+        
+4. 相关脚本:
+
+> https://github.com/iambus/youku-lixian
+
+> https://github.com/rg3/youtube-dl
+
+> https://github.com/soimort/you-get    
 
 ---
 
