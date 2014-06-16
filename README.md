@@ -636,7 +636,9 @@
 
 用法
 
-        python2 unzip.py azipfile.zip
+        python2 unzip.py azipfile1.zip azipfile2.zip ..
+        python2 unzip.py azipfile.zip -s secret
+        # -s 密码
 
 代码来自以下连接，我改了一点。
 
