@@ -100,7 +100,11 @@ def main(url):
 
     r = requests.get(url)
     j = r.json()
-    j = pickup(j)
+    if j:
+        j = pickup(j)
+    else:
+        print s % (1, 91, '  !! Can\'t get videos')
+        sys.exit()
     print s % (2, 92, '  -- %s' % j['quality'].encode('utf8'))
 
     yes = True if len(j['files']) > 1 else False
