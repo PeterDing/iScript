@@ -103,7 +103,7 @@ class mute_torrent(object):
 
         ## with https://zoink.it
         if args.proxy:
-            print s % (1, 94, '  >>> try:'), 'http://torrage.com'
+            print s % (1, 94, '  >> try:'), 'http://torrage.com'
             proxies = {
                 'http': args.proxy if args.proxy.startswith('http://') \
                 else 'http://' + args.proxy
@@ -119,7 +119,7 @@ class mute_torrent(object):
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with https://zoink.it
-        print s % (1, 94, '  >>> try:'), 'http://zoink.it'
+        print s % (1, 94, '  >> try:'), 'http://zoink.it'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
         r = ss.get(url, verify=False)
         if r.ok:
@@ -128,7 +128,7 @@ class mute_torrent(object):
             print s % (1, 91, '  -- not get.')
 
         ## with https://zoink.it
-        print s % (1, 94, '  --> try:'), 'http://torcache.net'
+        print s % (1, 94, '  >> try:'), 'http://torcache.net'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
         r = ss.get(url, verify=False)
         if r.ok:
@@ -137,8 +137,8 @@ class mute_torrent(object):
             print s % (1, 91, '  -- not get.')
 
         ## with http://www.btspread.com
-        print s % (1, 94, '  >>> try:'), 'http://www.btspread.com'
-        print s % (1, 93, '  this will take a while, please be patient.')
+        print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
+        print s % (1, 93, '    |-- this will take a while, please be patient.')
         #ss.get('http://www.btspread.com/')
         url = 'http://www.btspread.com/convert/magnet'
         data = {
