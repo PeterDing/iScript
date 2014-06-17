@@ -215,6 +215,88 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _get_bdstoken')
             sys.exit(1)
 
+    #def _sift(self, fileslist, name=None, size=None, time=None, head=None, tail=None, include=None, exclude=None):
+    def _sift(self, fileslist, **arguments):
+        """
+        a filter for time, size, name, head, tail, include, exclude
+        support regular expression
+        """
+
+        def sort(reverse, arg, fileslist=fileslist):
+            tdict = {fileslist[i][arg] : i for i in xrange(len(fileslist))}
+            keys = tdict.keys()
+            keys.sort(reverse=reverse)
+            indexs = [tdict[i] for i in keys]
+            fileslist = [fileslist[i] for i in indexs]
+            return fileslist
+
+        # for time
+        if arguments.get('name'):
+            reverse = None
+            if arguments['name'] == 'reverse':
+                reverse = True
+            elif arguments['name'] == 'no_reverse':
+                reverse = False
+            fileslist = sort(reverse, 'server_filename')
+
+        # for size
+        if arguments.get('size'):
+            reverse = None
+            if arguments['size'] == 'reverse':
+                reverse = True
+            elif arguments['size'] == 'no_reverse':
+                reverse = False
+            fileslist = sort(reverse, 'size')
+
+        # for size
+        if arguments.get('time'):
+            reverse = None
+            if arguments['time'] == 'reverse':
+                reverse = True
+            elif arguments['time'] == 'no_reverse':
+                reverse = False
+            fileslist = sort(reverse, 'local_mtime')
+
+        # for head, tail, include, exclude
+        head = args.head
+        tail = args.tail
+        include = args.include
+        exclude = args.exclude
+        if head or tail or include or exclude:
+            tdict = {fileslist[i]['server_filename'] : i for i in xrange(len(fileslist))}
+            keys1 = [i for i in tdict.keys() if i.lower().startswith(head.encode('utf8').lower())] \
+                if head else []
+            keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8').lower())] \
+                if tail else []
+            keys3 = [i for i in tdict.keys() if re.search(include, i.encode('utf8'), flags=re.I)] \
+                if include else []
+            keys4 = [i for i in tdict.keys() if not re.search(exclude, i.encode('utf8'), flags=re.I)] \
+                if exclude else []
+
+            # intersection
+            keys = [i for i in [keys1, keys2, keys3, keys4] if i]
+            if len(keys) > 1:
+                tkeys = keys[0]
+                for i in keys:
+                    tkeys &= i
+                keys = tkeys
+            elif len(keys) == 1:
+                keys = keys[0]
+            elif len(keys) == 0:
+                keys = []
+
+            indexs = [tdict[i] for i in keys]
+            fileslist = [fileslist[i] for i in indexs]
+
+        dirs = [i for i in fileslist if i['isdir']]
+        files = [i for i in fileslist if not i['isdir']]
+        if arguments.get('desc') == 1:
+            dirs.reverse()
+            files.reverse()
+        fileslist = dirs + files
+
+        return fileslist
+
     def _get_file_list(self, order, desc, dir_):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
         theaders = headers
@@ -249,7 +331,9 @@ class panbaiducom_HOME(object):
             else os.path.split(self.path)[0]
         for d in dir_loop:
             j = self._get_file_list('name', None, d)
-            if j['errno'] == 0 and j['list']:
+            if j['list']:
+                if args.head or args.tail or args.include or args.exclude:
+                    j['list'] = self._sift(j['list'])
                 if args.type_:
                     j['list'] = [x for x in j['list'] if x['isdir'] \
                         or x['server_filename'][-len(args.type_):] \
@@ -1017,17 +1101,17 @@ class panbaiducom_HOME(object):
             "web": 1,
             "dir": directory if directory else "",
             "key": keyword,
-            "recursion": "",
             #"timeStamp": "0.15937364846467972",
-            #"bdstoken": ,
+            #"bdstoken": self._get_bdstoken(),
         }
+        if args.recursive: p['recursion'] = 1
         url = 'http://pan.baidu.com/api/search'
         r = ss.get(url, params=p)
         j = r.json()
         if j['errno'] == 0:
             return j['list']
         else:
-            print s % (1, 91, '  !! Error at _search')
+            print s % (1, 91, '  !! Error at _search'), j
             sys.exit(1)
 
     def _find_display(self, info):
@@ -1065,8 +1149,11 @@ class panbaiducom_HOME(object):
             template = '  %s %s %s' % (isdir, size, path)
             print template
 
-    def find(self, keyword, directory=None):
-        infos = self._search(keyword, directory)
+    def find(self, keyword, **arguments):
+        infos = self._search(keyword, arguments.get('directory'))
+        infos = self._sift(infos, name=arguments.get('name'), \
+            size=arguments.get('size'), time=arguments.get('time'), \
+            desc=arguments.get('desc'))
         for info in infos:
             self._find_display(info)
 
@@ -1086,8 +1173,10 @@ class panbaiducom_HOME(object):
         y = 1
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
+            if args.head or args.tail or args.include or args.exclude:
+                infos = self._sift(infos)
             self._ls_display(infos, dir_)
-            if args.ls_recursively:
+            if args.recursive:
                 subdirs = [i['path'] for i in infos if i['isdir']]
                 directorys[y:y] = subdirs
                 y += 1
@@ -1337,12 +1426,24 @@ def main(argv):
  d  或 download url1 url2 ..                    下载
  u  或 upload localpath remotepath              上传
  s  或 save url remotepath [-s secret]          转存
- f  或 find keyword ... [directory]             搜索
  rn 或 rename path new_path                     重命名
  rm 或 remove path1 path2 ..                    删除
  mv 或 move path1 path2 .. /path/to/directory   移动
  cp 或 copy path /path/to/directory_or_file     复制
  cp 或 copy path1 path2 .. /path/to/directory   复制
+
+ f   或 find keyword .. [directory]             非递归搜索
+ ff  keyword .. [directory]                     非递归搜索 反序
+ ft  keyword .. [directory]                     非递归搜索 by time
+ ftt keyword .. [directory]                     非递归搜索 by time 反序
+ fs  keyword .. [directory]                     非递归搜索 by size
+ fss keyword .. [directory]                     非递归搜索 by size 反序
+ fn  keyword .. [directory]                     非递归搜索 by name
+ fnn keyword .. [directory]                     非递归搜索 by name 反序
+ # 递归搜索加 -R
+ # 关于-H, -T, -I, -E
+ f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+ f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
 
  l path1 path2 ..                               ls by name
  ll path1 path2 ..                              ls by name 反序
@@ -1355,8 +1456,11 @@ def main(argv):
 
  # sl 是以上ls命令中的一个.
  # 以下是只ls文件或文件夹
- sl -t f path1 path2 ..                         ls files
- sl -t d path1 path2 ..                         ls directorys
+ sl -t f path1 path2 ..                            ls files
+ sl -t d path1 path2 ..                            ls directorys
+ # 关于-H, -T, -I, -E
+ sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+ sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         """
     if len(argv) <= 1:
         print usage
@@ -1385,10 +1489,18 @@ def main(argv):
     # for upload
     p.add_argument('-m', '--uploadmode', action='store', \
         default='c', type=str, choices=['o', 'c'], \
-        help='上传模式: o --> 重传. c --> 续传.')
-    # for ls
-    p.add_argument('-R', '--ls_recursively', action='store_true', \
+        help='上传模式: o --> 重传. c --> 续传 .')
+    # for recurse, head, tail, include, exclude
+    p.add_argument('-R', '--recursive', action='store_true', \
         help='递归 ls')
+    p.add_argument('-H', '--head', action='store', \
+        default=None, type=str, help='匹配开头的字符，eg: -H Headishere')
+    p.add_argument('-T', '--tail', action='store', \
+        default=None, type=str, help='匹配结尾的字符，eg: -T Tailishere')
+    p.add_argument('-I', '--include', action='store', \
+        default=None, type=str, help='不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"')
+    p.add_argument('-E', '--exclude', action='store', \
+        default=None, type=str, help='排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"')
     p.add_argument('-c', '--ls_color', action='store', default='on', \
         choices=['on', 'off'], type=str, help='递归 ls')
     global args
@@ -1451,20 +1563,40 @@ def main(argv):
             x._secret_or_not(url)
             x.save_share(url, remotepath, infos=infos)
 
-    elif comd == 'f' or comd == 'find':
+    elif comd == 'f' or comd == 'find' or comd == 'ff' \
+        or comd == 'ft' or comd == 'ftt' \
+        or comd == 'fs' or comd == 'fss' \
+        or comd == 'fn' or comd == 'fnn':
         if len(xxx) < 1:
             print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
                 ' f keyword [directory]')
             sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
+        keyword = ''
+        directory = None
         if xxx[-1][0] == '/':
             keyword = ' '.join(xxx[:-1])
             directory = xxx[-1]
-            x.find(keyword, directory)
         else:
             keyword = ' '.join(xxx)
-            x.find(keyword)
+
+        if comd == 'f' or comd == 'find':
+            x.find(keyword, desc=None, directory=directory)
+        elif comd == 'ff':
+            x.find(keyword, desc=1, directory=directory)
+        elif comd == 'ft':
+            x.find(keyword, desc=None, time='no_reverse', directory=directory)
+        elif comd == 'ftt':
+            x.find(keyword, desc=1, time='reverse', directory=directory)
+        elif comd == 'fs':
+            x.find(keyword, desc=None, size='no_reverse', directory=directory)
+        elif comd == 'fss':
+            x.find(keyword, desc=1, size='reverse', directory=directory)
+        elif comd == 'fn':
+            x.find(keyword, desc=None, name='no_reverse', directory=directory)
+        elif comd == 'fnn':
+            x.find(keyword, desc=1, name='reverse', directory=directory)
 
     elif comd == 'mv' or comd == 'move' \
         or comd == 'rm' or comd == 'remove' \

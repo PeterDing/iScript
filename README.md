@@ -156,6 +156,19 @@
         cp 或 copy path /path/to/directory_or_file     复制
         cp 或 copy path1 path2 .. /path/to/directory   复制
 
+        f   或 find keyword .. [directory]             非递归搜索
+        ff  keyword .. [directory]                     非递归搜索 反序
+        ft  keyword .. [directory]                     非递归搜索 by time
+        ftt keyword .. [directory]                     非递归搜索 by time 反序
+        fs  keyword .. [directory]                     非递归搜索 by size
+        fss keyword .. [directory]                     非递归搜索 by size 反序
+        fn  keyword .. [directory]                     非递归搜索 by name
+        fnn keyword .. [directory]                     非递归搜索 by name 反序
+        # 递归搜索加 -R
+        # 关于-H, -T, -I, -E
+        f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+        f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+
         l path1 path2 ..                               ls by name
         ll path1 path2 ..                              ls by name 反序
         ln path1 path2 ..                              ls by name
@@ -169,6 +182,9 @@
         # 以下是只ls文件或文件夹
         sl -t f path1 path2 ..                         ls files
         sl -t d path1 path2 ..                         ls directorys
+        # 关于-H, -T, -I, -E
+        sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+        sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
 
     参数:
 
@@ -180,8 +196,14 @@
                                             或 l -t f (文件); l -t d (文件夹)
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
-        -R, --ls_recursively                递归 ls
+        -R, --recursive                     递归 ls
+        -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
+        -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
+        -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
+        -E EXCLUDE, --exclude EXCLUDE       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
         -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
+
+        # -t, -H, -T, -I, -E 都能用于 download, play, ls, find
 
 3. 用法
 
