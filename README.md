@@ -262,6 +262,19 @@
         bp f "this is one keyword" /path/to/search
         bp f this is also a keyword
 
+        bp ff  keyword .. [directory]                     非递归搜索 反序
+        bp ft  keyword .. [directory]                     非递归搜索 by time
+        bp ftt keyword .. [directory]                     非递归搜索 by time 反序
+        bp fs  keyword .. [directory]                     非递归搜索 by size
+        bp fss keyword .. [directory]                     非递归搜索 by size 反序
+        bp fn  keyword .. [directory]                     非递归搜索 by name
+        bp fnn keyword .. [directory]                     非递归搜索 by name 反序
+
+        # 递归搜索加 -R
+        # 关于-H, -T, -I, -E
+        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+
     ls、重命名、移动、删除、复制:
 
     见[命令](#cmd)
