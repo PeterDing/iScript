@@ -121,20 +121,26 @@ class mute_torrent(object):
         ## with https://zoink.it
         print s % (1, 94, '  >> try:'), 'http://zoink.it'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
-        r = ss.get(url, verify=False)
-        if r.ok:
-            return r.content
-        else:
-            print s % (1, 91, '  -- not get.')
+        try:
+            r = ss.get(url, verify=False)
+            if r.ok:
+                return r.content
+            else:
+                print s % (1, 91, '  -- not get.')
+        except Exception as e:
+            print s % (1, 91, '  !! Error at connection:'), e
 
         ## with https://zoink.it
         print s % (1, 94, '  >> try:'), 'http://torcache.net'
         url = 'http://torcache.net/torrent/%s.torrent' % hh
-        r = ss.get(url, verify=False)
-        if r.ok:
-            return r.content
-        else:
-            print s % (1, 91, '  -- not get.')
+        try:
+            r = ss.get(url, verify=False)
+            if r.ok:
+                return r.content
+            else:
+                print s % (1, 91, '  -- not get.')
+        except Exception as e:
+            print s % (1, 91, '  !! Error at connection:'), e
 
         ## with http://www.btspread.com
         print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
@@ -146,18 +152,21 @@ class mute_torrent(object):
             "magnetLink": "magnet:?xt=urn:btih:%s" % hh
         }
         #url = 'http://www.btspread.com/torrent/detail/hash/%s' % hh
-        r = ss.post(url, data=data)
-        if r.ok:
-            html = r.content
-            durl = re.search(r'"(http://www.btspread.com/torrent/download/key/.+?)"', html)
-            if durl:
-                durl = durl.group(1)
-                r = ss.get(durl)
-                if r.ok and r.content:
-                    print s % (1, 92, '  ++ get torrent.')
-                    return r.content
-                else:
-                    print s % (1, 91, '  -- not get.')
+        try:
+            r = ss.post(url, data=data)
+            if r.ok:
+                html = r.content
+                durl = re.search(r'"(http://www.btspread.com/torrent/download/key/.+?)"', html)
+                if durl:
+                    durl = durl.group(1)
+                    r = ss.get(durl)
+                    if r.ok and r.content:
+                        print s % (1, 92, '  ++ get torrent.')
+                        return r.content
+                    else:
+                        print s % (1, 91, '  -- not get.')
+        except Exception as e:
+            print s % (1, 91, '  !! Error at connection:'), e
 
         return False
 

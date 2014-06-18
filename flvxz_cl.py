@@ -48,7 +48,7 @@ def download(infos):
             #return 0
 
     num = random.randint(0, 7) % 7
-    col = s % (2, num + 90, infos['filename'])
+    col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ 正在下载: %s' % col
 
     cmd = wget_template % (infos['filename'], infos['durl'])
@@ -62,7 +62,7 @@ def download(infos):
 
 def play(infos):
     num = random.randint(0, 7) % 7
-    col = s % (2, num + 90, infos['filename'])
+    col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ play: %s' % col
 
     cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 \
