@@ -301,7 +301,7 @@
 
     用于净网时期的 baidu, xunlei
 
-    也看不改bt种子(torrent)中的文件名,直接得到原种子(torrent)
+    也可以不改bt种子(torrent)中的文件名,直接得到原种子(torrent)
 
     磁力连接转种子，用的是
 
@@ -321,7 +321,6 @@
         -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
         -m NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
         -n, --nomute                            用magnet,只下载torrent,不转变
-
 
 3. 用法
 
