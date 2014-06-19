@@ -49,7 +49,7 @@ def download(infos):
 
     num = random.randint(0, 7) % 7
     col = s % (2, num + 90, os.path.basename(infos['filename']))
-    print '\n  ++ 正在下载: %s' % col
+    print '\n  ++ 正在下载:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
     cmd = wget_template % (infos['filename'], infos['durl'])
     status = os.system(cmd)
@@ -63,7 +63,7 @@ def download(infos):
 def play(infos):
     num = random.randint(0, 7) % 7
     col = s % (2, num + 90, os.path.basename(infos['filename']))
-    print '\n  ++ play: %s' % col
+    print '\n  ++ play:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
     cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 \
         --http-header-fields "user-agent:%s" \
@@ -111,11 +111,14 @@ def main(url):
     dir_ = os.path.join(os.getcwd(), j['title'].encode('utf8')) if yes else os.getcwd()
 
     n = 1
+    amount = len(j['files'])
     for i in j['files']:
         infos = {
             'filename': os.path.join(dir_, '%s_%s.%s' % (j['title'].encode('utf8'), n, i['ftype'].encode('utf8'))),
             'durl': i['furl'].encode('utf8'),
-            'dir_': dir_
+            'dir_': dir_,
+            'amount': amount,
+            'n': n
         }
         if args.play:
             play(infos)
