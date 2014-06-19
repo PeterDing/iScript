@@ -194,7 +194,7 @@ def main(argv):
     new_torrents_dir = args.directory
     if not os.path.exists(new_torrents_dir):
         os.mkdir(new_torrents_dir)
-    print s % (1, 92, '  new torrents are at'), new_torrents_dir, '\n'
+    print s % (1, 92, '                    new torrents are at'), new_torrents_dir
 
     x = mute_torrent()
 
