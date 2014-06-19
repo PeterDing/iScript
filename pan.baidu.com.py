@@ -203,7 +203,7 @@ class panbaiducom_HOME(object):
         if hasattr(self, 'bdstoken'):
             return self.bdstoken
 
-        url = 'http://pan.baidu.com'
+        url = 'http://pan.baidu.com/wap/share/home'
         r = ss.get(url)
         html = r.content
 
