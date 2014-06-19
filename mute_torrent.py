@@ -6,6 +6,7 @@ import os
 import sys
 import re
 import requests
+import urlparse
 import argparse
 
 ############################################################
@@ -112,35 +113,33 @@ class mute_torrent(object):
             try:
                 r = ss.get(url, proxies=proxies)
                 if r.ok:
+                    print s % (1, 92, u'  √ get torrent.')
                     return r.content
                 else:
-                    print s % (1, 91, '  -- not get.')
+                    print s % (1, 91, u'  × not get.')
             except:
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
-        ## with https://zoink.it
-        print s % (1, 94, '  >> try:'), 'http://zoink.it'
-        url = 'http://torcache.net/torrent/%s.torrent' % hh
-        try:
-            r = ss.get(url, verify=False)
-            if r.ok:
-                return r.content
-            else:
-                print s % (1, 91, '  -- not get.')
-        except Exception as e:
-            print s % (1, 91, '  !! Error at connection:'), e
-
-        ## with https://zoink.it
-        print s % (1, 94, '  >> try:'), 'http://torcache.net'
-        url = 'http://torcache.net/torrent/%s.torrent' % hh
-        try:
-            r = ss.get(url, verify=False)
-            if r.ok:
-                return r.content
-            else:
-                print s % (1, 91, '  -- not get.')
-        except Exception as e:
-            print s % (1, 91, '  !! Error at connection:'), e
+        ## some torrent stores
+        urls = ['http://zoink.it/torrent/%s.torrent', \
+                'http://torcache.net/torrent/%s.torrent', \
+                'http://torrentproject.se/torrent/%s.torrent', \
+                'http://istoretor.com/fdown.php?hash=%s', \
+                'http://torrentbox.sx/torrent/%s', \
+                'http://www.torrenthound.com/torrent/%s', \
+                'http://www.silvertorrent.org/download.php?id=%s']
+        for url in urls:
+            print s % (1, 94, '  >> try:'), urlparse.urlparse(url).hostname
+            url = url % hh
+            try:
+                r = ss.get(url)
+                if r.ok and len(r.content) > 500:
+                    print s % (1, 92, u'  √ get torrent.')
+                    return r.content
+                else:
+                    print s % (1, 91, u'  × not get.')
+            except Exception as e:
+                print s % (1, 91, '  !! Error at connection:'), e
 
         ## with http://www.btspread.com
         print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
@@ -161,10 +160,10 @@ class mute_torrent(object):
                     durl = durl.group(1)
                     r = ss.get(durl)
                     if r.ok and r.content:
-                        print s % (1, 92, '  ++ get torrent.')
+                        print s % (1, 92, u'  √ get torrent.')
                         return r.content
                     else:
-                        print s % (1, 91, '  -- not get.')
+                        print s % (1, 91, u'  × not get.')
         except Exception as e:
             print s % (1, 91, '  !! Error at connection:'), e
 

@@ -308,8 +308,12 @@
         http://www.btspread.com
         http://torcache.net
         http://zoink.it
-        http://torrage.com
-        # 用torrage.com需要设置代理, eg: -p 127.0.0.1:8087
+        http://torrage.com   # 用torrage.com需要设置代理, eg: -p 127.0.0.1:8087
+        http://torrentproject.se
+        http://istoretor.com
+        http://torrentbox.sx
+        http://www.torrenthound.com
+        http://www.silvertorrent.org
 
     如果有更好的种子库，请提交issue
 
