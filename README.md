@@ -236,11 +236,12 @@
 
     magnet离线下载 -- 文件选择:
 
-        -t m    # 媒体文件, 如: mkv, avi, jpg ..etc
+        -t m    # 视频文件, 如: mkv, avi ..etc
+        -t i    # 图像文件, 如: jpg, png ..etc
         -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
         -t p    # 压缩文件, 如: rar, zip ..etc
-        -t a    # 所有文件
-        m, d, p, a 可以任意组合(用,分隔), 如: -t m,d   -t m,p   -t m,d,p
+        -t a    # 所有文件 (默认)
+        m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
         remotepath 默认为 /
 
         bp a magnet1 magnet2 .. [remotepath] -t m,d

@@ -1611,7 +1611,7 @@ def main(argv):
  # -t i    # 图像文件, 如: jpg, png ..etc
  # -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
  # -t p    # 压缩文件, 如: rar, zip ..etc
- # -t a    # 所有文件
+ # -t a    # 所有文件 (默认)
  # m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
  # remotepath 默认为 /
  a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
