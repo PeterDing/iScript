@@ -1341,7 +1341,8 @@ class panbaiducom_HOME(object):
             return j['magnet_info']
 
     def _get_selected_idx(self, magnet_info):
-        mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov"}
+        mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov"}
+        imagetype = {".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico"}
         doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
         archivetype = {".7z", ".a", ".ace", ".afa", ".alz", ".android", ".apk", ".ar", ".arc", ".arj", ".b1", ".b1", ".ba", ".bh", ".bz2", ".cab", ".cab", ".cfs", ".chm", ".cpio", ".cpt", ".cqm", ".dar", ".dd", ".dgc", ".dmg", ".ear", ".ecc", ".eqe", ".exe", ".f", ".gca", ".gz", ".ha", ".hki", ".html", ".ice", ".id", ".infl", ".iso", ".jar", ".kgb", ".lbr", ".lha", ".lqr", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", ".mar", ".ms", ".net", ".package", ".pak", ".paq6", ".paq7", ".paq8", ".par", ".par2", ".partimg", ".pea", ".pim", ".pit", ".qda", ".rar", ".rk", ".rz", ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx", ".tar", ".tbz2", ".tgz", ".tlz", ".tqt", ".uc", ".uc0", ".uc2", ".uca", ".ucn", ".ue2", ".uha", ".ur2", ".war", ".web", ".wim", ".x", ".xar", ".xp3", ".xz", ".yz1", ".z", ".zip", ".zipx", ".zoo", ".zpaq", ".zz"}
 
@@ -1354,6 +1355,9 @@ class panbaiducom_HOME(object):
         if 'm' in types:
             for i in xrange(len(magnet_info)):
                 idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in mediatype else None
+        if 'i' in types:
+            for i in xrange(len(magnet_info)):
+                idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in imagetype else None
         if 'd' in types:
             for i in xrange(len(magnet_info)):
                 idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in doctype else None
@@ -1603,13 +1607,14 @@ def main(argv):
  sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
 
  # magnet离线下载 -- 文件选择
- # -t m    # 媒体文件, 如: mkv, avi, jpg ..etc
+ # -t m    # 媒体文件, 如: mkv, avi ..etc
+ # -t i    # 图像文件, 如: jpg, png ..etc
  # -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
  # -t p    # 压缩文件, 如: rar, zip ..etc
  # -t a    # 所有文件
- # m, d, p, a 可以任意组合(用,分隔), 如: -t m,d   -t m,p   -t m,d,p
+ # m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
  # remotepath 默认为 /
- a magnet1 magnet2 .. [remotepath] -t m,d,p,a
+ a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
         """
     if len(argv) <= 1:
         print usage
