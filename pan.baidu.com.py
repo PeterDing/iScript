@@ -1336,7 +1336,7 @@ class panbaiducom_HOME(object):
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
-            return []
+            return None
         else:
             return j['magnet_info']
 
@@ -1371,6 +1371,8 @@ class panbaiducom_HOME(object):
 
     def _add_magnet(self, url, remotepath):
         magnet_info = self._get_magnet_info(url)
+        if not magnet_info:
+            return
         selected_idx = self._get_selected_idx(magnet_info)
 
         p = {
