@@ -8,7 +8,7 @@
 
 - *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
-- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、上传、播放、转存、文件操作
+- *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、离线下载、上传、播放、转存、文件操作
 
 - *[L]* [mute_torrent.py](#mute_torrent.py) - magnet2torrent & 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
 
@@ -105,7 +105,7 @@
 ---
 
 <a name="pan.baidu.com.py"></a>
-### pan.baidu.com.py - 百度网盘的下载、上传、播放、转存、文件操作
+### pan.baidu.com.py - 百度网盘的下载、离线下载、上传、播放、转存、文件操作
 
 1. 依赖
 
@@ -146,15 +146,16 @@
     <a name="cmd"></a>
     命令:
 
-        d  或 download url1 url2 ..                    下载
-        u  或 upload localpath remotepath              上传 
-        s  或 save url remotepath [-s secret]          转存
-        f  或 find keyword ... [directory]             搜索
-        rn 或 rename path new_path                     重命名
-        rm 或 remove path1 path2 ..                    删除
-        mv 或 move path1 path2 .. /path/to/directory   移动
-        cp 或 copy path /path/to/directory_or_file     复制
-        cp 或 copy path1 path2 .. /path/to/directory   复制
+        d  或 download url1 url2 ..                          下载
+        u  或 upload localpath remotepath                    上传
+        s  或 save url remotepath [-s secret]                转存
+        f  或 find keyword ... [directory]                   搜索
+        rn 或 rename path new_path                           重命名
+        rm 或 remove path1 path2 ..                          删除
+        mv 或 move path1 path2 .. /path/to/directory         移动
+        cp 或 copy path /path/to/directory_or_file           复制
+        cp 或 copy path1 path2 .. /path/to/directory         复制
+        a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
 
         f   或 find keyword .. [directory]             非递归搜索
         ff  keyword .. [directory]                     非递归搜索 反序
@@ -194,6 +195,7 @@
         -f number, --from_ number           从第几个开始下载，eg: -f 42
         -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
                                             或 l -t f (文件); l -t d (文件夹)
+                                            或 a -t m,d,p,a
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
         -R, --recursive                     递归 ls
@@ -278,6 +280,17 @@
     ls、重命名、移动、删除、复制:
 
     见[命令](#cmd)
+
+    magnet离线下载 -- 文件选择:
+
+        -t m    # 媒体文件, 如: mkv, avi, jpg ..etc
+        -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
+        -t p    # 压缩文件, 如: rar, zip ..etc
+        -t a    # 所有文件
+        m, d, p, a 可以任意组合(用,分隔), 如: -t m,d   -t m,p   -t m,d,p
+        remotepath 默认为 /
+
+        a magnet1 magnet2 .. [remotepath] -t m,d,p,a
 
 4. 参考:
 
