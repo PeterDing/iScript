@@ -1409,6 +1409,12 @@ class panbaiducom_HOME(object):
                 return
             else:
                 print s % (1 ,97, '  ++ rapid_download:'), s % (1, 91, j['rapid_download'])
+                if args.view:
+                    print ''
+                    files = [os.path.join(remotepath, magnet_info[int(i) - 1]['file_name']) \
+                        for i in selected_idx]
+                    for i in files:
+                        print i
                 return
 
     def _add_task(self, url, remotepath):
@@ -1447,6 +1453,7 @@ class panbaiducom_HOME(object):
     def add_tasks(self, urls, remotepath):
         for url in urls:
             if url.startswith('magnet:'):
+                args.type_ = 'm' if not args.type_ else args.type_  # default args.type_
                 self._add_magnet(url, remotepath)
             elif url.startswith('http'):
                 self._add_task(url, remotepath)
@@ -1632,6 +1639,8 @@ def main(argv):
         type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', \
         help='play with mpv')
+    p.add_argument('-v', '--view', action='store_true', \
+        help='view details')
     p.add_argument('-s', '--secret', action='store', \
         default=None, help='提取密码')
     p.add_argument('-f', '--from_', action='store', \
