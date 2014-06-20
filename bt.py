@@ -281,17 +281,17 @@ def main(argv):
     dir_ = os.getcwd() if not args.directory else args.directory
     if not os.path.exists(dir_):
         os.mkdir(dir_)
-    if comd == 'mt':   # magnet to torrent
+    if comd == 'mt' or comd == 'm':   # magnet to torrent
         urls = xxx
         x = bt()
         x.magnet2torrent(urls, dir_)
 
-    elif comd == 'tm':   # torrent ot magnet
+    elif comd == 'tm' or comd == 't:   # torrent ot magnet
         paths = xxx
         x = bt()
         x.torrent2magnet(paths)
 
-    elif comd == 'ct':   # change
+    elif comd == 'ct' or comd == 'c:   # change
         ups = xxx
         x = bt()
         x.change(ups, dir_)

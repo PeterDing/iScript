@@ -334,9 +334,9 @@
 
     命令:
 
-        mt magnet_link1 magnet_link2 .. [-d /path/to/save]   # magnet 2 torrent
-        tm path1 path2 ..                                    # torrent 2 magnet, 输出magnet
-        ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  # 过滤敏.感.词
+        mt 或 m magnet_link1 magnet_link2 .. [-d /path/to/save]   # magnet 2 torrent
+        tm 或 t path1 path2 ..                                    # torrent 2 magnet, 输出magnet
+        ct 或 c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  # 过滤敏.感.词
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
 
