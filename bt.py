@@ -5,6 +5,7 @@ import bencode
 import os
 import sys
 import re
+from hashlib import sha1
 import requests
 import urlparse
 import argparse
@@ -25,7 +26,7 @@ ss.headers.update(headers)
 s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789']
 
-class mute_torrent(object):
+class bt(object):
     def transfer(self, string, tpath):
         self.dir_dict = {}
         self.sub_dir_index = 0
@@ -169,73 +170,134 @@ class mute_torrent(object):
 
         return False
 
+    def magnet2torrent(self, urls, dir_):
+        for url in urls:
+            hh = re.search(r'urn:btih:(\w+)', url)
+            if hh:
+                hh = hh.group(1).upper()
+            else:
+                print s % (1, 91, '  !! magnet is wrong.'), url
+                continue
+            string = self.get_torrent(hh)
+            if string:
+                tpath = os.path.join(dir_, hh + '.torrent')
+                print s % (1, 97, '  ++ magnet to torrent:'), 'magnet:?xt=urn:btih:%s' % hh
+                with open(tpath, 'w') as g:
+                    g.write(string)
+            else:
+                print s % (1, 91, '  !! Can\'t get torrent from web.'), url
+
+    def torrent2magnet(self, paths):
+        def trans(tpath):
+            if tpath.lower().endswith('torrent'):
+                string = open(tpath).read()
+                try:
+                    dd = bencode.bdecode(string)
+                except Exception as e:
+                    print s % (1, 91, '  !! torrent is wrong:'), e
+                info = bencode.bencode(dd['info'])
+                hh = sha1(info).hexdigest()
+                print '# %s' % tpath
+                print 'magnet:?xt=urn:btih:%s' % hh, '\n'
+
+        for path in paths:
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    for a, b, c in os.walk(path):
+                        for i in c:
+                            tpath = os.path.join(a, i)
+                            trans(tpath)
+                elif os.path.isfile(path):
+                    tpath = path
+                    trans(tpath)
+            else:
+                print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
+
+    def change(self, ups, dir_):
+        for up in ups:
+            path = up
+            if path.startswith('magnet:'):
+                hh = re.search(r'urn:btih:(\w+)', path)
+                if hh:
+                    hh = hh.group(1).upper()
+                else:
+                    print s % (1, 91, '  !! magnet is wrong.'), path
+                string = self.get_torrent(hh)
+                if string:
+                    tpath = os.path.join(dir_, hh + '.torrent')
+                    print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
+                    self.transfer(string, tpath)
+                else:
+                    print s % (1, 91, '  !! Can\'t get torrent from web.'), path
+
+            elif os.path.exists(path):
+                if os.path.isdir(path):
+                    for a, b, c in os.walk(path):
+                        for i in c:
+                            ipath = os.path.join(a, i)
+                            if i.lower().endswith('torrent'):
+                                def do():
+                                    print s % (1, 97, '  ++ transfer:'), ipath
+                                    string = open(ipath).read()
+                                    tpath = os.path.join(dir_, 'change_' + i)
+                                    self.transfer(string, tpath)
+                                    paths.update(ipath)
+                                if os.getcwd() == os.path.abspath(dir_):
+                                    do()
+                                elif os.getcwd() != os.path.abspath(dir_) and \
+                                    os.path.abspath(a) != os.path.abspath(dir_):
+                                    do()
+                elif os.path.isfile(path):
+                    if path.lower().endswith('torrent'):
+                        print s % (1, 97, '  ++ transfer:'), path
+                        string = open(path).read()
+                        tpath = os.path.join(dir_, 'change_' + os.path.basename(path))
+                        self.transfer(string, tpath)
+            else:
+                print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
+
 def main(argv):
-    new_torrents_dir = os.path.join(os.getcwd(), 'new_torrents')
+    if len(argv) <= 1:
+        print usage
+        sys.exit()
 
     ######################################################
     # for argparse
-    p = argparse.ArgumentParser(description='mute magnet or torrent' \
+    p = argparse.ArgumentParser(description='magnet torrent 互转，数字命名bt内容文件名' \
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
     p.add_argument('-p', '--proxy', action='store', default='127.0.0.1:8087', \
         type=str, help='proxy for torrage.com, eg: -p 127.0.0.1:8087')
-    p.add_argument('-d', '--directory', action='store', default=new_torrents_dir, \
-        type=str, help='改变的torrents保存的路径, eg: -d /path/to/save')
-    p.add_argument('-m', '--name', action='store', default=None, \
-        type=str, help='顶级文件夹名称, eg: -m thistopdirectory')
-    p.add_argument('-n', '--nomute', action='store_true', \
-        help='用magnet,只下载torrent,不转变')
+    p.add_argument('-d', '--directory', action='store', default=None, \
+        type=str, help='torrents保存的路径, eg: -d /path/to/save')
+    p.add_argument('-n', '--name', action='store', default=None, \
+        type=str, help='顶级文件夹名称, eg: -n thistopdirectory')
     global args
-    args = p.parse_args(argv[1:])
+    args = p.parse_args(argv[2:])
+    comd = argv[1]
     xxx = args.xxx
 
-    new_torrents_dir = args.directory
-    if not os.path.exists(new_torrents_dir):
-        os.mkdir(new_torrents_dir)
-    print s % (1, 92, '                    new torrents are at'), new_torrents_dir
+    dir_ = os.getcwd() if not args.directory else args.directory
+    if not os.path.exists(dir_):
+        os.mkdir(dir_)
+    if comd == 'mt':   # magnet to torrent
+        urls = xxx
+        x = bt()
+        x.magnet2torrent(urls, dir_)
 
-    x = mute_torrent()
+    elif comd == 'tm':   # torrent ot magnet
+        paths = xxx
+        x = bt()
+        x.torrent2magnet(paths)
 
-    for path in xxx:
-        if path.startswith('magnet:'):
-            hh = re.search(r'urn:btih:(\w+)', path)
-            if hh:
-                hh = hh.group(1).upper()
-            else:
-                print s % (1, 91, '  !! magnet is wrong.'), path
-            string = x.get_torrent(hh)
-            if string:
-                tpath = os.path.join(new_torrents_dir, hh + '.torrent')
-                if args.nomute:
-                    print s % (1, 97, '  ++ only magnet to torrent:'), 'magnet:?xt=urn:btih:%s' % hh
-                    with open(tpath, 'w') as g:
-                        g.write(string)
-                else:
-                    print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
-                    x.transfer(string, tpath)
-            else:
-                print s % (1, 91, 'Can\'t get torrent from web.'), path
+    elif comd == 'ct':   # change
+        ups = xxx
+        x = bt()
+        x.change(ups, dir_)
 
-        elif os.path.exists(path):
-            if os.path.isdir(path):
-                for a, b, c in os.walk(path):
-                    for i in c:
-                        if os.path.abspath(a) == new_torrents_dir: continue
-                        ipath = os.path.join(a, i)
-                        if ipath.lower().endswith('torrent'):
-                            print s % (1, 97, '  ++ transfer:'), ipath
-                            string = open(ipath).read()
-                            tpath = os.path.join(new_torrents_dir, i)
-                            x.transfer(string, tpath)
-            elif os.path.isfile(path):
-                if path.lower().endswith('torrent'):
-                    print s % (2, 97, '  ++ transfer:'), path
-                    string = open(path).read()
-                    tpath = os.path.join(new_torrents_dir, os.path.basename(path))
-                    x.transfer(string, tpath)
-        else:
-            print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
+    else:
+        print s % (2, 91, '  !! 命令错误\n')
 
 if __name__ == '__main__':
     argv = sys.argv

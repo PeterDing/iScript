@@ -10,7 +10,7 @@
 
 - *[L]* [pan.baidu.com.py](#pan.baidu.com.py) - 百度网盘的下载、离线下载、上传、播放、转存、文件操作
 
-- *[L]* [mute_torrent.py](#mute_torrent.py) - magnet2torrent & 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
+- *[L]* [bt.py](#bt.py) - magnet torrent 互转、及 过滤敏.感.词
 
 - *[L]* [115.py](#115.py) - 115网盘的下载和播放
 
@@ -25,8 +25,6 @@
 - *[L]* [tumblr.py](#tumblr.py) - 下载某个tumblr.com的所有图片
 
 - *[L]* [unzip.py](#unzip.py) - 解决linux下unzip乱码的问题
-
-- *[L]* [torrent2magnet.py](#torrent2magnet.py) - 种子转磁力
 
 - *[L]* [ed2k_search.py](#ed2k_search.py) - 基于 donkey4u.com 的emule搜索
 
@@ -303,8 +301,8 @@
 
 ---
 
-<a name="mute_torrent.py"></a>
-### mute_torrent.py - magnet2torrent & 改magnet和bt种子(torrent)中的文件名 - 过滤敏.感.词
+<a name="bt.py"></a>
+### bt.py - magnet torrent 互转、及 过滤敏.感.词
 
 1. 依赖
 
@@ -313,9 +311,9 @@
 
 2. 使用说明
 
-    用于净网时期的 baidu, xunlei
+    magnet 和 torrent 的相互转换
 
-    也可以不改bt种子(torrent)中的文件名,直接得到原种子(torrent)
+    过滤敏.感.词功能用于净网时期的 baidu, xunlei
 
     磁力连接转种子，用的是
 
@@ -333,27 +331,30 @@
 
     > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
 
+    命令:
+
+        mt magnet_link1 magnet_link2 .. [-d /path/to/save]   # magnet 2 torrent
+        tm path1 path2 ..                                    # torrent 2 magnet, 输出magnet
+        ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  # 过滤敏.感.词
+        # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
+        # /path/to/save 默认为 .
+
     参数:
 
-        -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087
+        -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087 (默认)
         -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
-        -m NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
-        -n, --nomute                            用magnet,只下载torrent,不转变
+        -n NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
 
 3. 用法
 
-    \# mt 是mute_torrent.py的马甲 (alias mt='python2 /path/to/mute_torrent.py')
+    \# bt 是bt.py的马甲 (alias bt='python2 /path/to/bt.py')
 
-        mt magnet_link1 magnet_link2 ..
-        mt path1 path2 ..
-        mt magnet_link1 path1 ..
-        mt magnet_link1 path1 .. -d /path/to/save
+        bt mt magnet_link1 magnet_link2 .. [-d /path/to/save]
+        bt tm path1 path2 ..
+        bt ct magnet_link1 path1 .. [-d /path/to/save]
 
         # 用torrage.com
-        mt magnet_link1 path1 .. -p 127.0.0.1:8087
-
-        # only magnet to torrent
-        mt magnet_link1 magnet_link2 .. -n
+        bt magnet_link1 path1 .. -p 127.0.0.1:8087
 
 4. 参考:
 
@@ -695,30 +696,6 @@
 代码来自以下连接，我改了一点。
 
 > http://wangqige.com/the-solution-of-unzip-files-which-zip-under-windows/解决在Linux环境下解压zip的乱码问题
-
----
-
-<a name="torrent2magnet.py"></a>
-### torrent2magnet.py - 种子转磁力
-
-1. 依赖
-        python3
-
-2. 使用说明
-
-    将一个目录下的所有torrent转换成magnet，并保存于当前目录的magnet_link文件中。
-
-3. 用法
-
-    \# ttm是torrent2magnet.py的马甲 (alias ttm='python3 /path/to/torrent2magnet.py')
-
-        ttm /path/to/directory
-
-4. 参考
-
-代码来自以下连接，我改了一点。
-
-> https://github.com/repolho/torrent2magnet
 
 ---
 
