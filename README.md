@@ -234,6 +234,17 @@
         bp d url -a
         bp d url -s [secret] -a
 
+    magnet离线下载 -- 文件选择:
+
+        -t m    # 媒体文件, 如: mkv, avi, jpg ..etc
+        -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
+        -t p    # 压缩文件, 如: rar, zip ..etc
+        -t a    # 所有文件
+        m, d, p, a 可以任意组合(用,分隔), 如: -t m,d   -t m,p   -t m,d,p
+        remotepath 默认为 /
+
+        bp a magnet1 magnet2 .. [remotepath] -t m,d
+
     播放:
 
         # url 是上面的
@@ -280,17 +291,6 @@
     ls、重命名、移动、删除、复制:
 
     见[命令](#cmd)
-
-    magnet离线下载 -- 文件选择:
-
-        -t m    # 媒体文件, 如: mkv, avi, jpg ..etc
-        -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
-        -t p    # 压缩文件, 如: rar, zip ..etc
-        -t a    # 所有文件
-        m, d, p, a 可以任意组合(用,分隔), 如: -t m,d   -t m,p   -t m,d,p
-        remotepath 默认为 /
-
-        a magnet1 magnet2 .. [remotepath] -t m,d,p,a
 
 4. 参考:
 
