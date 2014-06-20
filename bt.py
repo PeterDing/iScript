@@ -286,12 +286,12 @@ def main(argv):
         x = bt()
         x.magnet2torrent(urls, dir_)
 
-    elif comd == 'tm' or comd == 't:   # torrent ot magnet
+    elif comd == 'tm' or comd == 't':   # torrent ot magnet
         paths = xxx
         x = bt()
         x.torrent2magnet(paths)
 
-    elif comd == 'ct' or comd == 'c:   # change
+    elif comd == 'ct' or comd == 'c':   # change
         ups = xxx
         x = bt()
         x.change(ups, dir_)
