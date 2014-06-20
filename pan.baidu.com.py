@@ -1802,7 +1802,7 @@ def main(argv):
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
         if xxx[-1].startswith('/'):
-            remotepath = xxx[-1]
+            remotepath = xxx[-1] if xxx[-1][-1] == '/' else xxx[-1] + '/'
             urls = xxx[:-1]
         else:
             remotepath = '/'
