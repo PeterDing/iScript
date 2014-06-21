@@ -144,7 +144,7 @@ class bt(object):
 
         ## with http://www.btspread.com
         print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
-        print s % (1, 93, '    |-- this will take a while, please be patient.')
+        print s % (1, 93, '    |-- btspread.com will take a while, please be patient.')
         #ss.get('http://www.btspread.com/')
         url = 'http://www.btspread.com/convert/magnet'
         data = {
