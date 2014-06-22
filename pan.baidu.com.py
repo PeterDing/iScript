@@ -790,6 +790,9 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
+                        if args.type_ == 'r':   # only rapidupload
+                            print s % (1, 92, '  |-- can\'t be RapidUploaded\n')
+                            break
                         print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
                             'now trying normal uploading.')
                         upload_function = self._get_upload_function(rapidupload_is_fall=True)
@@ -1648,7 +1651,7 @@ def main(argv):
         help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
         default=None, type=str, \
-        help='要下载的文件的后缀，eg: -t mp3. 或者ls 文件(f)、文件夹(d)的参数')
+        help='类型参数，eg: -t mp3. 或者ls 文件(f)、文件夹(d)的参数')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
     # for upload

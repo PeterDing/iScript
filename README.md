@@ -194,6 +194,7 @@
         -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
                                             或 l -t f (文件); l -t d (文件夹)
                                             或 a -t m,d,p,a
+                                            或 u -t r  # 只进行 rapidupload
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
         -R, --recursive                     递归 ls
@@ -265,6 +266,9 @@
         # 上传模式:
         # o --> 重传
         # c --> 续传 (默认)
+
+        bp u localpath1 localpath2 .. remotepath -t r
+        # 只进行rapidupload
 
     转存:
 
