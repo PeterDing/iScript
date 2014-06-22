@@ -232,6 +232,12 @@
         bp d url -a
         bp d url -s [secret] -a
 
+    播放:
+
+        # url 是上面的
+        bp d url -p
+        bp d url -s [secret] -p
+
     离线下载:
 
         bp a http://mirrors.kernel.org/archlinux/iso/latest/archlinux-2014.06.01-dual.iso /path/to/save
@@ -252,12 +258,6 @@
         remotepath 默认为 /
 
         bp a magnet1 magnet2 .. [remotepath] -t m,d
-
-    播放:
-
-        # url 是上面的
-        bp d url -p
-        bp d url -s [secret] -p
 
     上传:
 
