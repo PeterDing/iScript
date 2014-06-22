@@ -236,7 +236,7 @@
 
         bp a http://mirrors.kernel.org/archlinux/iso/latest/archlinux-2014.06.01-dual.iso /path/to/save
         bp a https://github.com/PeterDing/iScript/archive/master.zip /path/to/save
-        bp a ftp://ftp.netscape.com/testfile
+        bp a ftp://ftp.netscape.com/testfile /path/to/save
 
         bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v
         bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
