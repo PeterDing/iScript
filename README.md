@@ -145,15 +145,14 @@
     命令:
 
         d  或 download url1 url2 ..                          下载
+        a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
-        f  或 find keyword ... [directory]                   搜索
         rn 或 rename path new_path                           重命名
         rm 或 remove path1 path2 ..                          删除
         mv 或 move path1 path2 .. /path/to/directory         移动
         cp 或 copy path /path/to/directory_or_file           复制
         cp 或 copy path1 path2 .. /path/to/directory         复制
-        a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
 
         f   或 find keyword .. [directory]             非递归搜索
         ff  keyword .. [directory]                     非递归搜索 反序
@@ -232,6 +231,15 @@
         # 下载用aria2, url 是上面的
         bp d url -a
         bp d url -s [secret] -a
+
+    离线下载:
+
+        bp a http://mirrors.kernel.org/archlinux/iso/latest/archlinux-2014.06.01-dual.iso /path/to/save
+        bp a https://github.com/PeterDing/iScript/archive/master.zip /path/to/save
+        bp a ftp://ftp.netscape.com/testfile
+
+        bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v
+        bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
 
     magnet离线下载 -- 文件选择:
 
