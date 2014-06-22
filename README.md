@@ -188,7 +188,8 @@
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
-        -v, --view                          view detail, 如: b a magnet /path -v  # 离线下载并显示下载的文件
+        -v, --view                          view detail, eg: b a magnet /path -v  # 离线下载并显示下载的文件
+                                            b d -p url1 url2 .. -v  # 显示播放文件的完整路径
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始下载，eg: -f 42
         -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3

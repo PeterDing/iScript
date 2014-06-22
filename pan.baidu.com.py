@@ -354,6 +354,7 @@ class panbaiducom_HOME(object):
                             i['dlink'] = self._get_dlink2(i)
                         infos = {
                             'file': t,
+                            'path': i['path'].encode('utf8'),
                             'dir_': os.path.split(t)[0],
                             'dlink': i['dlink'].encode('utf8'),
                             'name': i['server_filename'].encode('utf8'),
@@ -374,6 +375,7 @@ class panbaiducom_HOME(object):
                                 i['dlink'] = self._get_dlink2(i)
                             infos = {
                                 'file': t,
+                                'path': i['path'].encode('utf8'),
                                 'dir_': os.path.split(t)[0],
                                 #'dlink': self.get_dlink(i),
                                 'dlink': i['dlink'].encode('utf8'),
@@ -514,7 +516,8 @@ class panbaiducom_HOME(object):
     @staticmethod
     def play(infos):
         num = random.randint(0, 7) % 7
-        col = s % (2, num + 90, infos['name'])
+        col = s % (2, num + 90, infos['path']) if args.view \
+            else s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
         print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', \
