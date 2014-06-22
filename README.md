@@ -256,7 +256,7 @@
         -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
         -t p    # 压缩文件, 如: rar, zip ..etc
         -t a    # 所有文件
-        m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
+        m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t d,p   -t i,p
         remotepath 默认为 /
 
         bp a magnet1 magnet2 .. [remotepath] -t m,d
