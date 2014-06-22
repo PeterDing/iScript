@@ -122,7 +122,8 @@ class bt(object):
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## some torrent stores
-        urls = ['http://zoink.it/torrent/%s.torrent', \
+        urls = ['http://www.sobt.org/Tool/downbt?info=%s', \
+                'http://zoink.it/torrent/%s.torrent', \
                 'http://torcache.net/torrent/%s.torrent', \
                 'http://torrentproject.se/torrent/%s.torrent', \
                 'http://istoretor.com/fdown.php?hash=%s', \
@@ -160,7 +161,7 @@ class bt(object):
                 if durl:
                     durl = durl.group(1)
                     r = ss.get(durl)
-                    if r.ok and r.content:
+                    if r.ok and r.content and '<head>' not in r.content:
                         print s % (1, 92, u'  √ get torrent.')
                         return r.content
                     else:

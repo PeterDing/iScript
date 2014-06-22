@@ -330,6 +330,7 @@
 
     磁力连接转种子，用的是
 
+        http://www.sobt.org
         http://www.btspread.com
         http://torcache.net
         http://zoink.it
