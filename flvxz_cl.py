@@ -80,13 +80,13 @@ def play(infos):
 def pickup(j):
     print s % (1, 97, '  ++ pick a quality:')
     for i in xrange(len(j)):
-        print s % (1, 91, '  %s' % i), j[i]['quality']
+        print s % (1, 91, '  %s' % (i+1)), j[i]['quality']
 
     p = raw_input(s % (1, 92, '  Enter: '))
     if p.isdigit():
         p = int(p)
-        if p < len(j):
-            return j[p]
+        if p <= len(j):
+            return j[p-1]
         else:
             print s % (1, 91, '  !! enter error')
             sys.exit()
