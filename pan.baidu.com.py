@@ -561,8 +561,10 @@ class panbaiducom_HOME(object):
         r = ss.post(url, params=p, data=data)
         j = r.json()
         if j['errno'] != 0:
-            print s % (1, 91, '  !! Error at _make_dir')
+            print s % (1, 91, '  !! Error at _make_dir'), j
             sys.exit(1)
+        else:
+            return ENoError
 
     def _meta(self, file_list):
         p = {
@@ -1470,6 +1472,19 @@ class panbaiducom_HOME(object):
             else:
                 print s % (1, 91, '  !! url is wrong:'), url
 
+    ############################################################
+    # for mkdir
+    def mkdir(self, paths):
+        for path in paths:
+            print s % (1, 92, '  ++ mkdir:'), path
+            meta = self._meta([path])
+            if not meta:
+                result = self._make_dir(path)
+                if result == ENoError:
+                    print s % (1, 92, '  ++ success.')
+            else:
+                print s % (1, 91, '  !! Error: file exists.'), path
+
     def do(self):
         self.get_infos()
 
@@ -1584,6 +1599,7 @@ def main(argv):
  d  或 download url1 url2 ..                          下载
  u  或 upload localpath remotepath                    上传
  s  或 save url remotepath [-s secret]                转存
+ md 或 mkdir path1 path2 ..                           创建文件夹
  rn 或 rename path new_path                           重命名
  rm 或 remove path1 path2 ..                          删除
  mv 或 move path1 path2 .. /path/to/directory         移动
@@ -1832,6 +1848,20 @@ def main(argv):
         x = panbaiducom_HOME()
         x.init()
         x.add_tasks(urls, remotepath)
+
+    elif comd == 'md' or comd == 'mkdir':
+        if len(xxx) < 1:
+            print s % (1, 91, '  !! 参数错误\n mkdir path1 path2 ..\n' \
+                ' md path1 path2 ..')
+            sys.exit(1)
+        paths = xxx
+        e =  True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! some path is wrong')
+            sys.exit(1)
+        x = panbaiducom_HOME()
+        x.init()
+        x.mkdir(paths)
 
     else:
         print s % (2, 91, '  !! 命令错误\n')

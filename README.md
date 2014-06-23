@@ -148,6 +148,7 @@
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
+        md 或 mkdir path1 path2 ..                           创建文件夹
         rn 或 rename path new_path                           重命名
         rm 或 remove path1 path2 ..                          删除
         mv 或 move path1 path2 .. /path/to/directory         移动
