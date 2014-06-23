@@ -53,7 +53,7 @@
 
 2. 使用说明
 
-    在源码中填入email和password后，可以将播放记录提交到虾米。
+    初次使用需要登录 xm login
 
     !!! vip账户支持高品质音乐的下载和播放。
 
@@ -70,6 +70,14 @@
 3. 用法
 
     \# xm 是xiami.py的马甲 (alias xm='python2 /path/to/xiami.py')
+
+        # 登录
+        xm login
+        xm login username
+        xm login username password
+
+        # 退出登录
+        xm signout
 
         # 下载专辑
         xm http://www.xiami.com/album/168709?spm=a1z1s.6928801.1561534521.114.ShN6mD
@@ -119,7 +127,7 @@
 
 2. 使用说明
 
-    在源码中填入百度账户 username, password 后使用。
+    初次使用需要登录 bp login
 
     他人分享的网盘连接，只支持单个的下载。
 
@@ -143,6 +151,14 @@
 
     <a name="cmd"></a>
     命令:
+
+        # 登录
+        login
+        login username
+        login username password
+
+        # 退出登录
+        signout
 
         d  或 download url1 url2 ..                          下载
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
@@ -211,6 +227,16 @@
 3. 用法
 
     \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.badiu.com.py')
+
+    登录:
+
+        bp login
+        bp login username
+        bp login username password
+
+    退出登录:
+
+        bp signout
 
     下载:
 
@@ -393,6 +419,8 @@
 
 2. 使用说明
 
+    初次使用需要登录 pan115 login
+
     !!! 脚本是用于下载自己的115网盘文件，不支持他人分享文件。
 
     !!! 非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。
@@ -423,6 +451,14 @@
 3. 用法
 
     \# pan115 是115.py的马甲 (alias pan115='python2 /path/to/115.py')
+
+        # 登录
+        pan115 login
+        pan115 login username
+        pan115 login username password
+
+        # 退出登录
+        pan115 signout
 
         # 递归下载自己网盘中的*文件夹*
         pan115 http://115.com/?cid=xxxxxxxxxxxx&offset=0&mode=wangpan
@@ -459,7 +495,7 @@
 
 2. 使用说明
 
-    在源码中填入yunpan.360.com账户username和password后，可以递归下载自己的网盘文件。
+    初次使用需要登录 yp login
 
     !!!!!!  万恶的360不支持断点续传   !!!!!!
 
@@ -483,6 +519,14 @@
 3. 用法
 
     \# yp 是yunpan.360.cn.py的马甲 (alias yp='python2 /path/to/yunpan.360.cn.py')
+
+        # 登录
+        yp login
+        yp login username
+        yp login username password
+
+        # 退出登录
+        yp signout
 
         # 递归下载自己网盘中的*文件夹*
         yp http://c17.yunpan.360.cn/my/?sid=#/path/to/directory

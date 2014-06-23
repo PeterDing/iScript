@@ -3,6 +3,7 @@
 
 import os
 import sys
+from getpass import getpass
 import requests
 from requests_toolbelt import MultipartEncoder
 import urllib
@@ -18,11 +19,6 @@ import md5
 from zlib import crc32
 import StringIO
 import signal
-
-
-username = ''
-password = ''
-
 
 ############################################################
 # Defines that should never be changed
@@ -84,26 +80,21 @@ class panbaiducom_HOME(object):
         self.ondup = 'overwrite'
 
     def init(self):
-        def loginandcheck():
-            self.login()
-            if self.check_login():
-                print s % (1, 92, '  -- login success\n')
-            else:
-                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (1, 91, '  !! maybe this app is down.')
-                sys.exit(1)
-
         if os.path.exists(cookie_file):
-            t = json.loads(open(cookie_file).read())
-            if t.get('user') != None and t.get('user') == username:
+            try:
+                t = json.loads(open(cookie_file).read())
                 ss.cookies.update(t.get('cookies', t))
                 if not self.check_login():
-                    loginandcheck()
-            else:
-                print s % (1, 91, '\n  ++  username changed, then relogin')
-                loginandcheck()
+                    print s % (1, 91, '  !! cookie is invalid, please login\n')
+                    sys.exit(1)
+            except:
+                g = open(cookie_file, 'w')
+                g.close()
+                print s % (1, 97, '  please login')
+                sys.exit(1)
         else:
-            loginandcheck()
+            print s % (1, 91, '  !! cookie_file is missing, please login')
+            sys.exit(1)
 
     def get_path(self, url):
         t = re.search(r'path=(.+?)(&|$)', url)
@@ -137,7 +128,7 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  -- check_login fail\n')
             return False
 
-    def login(self):
+    def login(self, username, password):
         print s % (1, 97, '\n  -- login')
 
         # Check if we have to deal with verify codes
@@ -193,10 +184,11 @@ class panbaiducom_HOME(object):
         # XXX : do not handle errors
         url = 'https://passport.baidu.com/v2/api/?login'
         ss.post(url, data=data)
+        self.save_cookies()
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
-            c = {'user': username, 'cookies': ss.cookies.get_dict()}
+            c = {'cookies': ss.cookies.get_dict()}
             g.write(json.dumps(c, indent=4, sort_keys=True))
 
     def _get_bdstoken(self):
@@ -1596,6 +1588,14 @@ def main(argv):
  usage: https://github.com/PeterDing/iScript#pan.baidu.com.py
 
  命令:
+ # 登录
+ login
+ login username
+ login username password
+
+ # 退出登录
+ signout
+
  d  或 download url1 url2 ..                          下载
  u  或 upload localpath remotepath                    上传
  s  或 save url remotepath [-s secret]                转存
@@ -1696,7 +1696,32 @@ def main(argv):
     xxx = args.xxx
     #######################################################
 
-    if comd == 'u' or comd == 'upload':
+    if comd == 'login':
+        if len(xxx) < 1:
+            username = raw_input(s % (1, 97, '  username: '))
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx) == 1:
+            username = xxx[0]
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx) == 2:
+            username = xxx[0]
+            password = xxx[1]
+        else:
+            print s % (1, 91, '  login\n  login username\n  login username password')
+
+        x = panbaiducom_HOME()
+        x.login(username, password)
+        is_signin = x.check_login()
+        if is_signin:
+            print s % (1, 92, '  ++ login succeeds.')
+        else:
+            print s % (1, 91, '  login failes')
+
+    elif comd == 'signout':
+        g = open(cookie_file, 'w')
+        g.close()
+
+    elif comd == 'u' or comd == 'upload':
         if len(xxx) < 2:
             print s % (1, 91, '  !! 参数错误\n  upload localpath1 localpath2 .. remotepath\n' \
                 '  u localpath1 localpath2 .. remotepath')

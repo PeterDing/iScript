@@ -3,6 +3,7 @@
 
 import os
 import sys
+from getpass import getpass
 import requests
 import urllib
 import json
@@ -11,12 +12,6 @@ import time
 import argparse
 import random
 import md5
-import select
-
-
-username = ''
-password = ''
-
 
 ############################################################
 # wget exit status
@@ -55,34 +50,26 @@ ss = requests.session()
 ss.headers.update(headers)
 
 class yunpan360(object):
-    def __init__(self, url=''):
-        self.path = self.get_path(url)
-
     def init(self):
-        def loginandcheck():
-            self.login()
-            if self.check_login():
-                print s % (1, 92, '  -- login success\n')
-            else:
-                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (1, 91, '  !! maybe this app is down.')
-                sys.exit(1)
-
         if os.path.exists(cookie_file):
-            t = json.loads(open(cookie_file).read())
-            if t.get('user') != None and t.get('user') == username:
+            try:
+                t = json.loads(open(cookie_file).read())
                 ss.cookies.update(t.get('cookies', t))
                 if not self.check_login():
-                    loginandcheck()
-            else:
-                print s % (1, 91, '\n  ++  username changed, then relogin')
-                loginandcheck()
+                    print s % (1, 91, '  !! cookie is invalid, please login\n')
+                    sys.exit(1)
+            except:
+                g = open(cookie_file, 'w')
+                g.close()
+                print s % (1, 97, '  please login')
+                sys.exit(1)
         else:
-            loginandcheck()
+            print s % (1, 91, '  !! cookie_file is missing, please login')
+            sys.exit(1)
 
     def get_path(self, url):
         url = urllib.unquote_plus(url)
-        f = re.search(r'sid=#(.+?)(&|$)', url)
+        f = re.search(r'#(.+?)(&|$)', url)
         if f:
             return f.group(1)
         else:
@@ -105,7 +92,7 @@ class yunpan360(object):
             print s % (1, 91, '  -- check_login fail\n')
             return False
 
-    def login(self):
+    def login(self, username, password):
         print s % (1, 97, '\n  -- login')
 
         # get token
@@ -142,10 +129,11 @@ class yunpan360(object):
         }
         url = 'https://login.360.cn'
         ss.get(url, params=params)
+        self.save_cookies()
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
-            c = {'user': username, 'cookies': ss.cookies.get_dict()}
+            c = {'cookies': ss.cookies.get_dict()}
             g.write(json.dumps(c, indent=4, sort_keys=True))
 
     def get_dlink(self, i):
@@ -302,14 +290,15 @@ class yunpan360(object):
     def do(self):
         self.get_infos()
 
-def main(url):
-    x = yunpan360(url)
-    x.init()
-    x.do()
+def main(argv):
+    if len(argv) <= 1:
+        sys.exit()
 
-if __name__ == '__main__':
+    ######################################################
+    # for argparse
     p = argparse.ArgumentParser(description='download from yunpan.360.com')
-    p.add_argument('url', help='自己的360网盘url')
+    p.add_argument('xxx', type=str, nargs='*', \
+        help='命令对象.')
     p.add_argument('-a', '--aria2c', action='store_true', \
         help='download with aria2c')
     p.add_argument('-p', '--play', action='store_true', \
@@ -322,5 +311,43 @@ if __name__ == '__main__':
         help='要下载的文件的后缀，eg: -t mp3')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
-    args = p.parse_args()
-    main(args.url)
+    global args
+    args = p.parse_args(argv[1:])
+    xxx = args.xxx
+
+    if xxx[0] == 'login':
+        if len(xxx[1:]) < 1:
+            username = raw_input(s % (1, 97, '  username: '))
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx[1:]) == 1:
+            username = xxx[1]
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx[1:]) == 2:
+            username = xxx[1]
+            password = xxx[2]
+        else:
+            print s % (1, 91, '  login\n  login username\n  login username password')
+
+        x = yunpan360()
+        x.login(username, password)
+        is_signin = x.check_login()
+        if is_signin:
+            print s % (1, 92, '  ++ login succeeds.')
+        else:
+            print s % (1, 91, '  login failes')
+
+    elif xxx[0] == 'signout':
+        g = open(cookie_file, 'w')
+        g.close()
+
+    else:
+        urls = xxx
+        x = yunpan360()
+        x.init()
+        for url in urls:
+            x.path = x.get_path(url)
+            x.do()
+
+if __name__ == '__main__':
+    argv = sys.argv
+    main(argv)

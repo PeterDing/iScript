@@ -3,6 +3,7 @@
 
 import os
 import sys
+from getpass import getpass
 import requests
 import urllib
 import json
@@ -12,11 +13,6 @@ import argparse
 import random
 import sha
 import select
-
-
-account  = ''
-password = ''   # 注意password不能超过48位
-
 
 ############################################################
 # wget exit status
@@ -58,26 +54,21 @@ class pan115(object):
         self.download = self.play if args.play else self.download
 
     def init(self):
-        def loginandcheck():
-            self.login()
-            if self.check_login():
-                print s % (1, 92, '  -- login success\n')
-            else:
-                print s % (1, 91, '  !! login fail, maybe username or password is wrong.\n')
-                print s % (1, 91, '  !! maybe this app is down.')
-                sys.exit(1)
-
         if os.path.exists(cookie_file):
-            t = json.loads(open(cookie_file).read())
-            if t.get('user') != None and t.get('user') == account:
+            try:
+                t = json.loads(open(cookie_file).read())
                 ss.cookies.update(t.get('cookies', t))
                 if not self.check_login():
-                    loginandcheck()
-            else:
-                print s % (1, 91, '\n  ++ account changed, then relogin')
-                loginandcheck()
+                    print s % (1, 91, '  !! cookie is invalid, please login\n')
+                    sys.exit(1)
+            except:
+                g = open(cookie_file, 'w')
+                g.close()
+                print s % (1, 97, '  please login')
+                sys.exit(1)
         else:
-            loginandcheck()
+            print s % (1, 91, '  !! cookie_file is missing, please login')
+            sys.exit(1)
 
     def check_login(self):
         #print s % (1, 97, '\n  -- check_login')
@@ -91,7 +82,7 @@ class pan115(object):
             print s % (1, 91, '  -- check_login fail\n')
             return False
 
-    def login(self):
+    def login(self, account, password):
         print s % (1, 97, '\n  -- login')
 
         def get_ssopw(ssoext):
@@ -129,10 +120,11 @@ class pan115(object):
         }
         url = 'http://passport.115.com'
         ss.post(url, params=params, data=data, headers=theaders)
+        self.save_cookies()
 
     def save_cookies(self):
         with open(cookie_file, 'w') as g:
-            c = {'user': account, 'cookies': ss.cookies.get_dict()}
+            c = {'cookies': ss.cookies.get_dict()}
             g.write(json.dumps(c, indent=4, sort_keys=True))
 
     def get_dlink(self, pc):
@@ -355,32 +347,15 @@ class pan115(object):
         }
         self.download(infos)
 
-def main(url):
-    if 'pickcode' in url:
-        pc = re.search(r'pickcode=([\d\w]+)', url)
-        if pc:
-            pc = pc.group(1)
-            x = pan115()
-            x.init()
-            x.do(pc)
-        else:
-            print s % (1, 91, '  can\'t find pickcode.')
-    elif 'cid=' in url:
-        cid = re.search(r'cid=(\d+)', url)
-        cid = cid.group(1) if cid else '0'
-        x = pan115()
-        x.init()
-        x.get_infos(cid)
-    elif args.addtask:
-        x = pan115()
-        x.init()
-        x.addtask(url)
-    else:
-        print s % (2, 91, '  请正确输入自己的115地址。')
+def main(argv):
+    if len(argv) <= 1:
+        sys.exit()
 
-if __name__ == '__main__':
+    ######################################################
+    # for argparse
     p = argparse.ArgumentParser(description='download from 115.com reversely')
-    p.add_argument('url', help='自己115文件夹url')
+    p.add_argument('xxx', type=str, nargs='*', \
+        help='命令对象.')
     p.add_argument('-a', '--aria2c', action='store_true', \
         help='download with aria2c')
     p.add_argument('-p', '--play', action='store_true', \
@@ -395,5 +370,55 @@ if __name__ == '__main__':
         default=None, type=str, help='下载速度限制，eg: -l 100k')
     p.add_argument('-d', '--addtask', action='store_true', \
         help='加离线下载任务')
-    args = p.parse_args()
-    main(args.url)
+    global args
+    args = p.parse_args(argv[1:])
+    xxx = args.xxx
+
+    if xxx[0] == 'login':
+        if len(xxx[1:]) < 1:
+            username = raw_input(s % (1, 97, '  account: '))
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx[1:]) == 1:
+            username = xxx[0]
+            password = getpass(s % (1, 97, '  password: '))
+        elif len(xxx[1:]) == 2:
+            username = xxx[0]
+            password = xxx[1]
+        else:
+            print s % (1, 91, '  login\n  login account\n  login account password')
+
+        x = pan115()
+        x.login(username, password)
+        is_signin = x.check_login()
+        if is_signin:
+            print s % (1, 92, '  ++ login succeeds.')
+        else:
+            print s % (1, 91, '  login failes')
+
+    elif xxx[0] == 'signout':
+        g = open(cookie_file, 'w')
+        g.close()
+
+    else:
+        x = pan115()
+        x.init()
+        for url in xxx:
+            if 'pickcode' in url:
+                pc = re.search(r'pickcode=([\d\w]+)', url)
+                if pc:
+                    pc = pc.group(1)
+                    x.do(pc)
+                else:
+                    print s % (1, 91, '  can\'t find pickcode.')
+            elif 'cid=' in url:
+                cid = re.search(r'cid=(\d+)', url)
+                cid = cid.group(1) if cid else '0'
+                x.get_infos(cid)
+            elif args.addtask:
+                x.addtask(url)
+            else:
+                print s % (2, 91, '  请正确输入自己的115地址。')
+
+if __name__ == '__main__':
+    argv = sys.argv
+    main(argv)
