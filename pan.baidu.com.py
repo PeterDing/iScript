@@ -737,7 +737,7 @@ class panbaiducom_HOME(object):
                 self.upload_datas[lpath]['is_over'] = True
                 self.upload_datas[lpath]['remotepaths'].update([rpath])
                 self.save_upload_datas()
-                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload')
+                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
                 return
             else:
                 pass
