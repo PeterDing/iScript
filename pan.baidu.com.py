@@ -713,6 +713,15 @@ class panbaiducom_HOME(object):
     def _upload_file(self, lpath, rpath):
         print s % (1, 94, '  ++ uploading:'), lpath
 
+        if 'e' in args.type_.split(','):
+            path = os.path.join(rpath, os.path.basename(lpath))
+            meta = self._meta([path])
+            if meta:
+                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload')
+                return
+            else:
+                pass
+
         __current_file_size = os.path.getsize(lpath)
         self.__current_file_size = __current_file_size
         upload_function = self._get_upload_function()
@@ -787,8 +796,8 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
-                        if args.type_ == 'r':   # only rapidupload
-                            print s % (1, 92, '  |-- can\'t be RapidUploaded\n')
+                        if 'r' in args.type_.split(','):   # only rapidupload
+                            print s % (1, 91, '  |-- can\'t be RapidUploaded\n')
                             break
                         print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
                             'now trying normal uploading.')
@@ -1468,7 +1477,7 @@ class panbaiducom_HOME(object):
     # for mkdir
     def mkdir(self, paths):
         for path in paths:
-            print s % (1, 92, '  ++ mkdir:'), path
+            print s % (1, 97, '  ++ mkdir:'), path
             meta = self._meta([path])
             if not meta:
                 result = self._make_dir(path)
@@ -1588,13 +1597,14 @@ def main(argv):
  usage: https://github.com/PeterDing/iScript#pan.baidu.com.py
 
  命令:
+
  # 登录
  login
  login username
  login username password
 
- # 退出登录
- signout
+ signout                                              退出登录
+ user                                                 用户信息
 
  d  或 download url1 url2 ..                          下载
  u  或 upload localpath remotepath                    上传
@@ -1646,6 +1656,32 @@ def main(argv):
  # m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
  # remotepath 默认为 /
  a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
+
+
+ 参数:
+
+ -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
+ -p, --play                          play with mpv
+ -v, --view                          view detail, eg: b a magnet /path -v  # 离线下载并显示下载的文件
+                                     b d -p url1 url2 .. -v  # 显示播放文件的完整路径
+ -s SECRET, --secret SECRET          提取密码
+ -f number, --from_ number           从第几个开始下载，eg: -f 42
+ -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
+                                     或 l -t f (文件); l -t d (文件夹)
+                                     或 a -t m,d,p,a
+                                     或 u -t r  # 只进行 rapidupload
+                                     或 u -t e  # 如果云端已经存在则不上传(不比对md5)
+                                     或 u -t r,e
+ -l amount, --limit amount           下载速度限制，eg: -l 100k
+ -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
+ -R, --recursive                     递归 ls
+ -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
+ -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
+ -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
+ -E EXCLUDE, --exclude EXCLUDE       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
+ -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
+
+ # -t, -H, -T, -I, -E 都能用于 download, play, ls, find
         """
     if len(argv) <= 1:
         print usage
@@ -1720,6 +1756,17 @@ def main(argv):
     elif comd == 'signout':
         g = open(cookie_file, 'w')
         g.close()
+
+    elif comd == 'user':
+        x = panbaiducom_HOME()
+        x.init()
+        r = ss.get('http://pan.baidu.com/wap/share/home')
+        html = r.content
+        open('/tmp/t/c/ss', 'w').write(html)
+        user = re.search(r'"name">(.+?)<', html).group(1)
+        capacity = re.search(r'^(\d.+\d.+)<', html, re.M).group(1)
+        print '    user:', s % (1, 97, user)
+        print 'capacity:',s % (1, 97, capacity)
 
     elif comd == 'u' or comd == 'upload':
         if len(xxx) < 2:

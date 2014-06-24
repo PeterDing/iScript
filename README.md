@@ -157,8 +157,8 @@
         login username
         login username password
 
-        # 退出登录
-        signout
+        signout                                              退出登录
+        user                                                 用户信息
 
         d  或 download url1 url2 ..                          下载
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
@@ -213,6 +213,8 @@
                                             或 l -t f (文件); l -t d (文件夹)
                                             或 a -t m,d,p,a
                                             或 u -t r  # 只进行 rapidupload
+                                            或 u -t e  # 如果云端已经存在则不上传(不比对md5)
+                                            或 u -t r,e
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
         -R, --recursive                     递归 ls
@@ -297,6 +299,10 @@
 
         bp u localpath1 localpath2 .. remotepath -t r
         # 只进行rapidupload
+        bp u localpath1 localpath2 .. remotepath -t e
+        # 如果云端已经存在则不上传(不比对md5)
+        # 用 -t e 时, -m o 无效
+        bp u localpath1 localpath2 .. remotepath -t r,e  # 以上两种模式
 
     转存:
 
