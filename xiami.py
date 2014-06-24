@@ -298,31 +298,31 @@ class xiami(object):
         for url in urls:
             if '/showcollect/' in url:
                 self.showcollect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
-                print(s % (2, 92, u'\n  -- 正在分析精选集信息 ...'))
+                #print(s % (2, 92, u'\n  -- 正在分析精选集信息 ...'))
                 self.download_collect()
             elif '/album/' in url:
                 self.album_id = re.search(r'/album/(\d+)', url).group(1)
-                print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
+                #print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
                 self.download_album()
             elif '/artist/' in url:
                 self.artist_id = re.search(r'/artist/(\d+)', url).group(1)
                 code = raw_input('  >> 输入 a 下载该艺术家所有专辑.\n' \
                     '  >> 输入 t 下载该艺术家top 20歌曲.\n  >> ')
                 if code == 'a':
-                    print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
+                    #print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                     self.download_artist_albums()
                 elif code == 't':
-                    print(s % (2, 92, u'\n  -- 正在分析艺术家top20信息 ...'))
+                    #print(s % (2, 92, u'\n  -- 正在分析艺术家top20信息 ...'))
                     self.download_artist_top_20_songs()
                 else:
                     print(s % (1, 92, u'  --> Over'))
             elif '/song/' in url:
                 self.song_id = re.search(r'/song/(\d+)', url).group(1)
-                print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
+                #print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
                 self.download_song()
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
-                print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
+                #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
                 self.download_user_songs()
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))

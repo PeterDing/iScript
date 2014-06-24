@@ -713,7 +713,7 @@ class panbaiducom_HOME(object):
     def _upload_file(self, lpath, rpath):
         print s % (1, 94, '  ++ uploading:'), lpath
 
-        if 'e' in args.type_.split(','):
+        if args.type_ and 'e' in args.type_.split(','):
             path = os.path.join(rpath, os.path.basename(lpath))
             meta = self._meta([path])
             if meta:
@@ -796,7 +796,7 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
-                        if 'r' in args.type_.split(','):   # only rapidupload
+                        if args.type_ and 'r' in args.type_.split(','):   # only rapidupload
                             print s % (1, 91, '  |-- can\'t be RapidUploaded\n')
                             break
                         print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
