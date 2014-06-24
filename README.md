@@ -299,9 +299,11 @@
 
         bp u localpath1 localpath2 .. remotepath -t r
         # 只进行rapidupload
+
         bp u localpath1 localpath2 .. remotepath -t e
         # 如果云端已经存在则不上传(不比对md5)
         # 用 -t e 时, -m o 无效
+
         bp u localpath1 localpath2 .. remotepath -t r,e  # 以上两种模式
 
     转存:
