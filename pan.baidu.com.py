@@ -713,15 +713,6 @@ class panbaiducom_HOME(object):
     def _upload_file(self, lpath, rpath):
         print s % (1, 94, '  ++ uploading:'), lpath
 
-        if args.type_ and 'e' in args.type_.split(','):
-            path = os.path.join(rpath, os.path.basename(lpath))
-            meta = self._meta([path])
-            if meta:
-                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload')
-                return
-            else:
-                pass
-
         __current_file_size = os.path.getsize(lpath)
         self.__current_file_size = __current_file_size
         upload_function = self._get_upload_function()
@@ -738,6 +729,18 @@ class panbaiducom_HOME(object):
                 'size': __current_file_size,
                 'remotepaths': set()
             }
+
+        if args.type_ and 'e' in args.type_.split(','):
+            path = os.path.join(rpath, os.path.basename(lpath))
+            meta = self._meta([path])
+            if meta:
+                self.upload_datas[lpath]['is_over'] = True
+                self.upload_datas[lpath]['remotepaths'].update([rpath])
+                self.save_upload_datas()
+                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload')
+                return
+            else:
+                pass
 
         while True:
             if not self.upload_datas[lpath]['is_over']:
