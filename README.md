@@ -153,6 +153,7 @@
     命令:
 
         # 登录
+        g
         login
         login username
         login username password
@@ -232,6 +233,7 @@
 
     登录:
 
+        bp g
         bp login
         bp login username
         bp login username password

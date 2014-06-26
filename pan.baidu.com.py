@@ -1602,6 +1602,7 @@ def main(argv):
  命令:
 
  # 登录
+ g
  login
  login username
  login username password
@@ -1735,7 +1736,7 @@ def main(argv):
     xxx = args.xxx
     #######################################################
 
-    if comd == 'login':
+    if comd == 'login' or comd == 'g':
         if len(xxx) < 1:
             username = raw_input(s % (1, 97, '  username: '))
             password = getpass(s % (1, 97, '  password: '))
