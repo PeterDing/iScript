@@ -405,6 +405,10 @@
         bt tm path1 path2 ..
         bt ct magnet_link1 path1 .. [-d /path/to/save]
 
+        bt m magnet_link1 magnet_link2 .. [-d /path/to/save]
+        bt t path1 path2 ..
+        bt c magnet_link1 path1 .. [-d /path/to/save]
+
         # 用torrage.com
         bt magnet_link1 path1 .. -p 127.0.0.1:8087
 
