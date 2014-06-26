@@ -72,6 +72,7 @@
     \# xm 是xiami.py的马甲 (alias xm='python2 /path/to/xiami.py')
 
         # 登录
+        xm g
         xm login
         xm login username
         xm login username password
@@ -467,6 +468,7 @@
     \# pan115 是115.py的马甲 (alias pan115='python2 /path/to/115.py')
 
         # 登录
+        pan115 g
         pan115 login
         pan115 login username
         pan115 login username password
@@ -535,6 +537,7 @@
     \# yp 是yunpan.360.cn.py的马甲 (alias yp='python2 /path/to/yunpan.360.cn.py')
 
         # 登录
+        yp g
         yp login
         yp login username
         yp login username password

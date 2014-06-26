@@ -615,7 +615,7 @@ def main(argv):
     args = p.parse_args(argv[1:])
     xxx = args.xxx
 
-    if xxx[0] == 'login':
+    if xxx[0] == 'login' or xxx[0] == 'g':
         if len(xxx[1:]) < 1:
             email = raw_input(s % (1, 97, '  username: '))
             password = getpass(s % (1, 97, '  password: '))
