@@ -516,12 +516,12 @@ class panbaiducom_HOME(object):
             s % (1, 97, infos['total_file']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
-            cmd = 'mplayer -really-quiet -cache 8140 ' \
+            cmd = 'mplayer -really-quiet -cache 10000 ' \
                 '-http-header-fields "user-agent:%s" ' \
                 '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
                 % (headers['User-Agent'], infos['dlink'])
         else:
-            cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
+            cmd = 'mpv --really-quiet --cache 10000 --cache-default 10000 ' \
                 '--http-header-fields "user-agent:%s" '\
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
                 % (headers['User-Agent'], infos['dlink'])

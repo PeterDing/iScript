@@ -376,19 +376,19 @@ def main(argv):
 
     if xxx[0] == 'login' or xxx[0] == 'g':
         if len(xxx[1:]) < 1:
-            username = raw_input(s % (1, 97, '  account: '))
+            account = raw_input(s % (1, 97, '  account: '))
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx[1:]) == 1:
-            username = xxx[0]
+            account = xxx[0]
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx[1:]) == 2:
-            username = xxx[0]
+            account = xxx[0]
             password = xxx[1]
         else:
             print s % (1, 91, '  login\n  login account\n  login account password')
 
         x = pan115()
-        x.login(username, password)
+        x.login(account, password)
         is_signin = x.check_login()
         if is_signin:
             print s % (1, 92, '  ++ login succeeds.')

@@ -617,7 +617,7 @@ def main(argv):
 
     if xxx[0] == 'login' or xxx[0] == 'g':
         if len(xxx[1:]) < 1:
-            email = raw_input(s % (1, 97, '  username: '))
+            email = raw_input(s % (1, 97, '     email: '))
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx[1:]) == 1:
             email = xxx[1]
@@ -626,7 +626,7 @@ def main(argv):
             email = xxx[1]
             password = xxx[2]
         else:
-            print s % (1, 91, '  login\n  login username\n  login username password')
+            print s % (1, 91, '  login\n  login email\n  login email password')
 
         x = xiami()
         x.login(email, password)
