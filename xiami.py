@@ -597,7 +597,7 @@ class xiami(object):
             time.sleep(0)
 
 def main(argv):
-    if len(argv) <= 2:
+    if len(argv) < 2:
         sys.exit()
 
     ######################################################
