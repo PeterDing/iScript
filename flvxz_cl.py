@@ -8,9 +8,11 @@ import os
 import sys
 import argparse
 import random
+from HTMLParser import HTMLParser
 import select
 
 s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
+parser = HTMLParser()
 
 ############################################################
 # wget exit status
@@ -51,7 +53,7 @@ def download(infos):
     col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ 正在下载:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
-    cmd = wget_template % (infos['filename'], infos['durl'])
+    cmd = wget_template % (infos['filename'], parser.unescape(infos['durl']))
     status = os.system(cmd)
 
     if status != 0:     # other http-errors, such as 302.
@@ -65,9 +67,10 @@ def play(infos):
     col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ play:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
-    cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 \
-        --http-header-fields "user-agent:%s" \
-        "%s"' % (headers['User-Agent'], infos['durl'])
+    cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
+        '"%s"' % parser.unescape(infos['durl'])
+        #'--http-header-fields "User-Agent:%s" ' \
+        #'"%s"' % (headers['User-Agent'], infos['durl'])
 
     status = os.system(cmd)
     timeout = 1

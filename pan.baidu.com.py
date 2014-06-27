@@ -1766,7 +1766,6 @@ def main(argv):
         x.init()
         r = ss.get('http://pan.baidu.com/wap/share/home')
         html = r.content
-        open('/tmp/t/c/ss', 'w').write(html)
         user = re.search(r'"name">(.+?)<', html).group(1)
         capacity = re.search(r'^(\d.+\d.+)<', html, re.M).group(1)
         print '    user:', s % (1, 97, user)
