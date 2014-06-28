@@ -181,7 +181,7 @@
         fss keyword .. [directory]                     非递归搜索 by size 反序
         fn  keyword .. [directory]                     非递归搜索 by name
         fnn keyword .. [directory]                     非递归搜索 by name 反序
-        # 递归搜索加 -R
+                                                       # 递归搜索加 -R
         # 关于-H, -T, -I, -E
         f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
@@ -219,7 +219,7 @@
                                             或 u -t r,e
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
-        -R, --recursive                     递归 ls
+        -R, --recursive                     递归, 用于ls, find
         -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
         -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
         -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
