@@ -1096,7 +1096,7 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  |-- file had existed.')
                 sys.exit()
             #elif result == -33:
-            elif result == 1:
+            elif result == 1 or result == -33 or result == -10:
                 if info['isdir']:
                     print s % (1, 93, '  |-- over transferring limit.')
                     infos += self._get_share_inbox_list(info)
