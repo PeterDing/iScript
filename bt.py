@@ -136,7 +136,7 @@ class bt(object):
             url = url % hh
             try:
                 r = ss.get(url)
-                if r.ok and len(r.content) > 500:
+                if r.ok and len(r.content) > 100 and '<head>' not in r.content:
                     print s % (1, 92, u'  √ get torrent.')
                     return r.content
                 else:
