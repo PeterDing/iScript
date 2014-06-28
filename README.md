@@ -369,7 +369,7 @@
 
     磁力连接转种子，用的是
 
-        http://www.sobt.org
+        http://www.sobt.org  # 302 --> http://www.win8down.com/url.php?hash=
         http://www.btspread.com
         http://torcache.net
         http://zoink.it
