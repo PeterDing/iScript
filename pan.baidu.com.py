@@ -576,6 +576,9 @@ class panbaiducom_HOME(object):
         else:
             return False
 
+    ################################################################
+    # for upload
+
     def _rapidupload_file(self, lpath, rpath):
         print '  |-- upload_function:', s % (1, 97, '_rapidupload_file')
         slice_md5 = md5.new(open(lpath, 'rb').read(256 * OneK)).hexdigest()
