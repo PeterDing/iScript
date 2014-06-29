@@ -1082,7 +1082,6 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _get_share_inbox_infos')
             sys.exit()
 
-
     def save_inbox_share(self, url, remotepath, infos=None):
         ss.headers['Referer'] = 'http://pan.baidu.com'
         remotepath = remotepath if remotepath[-1] != '/' else remotepath[:-1]
@@ -1095,15 +1094,19 @@ class panbaiducom_HOME(object):
             elif result == 12:
                 print s % (1, 91, '  |-- file had existed.')
                 sys.exit()
-            #elif result == -33:
             elif result == 1 or result == -33 or result == -10:
+                if result == -10:
+                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:'), -10, s , \
+                        s % (1, 91, 'category of pan is unsatisfied.')
+                elif result == -33:
+                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:'), -33, s , \
+                    s % (1, 93, '  |-- over transferring limit.')
                 if info['isdir']:
-                    print s % (1, 93, '  |-- over transferring limit.')
                     infos += self._get_share_inbox_list(info)
-                else:
-                    print s % (1, 91, '  !! Error: can\'t transfer file')
+                #else:
+                    #print s % (1, 91, '  |-- Error: can\'t transfer file')
             else:
-                print s % (1, 91, '  !! Error at save_inbox_share, errno:'), result
+                print s % (1, 91, '  |-- _share_inbox_transfer, errno:'), result
                 sys.exit(1)
 
     #######################################################################
