@@ -52,7 +52,7 @@ class bt(object):
                         del fl[item]
 
                 files.append(fl)
-                dstring['info']['files'] = files
+            dstring['info']['files'] = files
 
         ## change top directory
         for i in dstring['info'].keys():
