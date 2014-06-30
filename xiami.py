@@ -623,6 +623,56 @@ class xiami(object):
             ii += 1
             time.sleep(0)
 
+    def _save_do(self, id_, type, tags):
+        data = {
+            "tags": tags,
+            "type": type,
+            "id": id_,
+            "desc": "",
+            "grade": "",
+            "share": 0,
+            "shareTo": "all",
+            "_xiamitoken": ss.cookies['_xiamitoken'],
+        }
+        url = 'http://www.xiami.com/ajax/addtag'
+        r = ss.post(url, data=data)
+        j = r.json()
+        if j['status'] == 'ok':
+            return 0
+        else:
+            return j['status']
+
+    def save(self, urls):
+        tags = args.tags
+        for url in urls:
+            if '/showcollect/' in url:
+                showcollect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/showcollect/' + showcollect_id
+                result = self._save_do(showcollect_id, 4, tags)
+
+            elif '/album/' in url:
+                album_id = re.search(r'/album/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save album:'), 'http://www.xiami.com/album/' + album_id
+                result = self._save_do(album_id, 5, tags)
+
+            elif '/artist/' in url:
+                artist_id = re.search(r'/artist/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save artist:'), 'http://www.xiami.com/artist/' + artist_id
+                result = self._save_do(artist_id, 6, tags)
+
+            elif '/song/' in url:
+                song_id = re.search(r'/song/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save song:'), 'http://www.xiami.com/song/' + song_id
+                result = self._save_do(song_id, 3, tags)
+
+            else:
+                print(s % (2, 91, u'   请正确输入虾米网址.'))
+
+            if result == 0:
+                print s % (1, 92, '  ++ success.\n')
+            else:
+                print s % (1, 91, '  !! Error at _save_do.'), result, '\n'
+
 def main(argv):
     if len(argv) < 2:
         sys.exit()
@@ -636,22 +686,25 @@ def main(argv):
         help='play with mpv')
     p.add_argument('-d', '--undescription', action='store_true', \
         help='no add disk\'s distribution')
-    p.add_argument('-c', '--undownload', action='store_true', \
+    p.add_argument('-t', '--tags', action='store', \
+        type=str, default='', help='tags. eg: piano,cello')
+    p.add_argument('-n', '--undownload', action='store_true', \
         help='no download, using to renew id3 tags')
     global args
-    args = p.parse_args(argv[1:])
+    args = p.parse_args(argv[2:])
+    comd = argv[1]
     xxx = args.xxx
 
-    if xxx[0] == 'login' or xxx[0] == 'g':
-        if len(xxx[1:]) < 1:
+    if comd == 'login' or comd == 'g':
+        if len(xxx) < 1:
             email = raw_input(s % (1, 97, '     email: '))
             password = getpass(s % (1, 97, '  password: '))
-        elif len(xxx[1:]) == 1:
-            email = xxx[1]
+        elif len(xxx) == 1:
+            email = xxx[0]
             password = getpass(s % (1, 97, '  password: '))
-        elif len(xxx[1:]) == 2:
-            email = xxx[1]
-            password = xxx[2]
+        elif len(xxx) == 2:
+            email = xxx[0]
+            password = xxx[1]
         else:
             print s % (1, 91, '  login\n  login email\n  login email password')
 
@@ -663,15 +716,26 @@ def main(argv):
         else:
             print s % (1, 91, '  login failes')
 
-    elif xxx[0] == 'signout':
+    elif comd == 'signout':
         g = open(cookie_file, 'w')
         g.close()
 
-    else:
+    elif comd == 'd' or comd == 'download' \
+        or comd == 'p' or comd == 'play':
+        if comd == 'p' or comd == 'play': args.play = True
         urls = xxx
         x = xiami()
         x.init()
         x.url_parser(urls)
+
+    elif comd == 's' or comd == 'save':
+        urls = xxx
+        x = xiami()
+        x.init()
+        x.save(urls)
+
+    else:
+        print s % (2, 91, '  !! 命令错误\n')
 
 if __name__ == '__main__':
     argv = sys.argv

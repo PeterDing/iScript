@@ -57,15 +57,34 @@
 
     !!! vip账户支持高品质音乐的下载和播放。
 
-    默认执行下载，如要播放，加参数-p。
-
     下载的MP3默认添加id3 tags，保存在当前目录下。
 
-    日志保存在 ~/.Xiami.log, cookies保存在 ~/.Xiami.cookies。
+    cookies保存在 ~/.Xiami.cookies。
 
     关于播放操作:
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
+
+    命令:
+
+        # 登录
+        g
+        login
+        login username
+        login username password
+
+        signout                      # 退出登录
+
+        d 或 download url1 url2 ..      # 下载
+        p 或 play  url1 url2 ..         # 播放
+        s 或 save  url1 url2 ..         # 收藏
+
+    参数:
+
+        -p, --play            play with mpv
+        -d, --undescription   不加入disk的描述
+        -t TAGS, --tags TAGS  收藏用的tags,用英文逗号分开, eg: -t piano,cello,guitar
+        -n, --undownload      不下载,用于修改已存在的MP3的id3 tags
 
 3. 用法
 
@@ -81,24 +100,31 @@
         xm signout
 
         # 下载专辑
-        xm http://www.xiami.com/album/168709?spm=a1z1s.6928801.1561534521.114.ShN6mD
+        xm d http://www.xiami.com/album/168709?spm=a1z1s.6928801.1561534521.114.ShN6mD
 
         # 下载单曲
-        xm http://www.xiami.com/song/2082998?spm=a1z1s.6659513.0.0.DT2j7T
+        xm d http://www.xiami.com/song/2082998?spm=a1z1s.6659513.0.0.DT2j7T
 
         # 下载精选集
-        xm http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
+        xm d http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
 
         # 下载该艺术家所有专辑或 Top 20 歌曲
-        xm http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
+        xm d http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
         # 下载用户的收藏或虾米推荐
-        xm http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
+        xm d http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
 
     播放:
 
         # url 是上面的
-        xm -p url
+        xm p url
+
+    收藏:
+
+        xm s http://www.xiami.com/album/168709?spm=a1z1s.6928801.1561534521.114.ShN6mD
+        xm s -t 'tag1,tag 2,tag 3' http://www.xiami.com/song/2082998?spm=a1z1s.6659513.0.0.DT2j7T
+        xm s http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
+        xm s http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
 4. 参考:
 
