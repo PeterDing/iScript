@@ -47,7 +47,8 @@ class bt(object):
                 fl['path'] = path
 
                 for item in fl.keys():
-                    if item not in ['path', 'length', 'filehash', 'ed2k']:
+                    #if item not in ['path', 'length', 'filehash', 'ed2k']:
+                    if item not in ['path', 'length', 'filehash']:
                         del fl[item]
 
                 files.append(fl)
