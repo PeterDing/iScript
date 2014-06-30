@@ -92,9 +92,8 @@
         # 下载该艺术家所有专辑或 Top 20 歌曲
         xm http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
-        # 下载用户的收藏
+        # 下载用户的收藏或虾米推荐
         xm http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
-
 
     播放:
 

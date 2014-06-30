@@ -55,6 +55,7 @@ url_collect = "http://www.xiami.com/app/android/collect?id=%s"
 url_artist_albums = "http://www.xiami.com/app/android/artist-albums?id=%s&page=%s"
 url_artist_top_song = "http://www.xiami.com/app/android/artist-topsongs?id=%s"
 url_lib_songs = "http://www.xiami.com/app/android/lib-songs?uid=%s&page=%s"
+url_rndsongs = "http://www.xiami.com/app/android/rnd?uid=%s"
 # }}}
 ############################################################
 
@@ -322,8 +323,16 @@ class xiami(object):
                 self.download_song()
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
-                #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
-                self.download_user_songs()
+                code = raw_input('  >> 输入 m 下载该用户歌曲库.\n' \
+                    '  >> 输入 r 下载该用户的虾米推荐.\n  >> ')
+                if code == 'm':
+                    #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
+                    self.download_user_songs()
+                elif code == 'r':
+                    #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
+                    self.download_user_radio()
+                else:
+                    print(s % (1, 92, u'  --> Over'))
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
@@ -516,6 +525,24 @@ class xiami(object):
             else:
                 break
             ii += 1
+
+    def download_user_radio(self):
+        j = ss.get(url_rndsongs % self.user_id).json()
+        d = modificate_text(u'%s 的虾米推荐')
+        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+        amount_songs = unicode(len(j['songs']))
+        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+            if not args.play else ''
+        n = 1
+        for i in j['songs']:
+            song_id = i['song_id']
+            song_info = self.get_song_infos(song_id)
+            self.song_infos = [song_info]
+            self.download(amount_songs, n)
+            self.html = ''
+            self.disc_description_archives = {}
+            n += 1
 
     def display_infos(self, i):
         print '\n  ----------------'
