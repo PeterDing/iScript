@@ -185,8 +185,8 @@
         signout                                              退出登录
         user                                                 用户信息
 
-        d  或 download url1 url2 .. path1 path2 ..              下载
-        p  或 play url1 url2 .. path1 path2 ..                播放
+        d  或 download url1 url2 .. path1 path2 ..           下载
+        p  或 play url1 url2 .. path1 path2 ..               播放
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
