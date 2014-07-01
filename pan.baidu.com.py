@@ -278,7 +278,6 @@ class panbaiducom_HOME(object):
                 keys = []
                 return []
 
-            keys = list(keys)
             indexs = [tdict[i] for i in keys]
             indexs.sort()
             fileslist = [fileslist[i] for i in indexs]
