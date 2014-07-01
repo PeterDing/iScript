@@ -1618,7 +1618,8 @@ def main(argv):
  signout                                              退出登录
  user                                                 用户信息
 
- d  或 download url1 url2 ..                          下载
+ d  或 download url1 url2 .. path1 path2 ..           下载
+ p  或 play url1 url2 .. path1 path2 ..               播放
  u  或 upload localpath remotepath                    上传
  s  或 save url remotepath [-s secret]                转存
  md 或 mkdir path1 path2 ..                           创建文件夹
@@ -1788,11 +1789,13 @@ def main(argv):
         x.init()
         x.upload(xxx[:-1], xxx[-1])
 
-    elif comd == 'd' or comd == 'download':
+    elif comd == 'd' or comd == 'download' \
+        or comd == 'p' or comd == 'play':
         if len(xxx) < 1:
             print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
+        if comd == 'p' or comd == 'play': args.play = True
         urls = xxx
         for url in urls:
             if url[0] == '/':

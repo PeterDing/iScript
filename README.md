@@ -159,8 +159,6 @@
 
     下载工具默认为wget, 可用参数-a num选用aria2
 
-    对所有文件，默认执行下载，如要播放媒体文件，加参数-p。
-
     下载的文件，保存在当前目录下。
 
     搜索时，默认在 /。
@@ -187,7 +185,8 @@
         signout                                              退出登录
         user                                                 用户信息
 
-        d  或 download url1 url2 ..                          下载
+        d  或 download url1 url2 .. path1 path2 ..              下载
+        p  或 play url1 url2 .. path1 path2 ..                播放
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
@@ -294,8 +293,8 @@
     播放:
 
         # url 是上面的
-        bp d url -p
-        bp d url -s [secret] -p
+        bp p url1 url2 .. path1 path2 ..
+        bp p url -s [secret]
 
     离线下载:
 
