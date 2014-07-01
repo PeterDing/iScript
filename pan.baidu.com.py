@@ -266,7 +266,7 @@ class panbaiducom_HOME(object):
                 if exclude else []
 
             # intersection
-            keys = [i for i in [keys1, keys2, keys3, keys4] if i]
+            keys = [set(i) for i in [keys1, keys2, keys3, keys4] if i]
             if len(keys) > 1:
                 tkeys = keys[0]
                 for i in keys:
@@ -276,8 +276,11 @@ class panbaiducom_HOME(object):
                 keys = keys[0]
             elif len(keys) == 0:
                 keys = []
+                return []
 
+            keys = list(keys)
             indexs = [tdict[i] for i in keys]
+            indexs.sort()
             fileslist = [fileslist[i] for i in indexs]
 
         dirs = [i for i in fileslist if i['isdir']]
