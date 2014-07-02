@@ -258,7 +258,7 @@ class panbaiducom_HOME(object):
             tdict = {fileslist[i]['server_filename'] : i for i in xrange(len(fileslist))}
             keys1 = [i for i in tdict.keys() if i.lower().startswith(head.encode('utf8').lower())] \
                 if head else []
-            keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8').lower())] \
+            keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())] \
                 if tail else []
             keys3 = [i for i in tdict.keys() if re.search(include, i.encode('utf8'), flags=re.I)] \
                 if include else []
@@ -1189,7 +1189,7 @@ class panbaiducom_HOME(object):
             self._find_display(infos)
 
     def _ls_directory(self, order, desc, path):
-        directorys = [path.decode('utf8')]
+        directorys = [path.decode('utf8', 'ignore')]
         y = 1
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
@@ -1331,6 +1331,121 @@ class panbaiducom_HOME(object):
         }]
         data = 'filelist=' + urllib.quote_plus(json.dumps(t))
         self._filemanager('move', data)
+
+    ##############################################################
+    # for file operate with regex
+
+    def _rnre_do(self, foo, bar, infos):
+        for info in infos:
+            # no change directory if recursion
+            if args.recursive and info['isdir']: continue
+
+            old_filename = info['server_filename']
+            new_filename = re.sub(foo.decode('utf8', 'ignore'), bar.decode('utf8', 'ignore'), old_filename)
+            if old_filename == new_filename: continue
+
+            old_path = info['path']
+            dir_ = os.path.split(old_path)[0]
+            new_path = os.path.join(dir_, new_filename)
+
+            print s % (1, 97, '  ++ rename:'), old_path
+            self.rename(old_path, new_path)
+
+    def rnre(self, foo, bar, dirs):
+        for path in dirs:
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    directorys = [path.decode('utf8', 'ignore')]
+                    y = 1
+                    for dir_ in directorys:
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        self._rnre_do(foo, bar, infos)
+                        if args.recursive:
+                            subdirs = [i['path'] for i in infos if i['isdir']]
+                            directorys[y:y] = subdirs
+                            y += 1
+                else:
+                    print s % (1, 91, '  !! path is a file.\n'), \
+                        ' --------------\n ', path
+            else:
+                print s % (1, 91, '  !! path is not existed.\n'), \
+                    ' --------------\n ', path
+
+    def _rmre_do(self, infos):
+        if args.recursive:
+            paths = [i['path'] for i in infos if not i['isdir']]
+        else:
+            paths = [i['path'] for i in infos]
+
+        print '\n'.join(paths)
+        print s % (1, 93, '  matched above ↑')
+        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower()
+        if ipt == 'y':
+            self.remove(paths)
+        else:
+            print s % (1, 92, '  ++ aborted.')
+
+    def rmre(self, dirs):
+        for path in dirs:
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    directorys = [path.decode('utf8', 'ignore')]
+                    y = 1
+                    for dir_ in directorys:
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        infos = self._sift(infos)
+                        self._rmre_do(infos)
+                        if args.recursive:
+                            subdirs = [i['path'] for i in infos if i['isdir']]
+                            directorys[y:y] = subdirs
+                            y += 1
+                else:
+                    print s % (1, 91, '  !! path is a file.\n'), \
+                        ' --------------\n ', path
+            else:
+                print s % (1, 91, '  !! path is not existed.\n'), \
+                    ' --------------\n ', path
+
+    def _cmre_do(self, type, infos, todir):
+        if args.recursive:
+            paths = [i['path'] for i in infos if not i['isdir']]
+        else:
+            paths = [i['path'] for i in infos]
+
+        print '\n'.join(paths)
+        print s % (1, 93, '  matched above ↑')
+        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower()
+        if ipt == 'y':
+            if type == 'move':
+                self.move(paths, todir)
+            elif type == 'copy':
+                self.copy(paths, todir)
+        else:
+            print s % (1, 92, '  ++ aborted.')
+
+    def cmre(self, type, dirs, todir):
+        for path in dirs:
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    directorys = [path.decode('utf8', 'ignore')]
+                    y = 1
+                    for dir_ in directorys:
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        infos = self._sift(infos)
+                        self._cmre_do(type, infos, todir)
+                        if args.recursive:
+                            subdirs = [i['path'] for i in infos if i['isdir']]
+                            directorys[y:y] = subdirs
+                            y += 1
+                else:
+                    print s % (1, 91, '  !! path is a file.\n'), \
+                        ' --------------\n ', path
+            else:
+                print s % (1, 91, '  !! path is not existed.\n'), \
+                    ' --------------\n ', path
 
     ##############################################################
     # for add_task
@@ -1622,6 +1737,8 @@ def main(argv):
  p  或 play url1 url2 .. path1 path2 ..               播放
  u  或 upload localpath remotepath                    上传
  s  或 save url remotepath [-s secret]                转存
+
+ # 文件操作
  md 或 mkdir path1 path2 ..                           创建文件夹
  rn 或 rename path new_path                           重命名
  rm 或 remove path1 path2 ..                          删除
@@ -1629,6 +1746,15 @@ def main(argv):
  cp 或 copy path /path/to/directory_or_file           复制
  cp 或 copy path1 path2 .. /path/to/directory         复制
  a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
+
+ # 正则文件操作
+ rnr rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
+ rmr rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
+ mvr mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
+ cpr cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
+ # 递归加 -R
+ # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
+ # rnr 中 foo bar 都是 regex
 
  f   或 find keyword .. [directory]             非递归搜索
  ff  keyword .. [directory]                     非递归搜索 反序
@@ -1688,8 +1814,8 @@ def main(argv):
  -l amount, --limit amount           下载速度限制，eg: -l 100k
  -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
  -R, --recursive                     递归 ls
- -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
- -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
+ -H HEAD, --head HEAD                匹配开头的字符(不是regex)，eg: -H Headishere
+ -T TAIL, --tail TAIL                匹配结尾的字符(不是regex)，eg: -T Tailishere
  -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
  -E EXCLUDE, --exclude EXCLUDE       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
  -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
@@ -1821,10 +1947,10 @@ def main(argv):
             sys.exit(1)
         x = panbaiducom_HOME(xxx[0])
         x.init()
-        remotepath = xxx[1].decode('utf8')
+        remotepath = xxx[1].decode('utf8', 'ignore')
         infos = []
         if x.path != '/':
-            infos.append({'isdir': 1, 'path': x.path.decode('utf8'), \
+            infos.append({'isdir': 1, 'path': x.path.decode('utf8', 'ignore'), \
             'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
         else:
             infos = None
@@ -1918,6 +2044,88 @@ def main(argv):
             x.ls('size', None, xxx)
         elif comd == 'lss':
             x.ls('size', 1, xxx)
+
+    elif comd == 'rnr' or comd == 'rnre':
+        if len(xxx) < 3:
+            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            sys.exit(1)
+
+        foo = xxx[0]
+        bar = xxx[1]
+        dirs = xxx[2:]
+        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! path is incorrect.')
+            sys.exit(1)
+
+        x = panbaiducom_HOME()
+        x.init()
+        x.rnre(foo, bar, dirs)
+
+    elif comd == 'rmr' or comd == 'rmre':
+        if len(xxx) < 1:
+            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            sys.exit(1)
+
+        if not (args.include or args.exclude or args.head or args.tail):
+            print s % (1, 91, '  !! missing -I or -E or -H or -T')
+            sys.exit(1)
+
+        dirs = xxx
+        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! path is incorrect.')
+            sys.exit(1)
+
+        x = panbaiducom_HOME()
+        x.init()
+        x.rmre(dirs)
+
+    elif comd == 'mvr' or comd == 'mvre':
+        if len(xxx) < 2:
+            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            sys.exit(1)
+
+        if not (args.include or args.exclude or args.head or args.tail):
+            print s % (1, 91, '  !! missing -I or -E or -H or -T')
+            sys.exit(1)
+
+        dirs = xxx
+        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! path is incorrect.')
+            sys.exit(1)
+
+        x = panbaiducom_HOME()
+        x.init()
+        x.cmre('move', dirs[:-1], dirs[-1])
+
+    elif comd == 'cpr' or comd == 'cpre':
+        if len(xxx) < 2:
+            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory]\n' \
+                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            sys.exit(1)
+
+        if not (args.include or args.exclude or args.head or args.tail):
+            print s % (1, 91, '  !! missing -I or -E or -H or -T')
+            sys.exit(1)
+
+        dirs = xxx
+        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+        if e:
+            print s % (1, 91, '  !! path is incorrect.')
+            sys.exit(1)
+
+        x = panbaiducom_HOME()
+        x.init()
+        x.cmre('copy', dirs[:-1], dirs[-1])
 
     elif comd == 'a' or comd == 'add':
         if len(xxx) < 1:

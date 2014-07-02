@@ -190,12 +190,23 @@
         a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
+
+        # 文件操作
         md 或 mkdir path1 path2 ..                           创建文件夹
         rn 或 rename path new_path                           重命名
         rm 或 remove path1 path2 ..                          删除
         mv 或 move path1 path2 .. /path/to/directory         移动
         cp 或 copy path /path/to/directory_or_file           复制
         cp 或 copy path1 path2 .. /path/to/directory         复制
+
+        # 正则文件操作
+        rnr rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
+        rmr rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
+        mvr mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
+        cpr cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
+        # 递归加 -R
+        # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
+        # rnr 中 foo bar 都是 regex
 
         f   或 find keyword .. [directory]             非递归搜索
         ff  keyword .. [directory]                     非递归搜索 反序
@@ -363,7 +374,7 @@
         bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
 
-    ls、重命名、移动、删除、复制:
+    ls、重命名、移动、删除、复制、正则文件操作:
 
     见[命令](#cmd)
 
