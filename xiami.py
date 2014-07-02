@@ -307,8 +307,8 @@ class xiami(object):
                 self.download_album()
             elif '/artist/' in url:
                 self.artist_id = re.search(r'/artist/(\d+)', url).group(1)
-                code = raw_input('  >> 输入 a 下载该艺术家所有专辑.\n' \
-                    '  >> 输入 t 下载该艺术家top 20歌曲.\n  >> ')
+                code = raw_input('  >> a  #下载该艺术家所有专辑.\n' \
+                    '  >> t  #下载该艺术家top 20歌曲.\n  >> ')
                 if code == 'a':
                     #print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                     self.download_artist_albums()
@@ -323,8 +323,8 @@ class xiami(object):
                 self.download_song()
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
-                code = raw_input('  >> 输入 m 下载该用户歌曲库.\n' \
-                    '  >> 输入 r 下载该用户的虾米推荐.\n  >> ')
+                code = raw_input('  >> m  #该用户歌曲库.\n' \
+                    '  >> r  #该用户的虾米推荐.\n  >> ')
                 if code == 'm':
                     #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
                     self.download_user_songs()
