@@ -199,7 +199,7 @@
         cp 或 copy path /path/to/directory_or_file           复制
         cp 或 copy path1 path2 .. /path/to/directory         复制
 
-        # 正则文件操作
+        # 使用正则表达式进行文件操作
         rnr rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
         rmr rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
         mvr mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
@@ -208,6 +208,7 @@
         # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
         # rnr 中 foo bar 都是 regex
 
+        # 搜索
         f   或 find keyword .. [directory]             非递归搜索
         ff  keyword .. [directory]                     非递归搜索 反序
         ft  keyword .. [directory]                     非递归搜索 by time
@@ -221,6 +222,7 @@
         f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
 
+        # 列出文件
         l path1 path2 ..                               ls by name
         ll path1 path2 ..                              ls by name 反序
         ln path1 path2 ..                              ls by name
@@ -229,7 +231,6 @@
         ltt path1 path2 ..                             ls by time 反序
         ls path1 path2 ..                              ls by size
         lss path1 path2 ..                             ls by size 反序
-
         # sl 是以上ls命令中的一个.
         # 以下是只ls文件或文件夹
         sl -t f path1 path2 ..                         ls files
@@ -242,19 +243,21 @@
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
-        -v, --view                          view detail, eg: b a magnet /path -v  # 离线下载并显示下载的文件
+        -v, --view                          view detail
+                                            eg: b a magnet /path -v  # 离线下载并显示下载的文件
                                             b d -p url1 url2 .. -v  # 显示播放文件的完整路径
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始下载，eg: -f 42
-        -t ext, --type_ ext                 要下载的文件的后缀，eg: -t mp3
-                                            或 l -t f (文件); l -t d (文件夹)
-                                            或 a -t m,d,p,a
-                                            或 u -t r  # 只进行 rapidupload
-                                            或 u -t e  # 如果云端已经存在则不上传(不比对md5)
-                                            或 u -t r,e
+        -t ext, --type_ ext                 类型参数.
+                                            eg: d -t mp3    # 要下载的文件的后缀
+                                            l -t f (文件); l -t d (文件夹)
+                                            a -t m,d,p,a
+                                            u -t r  # 只进行 rapidupload
+                                            u -t e  # 如果云端已经存在则不上传(不比对md5)
+                                            u -t r,e
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
-        -R, --recursive                     递归, 用于ls, find
+        -R, --recursive                     递归, 用于ls, find, rmre, rnre, rmre, cpre
         -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
         -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
         -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
@@ -374,7 +377,7 @@
         bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
 
-    ls、重命名、移动、删除、复制、正则文件操作:
+    ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
     见[命令](#cmd)
 
