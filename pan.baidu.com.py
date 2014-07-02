@@ -1378,6 +1378,8 @@ class panbaiducom_HOME(object):
         else:
             paths = [i['path'] for i in infos]
 
+        if not paths: return
+
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
         ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower()
@@ -1395,8 +1397,8 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        infos = self._sift(infos)
-                        self._rmre_do(infos)
+                        tinfos = self._sift(infos)
+                        self._rmre_do(tinfos)
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
@@ -1413,6 +1415,8 @@ class panbaiducom_HOME(object):
             paths = [i['path'] for i in infos if not i['isdir']]
         else:
             paths = [i['path'] for i in infos]
+
+        if not paths: return
 
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
@@ -1434,8 +1438,8 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        infos = self._sift(infos)
-                        self._cmre_do(type, infos, todir)
+                        tinfos = self._sift(infos)
+                        self._cmre_do(type, tinfos, todir)
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
