@@ -195,17 +195,8 @@ class panbaiducom_HOME(object):
         if hasattr(self, 'bdstoken'):
             return self.bdstoken
 
-        url = 'http://pan.baidu.com/wap/share/home'
-        r = ss.get(url)
-        html = r.content
-
-        t = re.search(r'bdstoken="(.+?)"', html)
-        if t:
-            bdstoken = t.group(1)
-            return bdstoken
-        else:
-            print s % (1, 91, '  !! Error at _get_bdstoken')
-            sys.exit(1)
+        self.bdstoken = md5.new(str(time.time())).hexdigest()
+        return self.bdstoken
 
     #def _sift(self, fileslist, name=None, size=None, time=None, head=None, tail=None, include=None, exclude=None):
     def _sift(self, fileslist, **arguments):
