@@ -61,18 +61,6 @@ class bt(object):
             elif 'name' in i:
                 if args.name:
                     dstring['info'][i] = args.name
-                elif dstring['info'].get('files'):
-                    try:
-                        t = dstring['info'][i].decode('utf8')
-                        t = t[::-1].encode('utf8')   # reverse name
-                    except:
-                        t = dstring['info'][i]
-                    dstring['info'][i] = t
-                else:
-                    ext = os.path.splitext(dstring['info'][i])[-1]
-                    ext = self._check_ext(ext)
-                    name = '0' + ext
-                    dstring['info'][i] = name
 
         ## delete comment and creator
         for i in dstring.keys():
