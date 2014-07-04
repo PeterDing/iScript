@@ -735,7 +735,7 @@ def main(argv):
         x.save(urls)
 
     else:
-        print s % (2, 91, '  !! 命令错误\n')
+        print s % (2, 91, u'  !! 命令错误\n')
 
 if __name__ == '__main__':
     argv = sys.argv
