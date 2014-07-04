@@ -278,7 +278,13 @@ class panbaiducom_HOME(object):
         if arguments.get('desc') == 1:
             dirs.reverse()
             files.reverse()
-        fileslist = dirs + files
+
+        if args.type_ == 'f':
+            fileslist = files
+        elif args.type_ == 'd':
+            fileslist = dirs
+        else:
+            fileslist = dirs + files
 
         return fileslist
 
@@ -1351,7 +1357,9 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        self._rnre_do(foo, bar, infos)
+                        if args.type_ == 'f' or args.type_ == 'd':
+                            tinfos = self._sift(infos)
+                        self._rnre_do(foo, bar, tinfos)
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
@@ -1364,7 +1372,7 @@ class panbaiducom_HOME(object):
                     ' --------------\n ', path
 
     def _rmre_do(self, infos):
-        if args.recursive:
+        if args.recursive and args.type_ == 'f':
             paths = [i['path'] for i in infos if not i['isdir']]
         else:
             paths = [i['path'] for i in infos]
@@ -1402,7 +1410,7 @@ class panbaiducom_HOME(object):
                     ' --------------\n ', path
 
     def _cmre_do(self, type, infos, todir):
-        if args.recursive:
+        if args.recursive and args.type_ == 'f':
             paths = [i['path'] for i in infos if not i['isdir']]
         else:
             paths = [i['path'] for i in infos]
@@ -1749,6 +1757,8 @@ def main(argv):
  cpr cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
  # 递归加 -R
  # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
+ # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
+                                     -t d # 文件夹
  # rnr 中 foo bar 都是 regex
 
  # 搜索
@@ -2069,7 +2079,7 @@ def main(argv):
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
 
-        if not (args.include or args.exclude or args.head or args.tail):
+        if not (args.include or args.exclude or args.head or args.tail or args.type_):
             print s % (1, 91, '  !! missing -I or -E or -H or -T')
             sys.exit(1)
 
@@ -2090,7 +2100,7 @@ def main(argv):
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
 
-        if not (args.include or args.exclude or args.head or args.tail):
+        if not (args.include or args.exclude or args.head or args.tail or args.type_):
             print s % (1, 91, '  !! missing -I or -E or -H or -T')
             sys.exit(1)
 
@@ -2111,7 +2121,7 @@ def main(argv):
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
 
-        if not (args.include or args.exclude or args.head or args.tail):
+        if not (args.include or args.exclude or args.head or args.tail or args.type_):
             print s % (1, 91, '  !! missing -I or -E or -H or -T')
             sys.exit(1)
 
