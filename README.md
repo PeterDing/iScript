@@ -206,7 +206,8 @@
         cpr cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
         # 递归加 -R
         # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
-        # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
+        # 可以用 -t 指定操作的文件类型, eg:
+                                            -t f # 文件
                                             -t d # 文件夹
         # rnr 中 foo bar 都是 regex
 
@@ -671,8 +672,6 @@
     默认执行下载，如要播放，加参数-p。
 
     下载的MP3默认添加id3 tags，保存在当前目录下。
-
-    日志保存在 ~/.163music.log。
 
     关于播放操作:
 

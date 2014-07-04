@@ -8,7 +8,6 @@ import random
 import time
 import json
 import urllib2
-import logging
 import argparse
 import select
 
@@ -101,7 +100,6 @@ class baidu_music(object):
             if cover_data[:5] != '<?xml':
                 return cover_data
             if i >= 10:
-                logging.info("  |--> Error: can't get cover image")
                 print s % (1, 91, "  |--> Error: can't get cover image")
                 sys.exit(0)
             i += 1
@@ -129,7 +127,6 @@ class baidu_music(object):
             print(s % (2, 91, u'   请正确输入baidu网址.'))
 
     def get_song_infos(self):
-        logging.info('url -> http://music.baidu.com/song/%s' % self.song_id)
         api_json = self.opener.open(self.template_api % self.song_id).read()
         j = json.loads(api_json)
         song_info = {}
@@ -149,7 +146,6 @@ class baidu_music(object):
         self.download()
 
     def get_album_infos(self):
-        logging.info('url -> http://music.baidu.com/album/%s' % self.album_id)
         songidlist = self.get_songidlist(self.album_id)
         z = z_index(songidlist)
         ii = 1
@@ -200,8 +196,6 @@ class baidu_music(object):
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
         print(s % (2, 97, u'\n  >> ' + str(csongs) + u' 首歌曲将要下载.'))
-        logging.info('directory: %s' % dir_)
-        logging.info('total songs: %d' % csongs)
         ii = 1
         for i in self.song_infos:
             t = modificate_file_name_for_wget(i['file_name'])
@@ -214,13 +208,11 @@ class baidu_music(object):
                 num = random.randint(0,100) % 7
                 col = s % (2, num + 90, i['file_name'])
                 print(u'\n  ++ 正在下载: %s' % col)
-                logging.info('  #%d -> %s' % (ii, i['file_name'].encode('utf8')))
                 wget = self.template_wgets % (file_name_for_wget, i['durl'])
                 wget = wget.encode('utf8')
                 status = os.system(wget)
                 if status != 0:     # other http-errors, such as 302.
                     wget_exit_status_info = wget_es[status]
-                    logging.info('   \\\n                            \\->WARN: status: %d (%s), command: %s' % (status, wget_exit_status_info, wget))
                     print('\n\n ----### \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d (%s)\x1b[0m ###--- \n\n' % (status, wget_exit_status_info))
                     print('  ===> ' + wget)
                     break
@@ -239,12 +231,8 @@ def main(url):
     opener.addheaders = headers.items()
     x.opener = opener
     x.url_parser()
-    logging.info('  ########### work is over ###########\n')
 
 if __name__ == '__main__':
-    log_file = os.path.join(os.path.expanduser('~'), '.baidu.music.log')
-    logging.basicConfig(filename=log_file, level=10, format='%(asctime)s %(message)s')
-    print(s % (2, 91, u'程序运行日志在 %s' % log_file))
     p = argparse.ArgumentParser(description='downloading any music.baidu.com')
     p.add_argument('url', help='any url of music.baidu.com')
     p.add_argument('-f', '--flac', action='store_true', help='download flac')

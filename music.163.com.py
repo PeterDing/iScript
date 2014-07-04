@@ -7,7 +7,6 @@ import os
 import random
 import time
 import json
-import logging
 import argparse
 import urllib
 import requests
@@ -235,9 +234,6 @@ class neteaseMusic(object):
     def download_song(self, noprint=False, n=1):
         j = ss.get(url_song % (self.song_id, urllib.quote('[%s]' % self.song_id))).json()
         songs = j['songs']
-        logging.info('url -> http://music.163.com/song/%s' % self.song_id)
-        logging.info('directory: %s' % os.getcwd())
-        logging.info('total songs: %d' % 1)
         if not noprint:
             print(s % (2, 97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
                 if not args.play else ''
@@ -250,9 +246,6 @@ class neteaseMusic(object):
         d = modificate_text(j['album']['name'] + ' - ' + j['album']['artist']['name'])
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        logging.info('directory: %s' % self.dir_)
-        logging.info('total songs: %d' % len(songs))
-        logging.info('url -> http://music.163.com/album/%s' % self.album_id)
         self.amount_songs = unicode(len(songs))
         print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
@@ -268,10 +261,6 @@ class neteaseMusic(object):
         d = modificate_text(j['result']['name'] + ' - ' + j['result']['creator']['nickname'])
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        logging.info('url -> http://music.163.com/playlist/%s' \
-                     % self.playlist_id)
-        logging.info('directory: %s' % self.dir_)
-        logging.info('total songs: %d' % len(songs))
         self.amount_songs = unicode(len(songs))
         print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
@@ -285,10 +274,6 @@ class neteaseMusic(object):
         d = modificate_text(j['program']['name'] + ' - ' + j['program']['dj']['nickname'])
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        logging.info('url -> http://music.163.com/dj/%s' \
-                     % self.dj_id)
-        logging.info('directory: %s' % self.dir_)
-        logging.info('total songs: %d' % len(songs))
         self.amount_songs = unicode(len(songs))
         print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
@@ -311,10 +296,6 @@ class neteaseMusic(object):
         d = modificate_text(j[0]['artists'][0]['name'] + ' - ' + 'Top 50')
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        logging.info('url -> http://music.163.com/artist/%s  --  Top 50' \
-                     % self.artist_id)
-        logging.info('directory: %s' % self.dir_)
-        logging.info('total songs: %d' % len(songids))
         self.amount_songs = unicode(len(songids))
         print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
@@ -372,21 +353,14 @@ class neteaseMusic(object):
                 if n == None:
                     print(u'\n  ++ 正在下载: #%s/%s# %s' \
                         % (ii, amount_songs, col))
-                    logging.info(u'  #%s/%s [%s] -> %s' \
-                        % (ii, amount_songs, i['mp3_quality'], i['file_name']))
                 else:
                     print(u'\n  ++ 正在下载: #%s/%s# %s' \
                         % (n, amount_songs, col))
-                    logging.info(u'  #%s/%s [%s] -> %s' \
-                        % (n, amount_songs, i['mp3_quality'], i['file_name']))
                 wget = self.template_wgets % (file_name_for_wget, durl)
                 wget = wget.encode('utf8')
                 status = os.system(wget)
                 if status != 0:     # other http-errors, such as 302.
                     wget_exit_status_info = wget_es[status]
-                    logging.info('   \\\n                            \\->WARN: status: ' \
-                        '%d (%s), command: %s' % (status, wget_exit_status_info, wget))
-                    logging.info('  ########### work is over ###########\n')
                     print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
                         '(%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
                     print s % (1, 91, '  ===> '), wget
@@ -401,12 +375,8 @@ class neteaseMusic(object):
 def main(url):
     x = neteaseMusic(url)
     x.url_parser()
-    logging.info('  ########### work is over ###########\n')
 
 if __name__ == '__main__':
-    log_file = os.path.join(os.path.expanduser('~'), '.163music.log')
-    logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s')
-    print(s % (2, 91, u'\n  程序运行日志在 %s' % log_file))
     p = argparse.ArgumentParser(description='downloading any music.163.com')
     p.add_argument('url', help='any url of music.163.com')
     p.add_argument('-p', '--play', action='store_true', \
