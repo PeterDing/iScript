@@ -550,9 +550,9 @@ class xiami(object):
         print '  >>', s % (2, 95, i['album_name'])
         print '  >>', s % (2, 92, 'http://www.xiami.com/song/%s' % i['song_id'])
         if i['durl_is_H']:
-            print '  >>', s % (1, 97, '     < High rate >')
+            print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')
         else:
-            print '  >>', s % (1, 97, '     < Low rate >')
+            print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
         print ''
 
     def get_mp3_quality(self, durl):
