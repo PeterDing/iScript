@@ -74,9 +74,8 @@ ss = requests.session()
 ss.headers.update(headers)
 
 class panbaiducom_HOME(object):
-    def __init__(self, url=''):
-        self.path = self.get_path(url)
-        self.download = self.play if args.play else self.download
+    def __init__(self):
+        self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
 
     def init(self):
@@ -95,15 +94,6 @@ class panbaiducom_HOME(object):
         else:
             print s % (1, 91, '  !! cookie_file is missing, please login')
             sys.exit(1)
-
-    def get_path(self, url):
-        t = re.search(r'path=(.+?)(&|$)', url)
-        if t:
-            t = t.group(1)
-        else:
-            t = '/'
-        t = urllib.unquote_plus(t)
-        return t
 
     @staticmethod
     def save_img(url, ext):
@@ -204,7 +194,6 @@ class panbaiducom_HOME(object):
         a filter for time, size, name, head, tail, include, exclude
         support regular expression
         """
-
         def sort(reverse, arg, fileslist=fileslist):
             tdict = {fileslist[i][arg] : i for i in xrange(len(fileslist))}
             keys = tdict.keys()
@@ -288,6 +277,15 @@ class panbaiducom_HOME(object):
 
         return fileslist
 
+    def _get_path(self, url):
+        t = re.search(r'path=(.+?)(&|$)', url)
+        if t:
+            t = t.group(1)
+        else:
+            t = '/'
+        t = urllib.unquote_plus(t)
+        return t
+
     def _get_file_list(self, order, desc, dir_):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
         theaders = headers
@@ -315,65 +313,6 @@ class panbaiducom_HOME(object):
             sys.exit(1)
         else:
             return j
-
-    def get_infos(self):
-        dir_loop = [self.path]
-        base_dir = '' if os.path.split(self.path)[0] == '/' \
-            else os.path.split(self.path)[0]
-        for d in dir_loop:
-            j = self._get_file_list('name', None, d)
-            if j['list']:
-                if args.head or args.tail or args.include or args.exclude:
-                    j['list'] = self._sift(j['list'])
-                if args.type_:
-                    j['list'] = [x for x in j['list'] if x['isdir'] \
-                        or x['server_filename'][-len(args.type_):] \
-                        == unicode(args.type_)]
-                total_file = len([i for i in j['list'] if not i['isdir']])
-                if args.from_ - 1:
-                    j['list'] = j['list'][args.from_-1:] if args.from_ else j['list']
-                nn = args.from_
-                for i in j['list']:
-                    if i['isdir']:
-                        dir_loop.append(i['path'].encode('utf8'))
-                    else:
-                        t = i['path'].encode('utf8')
-                        t = t.replace(base_dir, '')
-                        t = t[1:] if t[0] == '/' else t
-                        t =  os.path.join(os.getcwd(), t)
-                        if not i.has_key('dlink'):
-                            i['dlink'] = self._get_dlink2(i)
-                        infos = {
-                            'file': t,
-                            'path': i['path'].encode('utf8'),
-                            'dir_': os.path.split(t)[0],
-                            'dlink': i['dlink'].encode('utf8'),
-                            'name': i['server_filename'].encode('utf8'),
-                            'nn': nn,
-                            'total_file': total_file
-                        }
-                        nn += 1
-                        self.download(infos)
-            elif not j['list']:
-                self.path, server_filename = os.path.split(self.path)
-                j = self._get_file_list('name', None, self.path)
-                if j['errno'] == 0 and j['list']:
-                    for i in j['list']:
-                        if i['server_filename'].encode('utf8') == server_filename:
-                            if i['isdir']: break
-                            t =  os.path.join(os.getcwd(), server_filename)
-                            if not i.has_key('dlink'):
-                                i['dlink'] = self._get_dlink2(i)
-                            infos = {
-                                'file': t,
-                                'path': i['path'].encode('utf8'),
-                                'dir_': os.path.split(t)[0],
-                                #'dlink': self.get_dlink(i),
-                                'dlink': i['dlink'].encode('utf8'),
-                                'name': i['server_filename'].encode('utf8')
-                            }
-                            self.download(infos)
-                            break
 
     def _get_dsign(self):
         url = 'http://pan.baidu.com/disk/home'
@@ -452,8 +391,76 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _get_dlink2')
             sys.exit(1)
 
+    def download(self, paths):
+        for path in paths:
+            path = self._get_path(path)
+            base_dir = '' if os.path.split(path)[0] == '/' \
+                else os.path.split(path)[0]
+
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    dir_loop = [path]
+                    for d in dir_loop:
+                        j = self._get_file_list('name', None, d)
+                        if j['list']:
+                            if args.head or args.tail or args.include or args.exclude:
+                                j['list'] = self._sift(j['list'])
+
+                            if args.type_:
+                                j['list'] = [x for x in j['list'] if x['isdir'] \
+                                    or x['server_filename'][-len(args.type_):] \
+                                    == unicode(args.type_)]
+
+                            total_file = len([i for i in j['list'] if not i['isdir']])
+
+                            if args.from_ - 1:
+                                j['list'] = j['list'][args.from_-1:] \
+                                    if args.from_ else j['list']
+
+                            nn = args.from_
+                            for i in j['list']:
+                                if i['isdir']:
+                                    dir_loop.append(i['path'].encode('utf8'))
+                                else:
+                                    t = i['path'].encode('utf8')
+                                t = t.replace(base_dir, '')
+                                t = t[1:] if t[0] == '/' else t
+                                t =  os.path.join(os.getcwd(), t)
+
+                                if not i.has_key('dlink'):
+                                    i['dlink'] = self._get_dlink2(i)
+
+                                infos = {
+                                    'file': t,
+                                    'path': i['path'].encode('utf8'),
+                                    'dir_': os.path.split(t)[0],
+                                    'dlink': i['dlink'].encode('utf8'),
+                                    'name': i['server_filename'].encode('utf8'),
+                                    'nn': nn,
+                                    'total_file': total_file
+                                }
+                                nn += 1
+                                self._download_do(infos)
+
+                elif not meta['info'][0]['isdir']:
+                    t =  os.path.join(os.getcwd(), meta['info'][0]['server_filename'])
+                    infos = {
+                        'file': t,
+                        'path': meta['info'][0]['path'].encode('utf8'),
+                        'dir_': os.path.split(t)[0],
+                        #'dlink': self.get_dlink(i),
+                        'dlink': meta['info'][0]['dlink'].encode('utf8'),
+                        'name': meta['info'][0]['server_filename'].encode('utf8')
+                    }
+                    self._download_do(infos)
+
+            else:
+                print s % (1, 91, '  !! path is not existed.\n'), \
+                    ' --------------\n ', path
+
     @staticmethod
-    def download(infos):
+    def _download_do(infos):
         ## make dirs
         if not os.path.exists(infos['dir_']):
             os.makedirs(infos['dir_'])
@@ -465,7 +472,7 @@ class panbaiducom_HOME(object):
         col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ 正在下载: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
+        print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         if args.aria2c:
             if args.limit:
@@ -505,7 +512,7 @@ class panbaiducom_HOME(object):
             os.rename('%s.tmp' % infos['file'], infos['file'])
 
     @staticmethod
-    def play(infos):
+    def _play_do(infos):
         num = random.randint(0, 7) % 7
         col = s % (2, num + 90, infos['path']) if args.view \
             else s % (2, num + 90, infos['name'])
@@ -1615,16 +1622,9 @@ class panbaiducom_HOME(object):
             else:
                 print s % (1, 91, '  !! Error: file exists.'), path
 
-    def do(self):
-        self.get_infos()
-
 class panbaiducom(object):
-    def __init__(self, url):
-        self.url = url
-        self.infos = {}
-
-    def get_params(self):
-        r = ss.get(self.url)
+    def get_params(self, path):
+        r = ss.get(path)
         pattern = re.compile('server_filename="(.+?)";disk.util.ViewShareUtils.bdstoken="(\w+)";'
                              'disk.util.ViewShareUtils.fsId="(\d+)".+?FileUtils.share_uk="(\d+)";'
                              'FileUtils.share_id="(\d+)";.+?FileUtils.share_timestamp="(\d+)";'
@@ -1662,20 +1662,18 @@ class panbaiducom(object):
             if not j['errno']:
                 self.infos['dlink'] = j['dlink'].encode('utf8')
                 if args.play:
-                    panbaiducom_HOME.play(self.infos)
+                    panbaiducom_HOME._play_do(self.infos)
                 else:
-                    panbaiducom_HOME.download(self.infos)
+                    panbaiducom_HOME._download_do(self.infos)
                 break
             else:
                 vcode = j['vcode']
                 input_code = panbaiducom_HOME.save_img(j['img'], 'jpg')
                 self.params.update({'input': input_code, 'vcode': vcode})
 
-    def get_infos2(self):
-        url = self.url
-
+    def get_infos2(self, path):
         while True:
-            r = ss.get(url)
+            r = ss.get(path)
             j = r.content.replace('\\', '')
             name = re.search(r'server_filename":"(.+?)"', j).group(1)
             dlink = re.search(r'dlink":"(.+?)"', j)
@@ -1687,20 +1685,24 @@ class panbaiducom(object):
                     'dlink': dlink.group(1)
                 }
                 if args.play:
-                    panbaiducom_HOME.play(self.infos)
+                    panbaiducom_HOME._play_do(self.infos)
                 else:
-                    panbaiducom_HOME.download(self.infos)
+                    panbaiducom_HOME._download_do(self.infos)
                 break
             else:
                 print s % (1, '  !! Error at get_infos2, can\'t get dlink')
 
-    def do(self):
-        panbaiducom_HOME._secret_or_not(self.url)
-        self.get_params()
-        self.get_infos()
+    def do(self, paths):
+        for path in paths:
+            self.infos = {}
+            panbaiducom_HOME._secret_or_not(path)
+            self.get_params(path)
+            self.get_infos()
 
-    def do2(self):
-        self.get_infos2()
+    def do2(self,paths):
+        for path in paths:
+            self.infos = {}
+            self.get_infos2(path)
 
 def sighandler(signum, frame):
     print s % (1, 91, "  !! Signal %s received, Abort" % signum)
@@ -1929,24 +1931,39 @@ def main(argv):
             print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
+
         if comd == 'p' or comd == 'play': args.play = True
-        urls = xxx
-        for url in urls:
-            if url[0] == '/':
-                url = 'path=%s' % url
-            if '/disk/home' in url or 'path' in url:
-                x = panbaiducom_HOME(url)
-                x.init()
-                x.do()
-            elif 'baidu.com/pcloud/album/file' in url:
-                x = panbaiducom(url)
-                x.do2()
-            elif 'yun.baidu.com' in url or 'pan.baidu.com' in url:
-                url = url.replace('wap/link', 'share/link')
-                x = panbaiducom(url)
-                x.do()
+
+        paths  = xxx
+        paths1 = []
+        paths2 = []
+        paths3 = []
+
+        for path in paths:
+            if path[0] == '/':
+                paths1.append('path=%s' % path)
+            elif '/disk/home' in path or 'path=' in path:
+                paths1.append(path)
+            elif 'baidu.com/pcloud/album/file' in path:
+                paths2.append(path)
+            elif 'yun.baidu.com' in path or 'pan.baidu.com' in path:
+                path = path.replace('wap/link', 'share/link')
+                paths3.append(path)
             else:
-                print s % (2, 91, '  !!! url 地址不正确.'), url
+                print s % (2, 91, '  !!! url 地址不正确.'), path
+
+        if paths1:
+            x = panbaiducom_HOME()
+            x.init()
+            x.download(paths1)
+
+        if paths2:
+            x = panbaiducom()
+            x.do2(paths2)
+
+        if paths3:
+            x = panbaiducom()
+            x.do(paths3)
 
     elif comd == 's' or comd == 'save':
         if len(xxx) != 2:
