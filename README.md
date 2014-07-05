@@ -427,9 +427,14 @@
 
     命令:
 
-        mt 或 m magnet_link1 magnet_link2 .. [-d /path/to/save]   # magnet 2 torrent
-        tm 或 t path1 path2 ..                                    # torrent 2 magnet, 输出magnet
-        ct 或 c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  # 过滤敏.感.词
+        # magnet 2 torrent
+        mt 或 m magnet_link1 magnet_link2 .. [-d /path/to/save]
+
+        # torrent 2 magnet, 输出magnet
+        tm 或 t path1 path2 ..
+
+        # 过滤敏.感.词
+        ct 或 c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
 
@@ -481,8 +486,6 @@
     !!! 脚本是用于下载自己的115网盘文件，不支持他人分享文件。
 
     !!! 非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。
-
-    在源码中填入115账户account和password后，可以*递归下载*自己的网盘文件。
 
     下载工具默认为wget, 可用参数-a选用aria2。
 
