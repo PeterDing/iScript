@@ -549,7 +549,7 @@ class xiami(object):
         print '  >>', s % (2, 94, i['file_name'])
         print '  >>', s % (2, 95, i['album_name'])
         print '  >>', s % (2, 92, 'http://www.xiami.com/song/%s' % i['song_id'])
-        if i['durl_is_H']:
+        if i['durl_is_H'] == 'h':
             print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')
         else:
             print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
@@ -557,15 +557,16 @@ class xiami(object):
 
     def get_mp3_quality(self, durl):
         if 'm3.file.xiami.com' in durl or 'm6.file.xiami.com' in durl:
-            return True
+            return 'h'
         else:
-            return False
+            return 'l'
 
     def play(self, nnn=None, nn=None):
         for i in self.song_infos:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
-            i['durl_is_H'] = 'm3.file' in durl
+            mp3_quality = self.get_mp3_quality(durl)
+            i['durl_is_H'] = mp3_quality
             self.display_infos(i)
             os.system('mpv --really-quiet %s' % durl)
             timeout = 1
@@ -581,6 +582,7 @@ class xiami(object):
         if dir_ != cwd:
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
+
         ii = 1
         for i in self.song_infos:
             num = random.randint(0, 100) % 7
@@ -595,18 +597,23 @@ class xiami(object):
                 else:
                     ii += 1
                     continue
-            file_name_for_wget = file_name.replace('`', '\`')
+
             if not args.undownload:
-                durl = self.get_durl(i['song_id'])
-                mp3_quality = self.get_mp3_quality(durl)
                 if n == None:
-                    print(u'\n  ++ 正在下载: #%s/%s# %s' \
+                    print(u'\n  ++ download: #%s/%s# %s' \
                         % (ii, amount_songs, col))
                 else:
-                    print(u'\n  ++ 正在下载: #%s/%s# %s' \
+                    print(u'\n  ++ download: #%s/%s# %s' \
                         % (n, amount_songs, col))
-                if mp3_quality == 'L':
-                    print s % (1, 91, ' !!! Warning: '), 'gaining LOW quality mp3 link.'
+
+                durl = self.get_durl(i['song_id'])
+                mp3_quality = self.get_mp3_quality(durl)
+                if mp3_quality == 'h':
+                    print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')
+                else:
+                    print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
+
+                file_name_for_wget = file_name.replace('`', '\`')
                 wget = self.template_wgets % (file_name_for_wget, durl)
                 wget = wget.encode('utf8')
                 status = os.system(wget)
