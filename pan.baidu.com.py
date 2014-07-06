@@ -422,8 +422,9 @@ class panbaiducom_HOME(object):
                             for i in j['list']:
                                 if i['isdir']:
                                     dir_loop.append(i['path'].encode('utf8'))
-                                else:
-                                    t = i['path'].encode('utf8')
+                                    continue
+
+                                t = i['path'].encode('utf8')
                                 t = t.replace(base_dir, '')
                                 t = t[1:] if t[0] == '/' else t
                                 t =  os.path.join(os.getcwd(), t)
