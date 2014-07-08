@@ -1754,10 +1754,10 @@ def main(argv):
  a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
 
  # 使用正则表达式进行文件操作
- rnr rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
- rmr rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
- mvr mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
- cpr cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
+ rnr 或 rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
+ rmr 或 rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
+ mvr 或 mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
+ cpr 或 cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
  # 递归加 -R
  # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
  # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
