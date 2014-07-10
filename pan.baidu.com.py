@@ -445,7 +445,7 @@ class panbaiducom_HOME(object):
                                 self._download_do(infos)
 
                 elif not meta['info'][0]['isdir']:
-                    t =  os.path.join(os.getcwd(), meta['info'][0]['server_filename'])
+                    t =  os.path.join(os.getcwd(), meta['info'][0]['server_filename'].encode('utf8'))
                     infos = {
                         'file': t,
                         'path': meta['info'][0]['path'].encode('utf8'),
