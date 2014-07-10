@@ -628,7 +628,7 @@ class xiami(object):
 
             self.modified_id3(file_name, i)
             ii += 1
-            time.sleep(0)
+            time.sleep(5)
 
     def _save_do(self, id_, type, tags):
         data = {
