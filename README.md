@@ -4,7 +4,7 @@
 
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
-> windows用户可在babun (https://github.com/babun/babun) 下运行。
+> ***windows用户可在babun (https://github.com/babun/babun) 下运行。***
 
 - *[L]* [xiami.py](#xiami.py) - 下载或播放高品质虾米音乐(xiami.com)
 
@@ -55,7 +55,7 @@
 
     初次使用需要登录 xm login  # **暂时不支持淘宝账户**
 
-    !!! vip账户支持高品质音乐的下载和播放。
+    **vip账户**支持高品质音乐的下载和播放。
 
     下载的MP3默认添加id3 tags，保存在当前目录下。
 
@@ -483,9 +483,9 @@
 
     初次使用需要登录 pan115 login
 
-    !!! 脚本是用于下载自己的115网盘文件，不支持他人分享文件。
+    **脚本是用于下载自己的115网盘文件，不支持他人分享文件。**
 
-    !!! 非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。
+    **非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。**
 
     下载工具默认为wget, 可用参数-a选用aria2。
 
@@ -558,7 +558,7 @@
 
     初次使用需要登录 yp login
 
-    !!!!!!  万恶的360不支持断点续传   !!!!!!
+    **!!!!!!  万恶的360不支持断点续传   !!!!!!**
 
     由于上面的原因，不能播放媒体文件。
 
@@ -670,7 +670,7 @@
 
 2. 使用说明
 
-    !!! 默认下载和播放高品质音乐，如果服务器没有高品质音乐则转到低品质音乐。
+    **默认下载和播放高品质音乐，如果服务器没有高品质音乐则转到低品质音乐。**
 
     默认执行下载，如要播放，加参数-p。
 
@@ -731,7 +731,7 @@
 
     flvxz.com 视频解析
 
-    !!! 不提供视频合并操作
+    **不提供视频合并操作**
 
     支持的网站:
 
@@ -764,7 +764,7 @@
 
 > https://github.com/rg3/youtube-dl
 
-> https://github.com/soimort/you-get    
+> https://github.com/soimort/you-get
 
 ---
 
@@ -779,8 +779,9 @@
 
 2. 使用说明
 
-    使用前需用在 http://www.tumblr.com/oauth/apps 加入一个app，证实后得到api_key，再在源码中填入，完成后则可使用。或者用 http://www.tumblr.com/docs/en/api/v2 提供的api_key (fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4
-)
+    * 使用前需用在 http://www.tumblr.com/oauth/apps 加入一个app，证实后得到api_key，再在源码中填入，完成后则可使用。
+
+    * 或者用 http://www.tumblr.com/docs/en/api/v2 提供的api_key ( fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4 )
 
     默认开5个进程，如需改变用参数-p [num]。
 
@@ -838,7 +839,7 @@
 <a name="91porn.py"></a>
 ### 91porn.py - 下载或播放91porn
 
-> 警告: 18岁以下者，请自觉远离。
+**警告: 18岁以下者，请自觉远离。**
 
 1. 依赖
 
@@ -881,7 +882,7 @@
 <a name="ThunderLixianExporter.user.js"></a>
 ### ThunderLixianExporter.user.js - A fork of https://github.com/binux/ThunderLixianExporter
 
-一个github.com/binux的迅雷离线导出脚本的fork。
+**一个github.com/binux的迅雷离线导出脚本的fork。**
 
 增加了mpv和mplayer的导出。
 
