@@ -1971,12 +1971,13 @@ def main(argv):
             print s % (1, 91, '  !! 参数错误\n save url remotepath\n' \
                 ' s url remotepath')
             sys.exit(1)
-        x = panbaiducom_HOME(xxx[0])
+        x = panbaiducom_HOME()
         x.init()
+        path = x._get_path(xxx[0])
         remotepath = xxx[1].decode('utf8', 'ignore')
         infos = []
-        if x.path != '/':
-            infos.append({'isdir': 1, 'path': x.path.decode('utf8', 'ignore'), \
+        if path != '/':
+            infos.append({'isdir': 1, 'path': path.decode('utf8', 'ignore'), \
             'remotepath': remotepath if remotepath[-1] != '/' else remotepath[:-1]})
         else:
             infos = None
