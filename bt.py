@@ -130,8 +130,8 @@ class bt(object):
                     return r.content
                 else:
                     print s % (1, 91, u'  × not get.')
-            except Exception as e:
-                print s % (1, 91, '  !! Error at connection:'), e
+            except:
+                print s % (1, 91, '  !! Error at connection')
 
         ## with http://www.btspread.com
         print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
@@ -156,8 +156,8 @@ class bt(object):
                         return r.content
                     else:
                         print s % (1, 91, u'  × not get.')
-        except Exception as e:
-            print s % (1, 91, '  !! Error at connection:'), e
+        except:
+            print s % (1, 91, '  !! Error at connection')
 
         return False
 
