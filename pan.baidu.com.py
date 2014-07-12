@@ -1199,8 +1199,8 @@ class panbaiducom_HOME(object):
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
             if args.head or args.tail or args.include or args.exclude:
-                infos = self._sift(infos)
-            self._ls_display(infos, dir_)
+                tinfos = self._sift(infos)
+            self._ls_display(tinfos, dir_)
             if args.recursive:
                 subdirs = [i['path'] for i in infos if i['isdir']]
                 directorys[y:y] = subdirs
