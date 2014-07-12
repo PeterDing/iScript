@@ -1728,8 +1728,11 @@ class panbaiducom_HOME(object):
             self._task_display(infos)
         else:
             jobids = self._list_task()
-            infos = self._query_task(jobids)
-            self._task_display(infos)
+            if not jobids:
+                print s % (1, 97, '  nothing')
+            else:
+                infos = self._query_task(jobids)
+                self._task_display(infos)
 
     def jobdump(self):
         p = {
