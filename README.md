@@ -242,6 +242,11 @@
         sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
 
+        # 离线任务操作
+        j  或 job                               # 列出离线下载任务
+        jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
+        jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
+
     参数:
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10

@@ -1611,7 +1611,168 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! url is wrong:'), url
 
     ############################################################
+    # for job, jobclear, jobdump, jobclearall
+
+    jobstatus = {
+        "0": "下载成功",
+        "1": "下载进行中",
+        "2": "系统错误",
+        "3": "资源不存在",
+        "4": "下载超时",
+        "5": "资源存在但下载失败",
+        "6": "存储空间不足",
+        "7": "目标地址数据已存在",
+        "8": "任务取消.",
+    }
+
+    def _task_display(self, infos):
+        template = '%s %s\n' \
+                   '%s %s\n' \
+                   '%s %s\n' \
+                   '%s %s\n' \
+                   '%s %s\n' \
+                   '------------------------------\n' \
+                   % (s % (2, 97, '     id:'), s % (1, 97, "%s"), \
+                      s % (1, 97, ' status:'), s % (2, 91, "%s"), \
+                      s % (1, 97, '   done:'), s % (3, 93, "%s"), \
+                      s % (2, 97, '   path:'), "%s", \
+                      s % (2, 97, ' source:'), "%s")
+
+        for i in infos:
+            if i['result'] == 0:
+                print template % (
+                        i['id'].encode('utf8', 'ignore'),
+                        self.jobstatus[i['status'].encode('utf8', 'ignore')],
+                        i['done'],
+                        i['path'].encode('utf8', 'ignore'),
+                        i['source'].encode('utf8', 'ignore'),
+                    )
+            else:
+                print '%s %s\n' \
+                      '%s %s\n' \
+                      '------------------------------\n' \
+                      % (s % (2, 97, '     id:'), s % (1, 97, i['id'].encode('utf8', 'ignore')), \
+                         s % (2, 91, '  Error:'), s % (2, 97, '要查询的task_id不存在'))
+
+    def _query_task(self, jobids):
+        p = {
+            "bdstoken": self._get_bdstoken(),
+            "web": 1,
+            "app_id": 250528,
+            "clienttype": 0,
+            "channel": "chunlei",
+            "method": "query_task",
+            "task_ids": ",".join(jobids),
+            "op_type": 1,
+            "t": str(int(time.time()*1000)),
+        }
+
+        url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j.get('errno'):
+            print s % (1, 91, '  !! Error at _query_task:'), j
+            sys.exit(1)
+
+        infos = []
+        for i in j['task_info']:
+            info = {}
+            info['id'] = i
+            if j['task_info'][i]['result'] == 0:
+                info['source'] = j['task_info'][i]['source_url']
+                info['path'] = os.path.join(j['task_info'][i]['save_path'], j['task_info'][i]['task_name'])
+                info['status'] = j['task_info'][i]['status']
+                info['result'] = j['task_info'][i]['result']
+
+                file_size = int(j['task_info'][i]['file_size'])
+                finished_size = int(j['task_info'][i]['finished_size'])
+                done = finished_size - file_size
+                done = '100.0%' if done == 0 else '%.1f' % (finished_size / (file_size + 0.0)) + '%'
+                info['done'] = done
+
+                infos.append(info)
+            else:
+                info['result'] = j['task_info'][i]['result']
+                infos.append(info)
+
+        return infos
+
+    def _list_task(self):
+        p = {
+            "bdstoken": self._get_bdstoken(),
+            "web": 1,
+            "app_id": 250528,
+            "clienttype": 0,
+            "channel": "chunlei",
+            "method": "list_task",
+            "need_task_info": 0,
+            "status": 255,
+            "start": 0,
+            "limit": 1000,
+            "t": int(time.time()*1000),
+        }
+
+        url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j.get('errno'):
+            print s % (1, 91, '  !! Error at _query_task:'), j
+            sys.exit(1)
+
+        jobids = [i['task_id'].encode('utf8') for i in j['task_info']]
+        return jobids
+
+    def job(self, jobids):
+        if jobids:
+            infos = self._query_task(jobids)
+            self._task_display(infos)
+        else:
+            jobids = self._list_task()
+            infos = self._query_task(jobids)
+            self._task_display(infos)
+
+    def jobdump(self):
+        p = {
+            "bdstoken": self._get_bdstoken(),
+            "web": 1,
+            "app_id": 250528,
+            "clienttype": 0,
+            "channel": "chunlei",
+            "method": "clear_task",
+            "t": int(time.time()*1000),
+        }
+
+        url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j.get('total'):
+            print s % (1, 92, '  ++ success.'), 'total:', j['total']
+        else:
+            print s % (1, 92, '  ++ no task.')
+
+    def jobclear(self, jobid):
+        p = {
+            "bdstoken": self._get_bdstoken(),
+            "web": 1,
+            "app_id": 250528,
+            "clienttype": 0,
+            "channel": "chunlei",
+            "method": "cancel_task",
+            "task_id": jobid,
+            "t": int(time.time()*1000),
+        }
+
+        url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
+        r = ss.get(url, params=p)
+        j = r.json()
+        if j.get('error_code'):
+            print s % (1, 91, '  !! Error:'), j['error_msg']
+
+    #def jobclearall(self):
+
+    ############################################################
     # for mkdir
+
     def mkdir(self, paths):
         for path in paths:
             print s % (1, 97, '  ++ mkdir:'), path
@@ -1805,6 +1966,12 @@ def main(argv):
  # remotepath 默认为 /
  a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
 
+ # 离线任务操作
+ j 或 job                                # 列出离线下载任务
+ jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
+ jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
+
+######################################################
 
  参数:
 
@@ -2183,6 +2350,34 @@ def main(argv):
         x = panbaiducom_HOME()
         x.init()
         x.mkdir(paths)
+
+    elif comd == 'j' or comd == 'job' \
+        or comd == 'jd' or comd == 'jobdump' \
+        or comd == 'jc' or comd == 'jobclear' \
+        or comd == 'jca' or comd == 'jobclearall':
+        if xxx:
+            e =  True if 'f' in ['f' for i in xxx if not i.isdigit()] else False
+            if e:
+                print s % (1, 91, '  !! some job_ids are not number.')
+                sys.exit(1)
+
+        jobids = xxx if xxx else None
+        x = panbaiducom_HOME()
+        x.init()
+        if comd == 'j' or comd == 'job':
+            x.job(jobids)
+
+        elif comd == 'jd' or comd == 'jobdump':
+            x.jobdump()
+
+        elif comd == 'jc' or comd == 'jobclear':
+            if jobids:
+                for jobid in jobids:
+                    x.jobclear(jobid)
+            else:
+                print s % (1, 91, '  !! missing job_ids.')
+
+        #elif comd == 'jca' or comd == 'jobclearall':
 
     else:
         print s % (2, 91, '  !! 命令错误\n')
