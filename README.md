@@ -385,6 +385,13 @@
         bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
 
+    离线任务操作:
+
+        bp j
+        bp jd
+        bp jc taskid1 taskid2 ..
+        bp jc 1208382 58239221 ..
+
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
     见[命令](#cmd)
