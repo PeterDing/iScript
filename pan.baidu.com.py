@@ -1687,7 +1687,7 @@ class panbaiducom_HOME(object):
                 file_size = int(j['task_info'][i]['file_size'])
                 finished_size = int(j['task_info'][i]['finished_size'])
                 done = finished_size - file_size
-                done = '100.0%' if done == 0 else '%.1f' % (finished_size / (file_size + 0.0)) + '%'
+                done = '100.0%' if done == 0 else '%.2f' % ((finished_size / (file_size + 0.0)) * 100) + '%'
                 info['done'] = done
 
                 infos.append(info)
