@@ -404,6 +404,9 @@ class panbaiducom_HOME(object):
                     for d in dir_loop:
                         j = self._get_file_list('name', None, d)
                         if j['list']:
+                            for i in j['list']:
+                                dir_loop.append(i['path'].encode('utf8')) if i['isdir'] else None
+
                             if args.head or args.tail or args.include or args.exclude:
                                 j['list'] = self._sift(j['list'])
 
@@ -420,9 +423,7 @@ class panbaiducom_HOME(object):
 
                             nn = args.from_
                             for i in j['list']:
-                                if i['isdir']:
-                                    dir_loop.append(i['path'].encode('utf8'))
-                                    continue
+                                if i['isdir']: continue
 
                                 t = i['path'].encode('utf8')
                                 t = t.replace(base_dir, '')
