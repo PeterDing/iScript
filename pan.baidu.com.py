@@ -1675,7 +1675,7 @@ class panbaiducom_HOME(object):
             sys.exit(1)
 
         infos = []
-        for i in j['task_info']:
+        for i in jobids:
             info = {}
             info['id'] = i
             if j['task_info'][i]['result'] == 0:
