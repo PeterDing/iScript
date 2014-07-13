@@ -1462,9 +1462,30 @@ class panbaiducom_HOME(object):
     ##############################################################
     # for add_task
 
-    def _get_magnet_info(self, url):
+    def _get_torrent_info(self, path):
         p = {
             "bdstoken": self._get_bdstoken(),
+            "channel": "chunlei",
+            "clienttype": 0,
+            "web": 1,
+            "app_id": 250528,
+            "method": "query_sinfo",
+            "source_path": path,
+            "type": 2,
+            "t": int(time.time()*1000),
+        }
+
+        url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
+        r = ss.post(url, params=p)
+        j = r.json()
+        if j.get('error_code'):
+            print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
+            return None
+        else:
+            return j['torrent_info']['file_info'], j['torrent_info']['sha1']
+
+    def _get_magnet_info(self, url):
+        p = {
             "bdstoken": self._get_bdstoken(),
             "channel": "chunlei",
             "clienttype": 0,
@@ -1485,9 +1506,9 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
             return None
         else:
-            return j['magnet_info']
+            return j['magnet_info'], ''
 
-    def _get_selected_idx(self, magnet_info):
+    def _get_selected_idx(self, infos):
         mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov"}
         imagetype = {".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico"}
         doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
@@ -1500,30 +1521,36 @@ class panbaiducom_HOME(object):
         if 'a' in types:
             return []
         if 'm' in types:
-            for i in xrange(len(magnet_info)):
-                idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in mediatype else None
+            for i in xrange(len(infos)):
+                idx.append(i+1) if os.path.splitext(infos[i]['file_name'])[-1].lower() in mediatype else None
         if 'i' in types:
-            for i in xrange(len(magnet_info)):
-                idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in imagetype else None
+            for i in xrange(len(infos)):
+                idx.append(i+1) if os.path.splitext(infos[i]['file_name'])[-1].lower() in imagetype else None
         if 'd' in types:
-            for i in xrange(len(magnet_info)):
-                idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in doctype else None
+            for i in xrange(len(infos)):
+                idx.append(i+1) if os.path.splitext(infos[i]['file_name'])[-1].lower() in doctype else None
         if 'p' in types:
-            for i in xrange(len(magnet_info)):
-                idx.append(i+1) if os.path.splitext(magnet_info[i]['file_name'])[-1].lower() in archivetype else None
+            for i in xrange(len(infos)):
+                idx.append(i+1) if os.path.splitext(infos[i]['file_name'])[-1].lower() in archivetype else None
         idx = list(set(idx))
         idx.sort()
         idx = [str(i) for i in idx]
         return idx
 
-    def _add_magnet(self, url, remotepath):
-        magnet_info = self._get_magnet_info(url)
-        if not magnet_info:
-            return
-        selected_idx = self._get_selected_idx(magnet_info)
+    def _add_bt(self, url, remotepath):
+        if url.startswith('magnet:'):
+            bt_info, ssh1 = self._get_magnet_info(url)
+            if not bt_info:
+                return
+
+        if url.startswith('/'):
+            bt_info, ssh1 = self._get_torrent_info(url)
+            if not bt_info:
+                return
+
+        selected_idx = self._get_selected_idx(bt_info)
 
         p = {
-            "bdstoken": self._get_bdstoken(),
             "bdstoken": self._get_bdstoken(),
             "channel": "chunlei",
             "clienttype": 0,
@@ -1533,14 +1560,19 @@ class panbaiducom_HOME(object):
         data = {
             "method": "add_task",
             "app_id": 250528,
-            "file_sha1": "",
+            "file_sha1": ssh1,
             "save_path": remotepath,
             "selected_idx": ",".join(selected_idx),
             "task_from": 1,
             "t": str(int(time.time())*1000),
-            "source_url": url,
-            "type": 4,
         }
+        if url.startswith('magnet:'):
+            data['source_url'] = url
+            data['type'] = 4
+        elif url.startswith('/'):
+            data['source_path'] = url
+            data['type'] = 2
+
         apiurl = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
         while True:
             r = ss.post(apiurl, params=p, data=data)
@@ -1552,13 +1584,13 @@ class panbaiducom_HOME(object):
                 input_code = panbaiducom_HOME.save_img(j['img'], 'jpg')
                 data.update({'input': input_code, 'vcode': vcode})
             elif j.get('error_code') != -19 and j.get('error_code'):
-                print s % (1, 91, '  !! Error at _add_magnet:'), j['error_msg']
+                print s % (1, 91, '  !! Error at _add_bt:'), j['error_msg']
                 return
             else:
                 print s % (1 ,97, '  ++ rapid_download:'), s % (1, 91, j['rapid_download'])
                 if args.view:
                     print ''
-                    files = [os.path.join(remotepath, magnet_info[int(i) - 1]['file_name']) \
+                    files = [os.path.join(remotepath, bt_info[int(i) - 1]['file_name']) \
                         for i in selected_idx]
                     for i in files:
                         print i
@@ -1566,7 +1598,6 @@ class panbaiducom_HOME(object):
 
     def _add_task(self, url, remotepath):
         p = {
-            "bdstoken": self._get_bdstoken(),
             "bdstoken": self._get_bdstoken(),
             "channel": "chunlei",
             "clienttype": 0,
@@ -1599,9 +1630,14 @@ class panbaiducom_HOME(object):
 
     def add_tasks(self, urls, remotepath):
         for url in urls:
-            if url.startswith('magnet:'):
-                args.type_ = 'm' if not args.type_ else args.type_  # default args.type_
-                self._add_magnet(url, remotepath)
+            if url.startswith('magnet:') or url.startswith('/'):
+                if url.startswith('/'):
+                    meta = self._meta([url])
+                    if not meta:
+                        print s % (1, 91, '  !! file is not existed.\n'), \
+                            ' --------------\n ', url
+                        continue
+                self._add_bt(url, remotepath)
             elif url.startswith('http'):
                 self._add_task(url, remotepath)
             elif url.startswith('ftp:'):
@@ -1770,7 +1806,7 @@ class panbaiducom_HOME(object):
         r = ss.get(url, params=p)
         j = r.json()
         if j.get('error_code'):
-            print s % (1, 91, '  !! Error:'), j['error_msg']
+            print s % (1, 91, '  !! Error:'), j['error_msg'], 'id: %s' % jobid
 
     #def jobclearall(self):
 
@@ -1916,7 +1952,6 @@ def main(argv):
  mv 或 move path1 path2 .. /path/to/directory         移动
  cp 或 copy path /path/to/directory_or_file           复制
  cp 或 copy path1 path2 .. /path/to/directory         复制
- a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
 
  # 使用正则表达式进行文件操作
  rnr 或 rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
@@ -1960,7 +1995,12 @@ def main(argv):
  sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
  sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
 
- # magnet离线下载 -- 文件选择
+ # 离线下载
+ a 或 add http https ftp ed2k .. remotepath
+ a 或 add magnet .. remotepath [-t {m,i,d,p}]
+ a 或 add remote_torrent .. remotepath [-t {m,i,d,p}]   # 使用网盘中torrent
+
+ # magnet, 网盘中torrent的离线下载 -- 文件选择
  # -t m    # 媒体文件, 如: mkv, avi ..etc
  # -t i    # 图像文件, 如: jpg, png ..etc
  # -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
@@ -1969,6 +2009,7 @@ def main(argv):
  # m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
  # remotepath 默认为 /
  a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
+ a remote_torrent1  remote_torrent2 .. [remotepath] -t m,i,d,p,a
 
  # 离线任务操作
  j 或 job                                # 列出离线下载任务
@@ -2331,12 +2372,16 @@ def main(argv):
                 ' a url1 url2 .. [directory]\n' \
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
+
+        args.type_ = 'm' if not args.type_ else args.type_  # default args.type_
+
         if xxx[-1].startswith('/'):
             remotepath = xxx[-1] if xxx[-1][-1] == '/' else xxx[-1] + '/'
             urls = xxx[:-1]
         else:
             remotepath = '/'
             urls = xxx
+
         x = panbaiducom_HOME()
         x.init()
         x.add_tasks(urls, remotepath)

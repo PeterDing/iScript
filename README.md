@@ -187,7 +187,6 @@
 
         d  或 download url1 url2 .. path1 path2 ..           下载
         p  或 play url1 url2 .. path1 path2 ..               播放
-        a  或 add url1 url2 .. [remotepath] [-t {m,d,p,a}]   离线下载
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
 
@@ -241,6 +240,11 @@
         # 关于-H, -T, -I, -E
         sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+
+        # 离线下载
+        a 或 add http https ftp ed2k .. remotepath
+        a 或 add magnet .. remotepath [-t {m,i,d,p}]
+        a 或 add remote_torrent .. remotepath [-t {m,i,d,p}]   # 使用网盘中torrent
 
         # 离线任务操作
         j  或 job                               # 列出离线下载任务
@@ -327,6 +331,11 @@
         bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v
         bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
 
+        # 离线下载
+        bp a 或 add http https ftp ed2k .. remotepath
+        bp a 或 add magnet .. [remotepath] [-t {m,i,d,p}]
+        bp a 或 add remote_torrent .. [remotepath] [-t {m,i,d,p}]   # 使用网盘中torrent
+
     magnet离线下载 -- 文件选择:
 
         -t m    # 视频文件 (默认), 如: mkv, avi ..etc
@@ -338,6 +347,14 @@
         remotepath 默认为 /
 
         bp a magnet1 magnet2 .. [remotepath] -t m,d
+        bp a remote_torrent1 remote_torrent2 .. [remotepath] -t m,i
+
+    离线任务操作:
+
+        bp j
+        bp jd
+        bp jc taskid1 taskid2 ..
+        bp jc 1208382 58239221 ..
 
     上传:
 
@@ -384,13 +401,6 @@
         # 关于-H, -T, -I, -E
         bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
         bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
-
-    离线任务操作:
-
-        bp j
-        bp jd
-        bp jc taskid1 taskid2 ..
-        bp jc 1208382 58239221 ..
 
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
