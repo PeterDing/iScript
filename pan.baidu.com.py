@@ -1199,6 +1199,7 @@ class panbaiducom_HOME(object):
         y = 1
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
+            tinfos = infos
             if args.head or args.tail or args.include or args.exclude:
                 tinfos = self._sift(infos)
             self._ls_display(tinfos, dir_)
@@ -1366,6 +1367,7 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        tinfos = infos
                         if args.type_ == 'f' or args.type_ == 'd':
                             tinfos = self._sift(infos)
                         self._rnre_do(foo, bar, tinfos)
