@@ -1480,7 +1480,7 @@ class panbaiducom_HOME(object):
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
-            return None
+            return None, None
         else:
             return j['torrent_info']['file_info'], j['torrent_info']['sha1']
 
@@ -1504,7 +1504,7 @@ class panbaiducom_HOME(object):
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
-            return None
+            return None, None
         else:
             return j['magnet_info'], ''
 
