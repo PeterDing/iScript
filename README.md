@@ -250,6 +250,7 @@
         j  或 job                               # 列出离线下载任务
         jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
         jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
+        jca 或 jobclearall                      # 清除 *全部任务*
 
     参数:
 
@@ -349,9 +350,11 @@
     离线任务操作:
 
         bp j
+        bp j 3482938 8302833
         bp jd
         bp jc taskid1 taskid2 ..
         bp jc 1208382 58239221 ..
+        bp jca
 
     上传:
 

@@ -54,7 +54,7 @@ wget_es = {
 }
 ############################################################
 
-s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%s;%sm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookies')
 upload_datas_path = os.path.join(os.path.expanduser('~'), '.bp.pickle')
@@ -1589,9 +1589,9 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! Error at _add_bt:'), j['error_msg']
                 return
             else:
-                print s % (1 ,97, '  ++ rapid_download:'), s % (1, 91, j['rapid_download'])
+                print ''
+                self.job([str(j['task_id'])])
                 if args.view:
-                    print ''
                     files = [os.path.join(remotepath, bt_info[int(i) - 1]['file_name']) \
                         for i in selected_idx]
                     for i in files:
@@ -1627,7 +1627,8 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! Error at _add_task:'), j['error_msg']
                 return
             else:
-                print s % (1 ,97, '  ++ rapid_download:'), s % (1, 91, j['rapid_download'])
+                print ''
+                self.job([str(j['task_id'])])
                 return
 
     def add_tasks(self, urls, remotepath):
@@ -1670,21 +1671,25 @@ class panbaiducom_HOME(object):
                    '%s %s\n' \
                    '%s %s\n' \
                    '%s %s\n' \
+                   '%s %s\n' \
                    '------------------------------\n' \
                    % (s % (2, 97, '     id:'), s % (1, 97, "%s"), \
-                      s % (1, 97, ' status:'), s % (2, 91, "%s"), \
+                      s % (1, 97, ' status:'), s % (2, "%s", "%s"), \
                       s % (1, 97, '   done:'), s % (3, 93, "%s"), \
+                      s % (2, 97, '   name:'), "%s", \
                       s % (2, 97, '   path:'), "%s", \
                       s % (2, 97, ' source:'), "%s")
 
         for i in infos:
+            status_color = 92 if i['status'] == '0' else 91
             if i['result'] == 0:
                 print template % (
-                        i['id'].encode('utf8', 'ignore'),
-                        self.jobstatus[i['status'].encode('utf8', 'ignore')],
+                        i['id'].encode('utf8'),
+                        status_color, self.jobstatus[i['status'].encode('utf8')],
                         i['done'],
-                        i['path'].encode('utf8', 'ignore'),
-                        i['source'].encode('utf8', 'ignore'),
+                        i['name'].encode('utf8'),
+                        i['path'].encode('utf8'),
+                        i['source'].encode('utf8'),
                     )
             else:
                 print '%s %s\n' \
@@ -1719,7 +1724,8 @@ class panbaiducom_HOME(object):
             info['id'] = i
             if j['task_info'][i]['result'] == 0:
                 info['source'] = j['task_info'][i]['source_url']
-                info['path'] = os.path.join(j['task_info'][i]['save_path'], j['task_info'][i]['task_name'])
+                info['name'] = j['task_info'][i]['task_name']
+                info['path'] = j['task_info'][i]['save_path']
                 info['status'] = j['task_info'][i]['status']
                 info['result'] = j['task_info'][i]['result']
 
@@ -1785,12 +1791,13 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.get(url, params=p)
-        j = r.json()
-        if j.get('total'):
-            print s % (1, 92, '  ++ success.'), 'total:', j['total']
-        else:
-            print s % (1, 92, '  ++ no task.')
+        ss.get(url, params=p)
+        #r = ss.get(url, params=p)
+        #j = r.json()
+        #if j.get('total'):
+            #print s % (1, 92, '  ++ success.'), 'total:', j['total']
+        #else:
+            #print s % (1, 92, '  ++ no task.')
 
     def jobclear(self, jobid):
         p = {
@@ -1810,7 +1817,12 @@ class panbaiducom_HOME(object):
         if j.get('error_code'):
             print s % (1, 91, '  !! Error:'), j['error_msg'], 'id: %s' % jobid
 
-    #def jobclearall(self):
+    def jobclearall(self):
+        self.jobdump()
+        jobids = self._list_task()
+        if jobids:
+            for jobid in jobids:
+                self.jobclear(jobid)
 
     ############################################################
     # for mkdir
@@ -2014,9 +2026,10 @@ def main(argv):
  a remote_torrent1  remote_torrent2 .. [remotepath] -t m,i,d,p,a
 
  # 离线任务操作
- j 或 job                                # 列出离线下载任务
+ j 或 job [taskid ..]                    # 列出离线下载任务
  jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
  jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
+ jca 或 jobclearall                      # 清除 *全部任务*
 
 ######################################################
 
@@ -2428,7 +2441,8 @@ def main(argv):
             else:
                 print s % (1, 91, '  !! missing job_ids.')
 
-        #elif comd == 'jca' or comd == 'jobclearall':
+        elif comd == 'jca' or comd == 'jobclearall':
+            x.jobclearall()
 
     else:
         print s % (2, 91, '  !! 命令错误\n')
