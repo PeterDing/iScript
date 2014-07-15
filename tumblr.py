@@ -86,10 +86,10 @@ class tumblr(object):
         r = None
         while True:
             try:
-                r = ss.get(self.url, params=params, timeout=10)
+                r = ss.get(self.url, params=params)
                 break
             except Exception as e:
-                print s % (1, 91, '  !! Error, ss.get'), e
+                print s % (1, 91, '  !! Error at get_infos'), e
                 time.sleep(5)
         if r.ok:
             j = r.json()
