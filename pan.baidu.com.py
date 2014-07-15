@@ -1351,14 +1351,15 @@ class panbaiducom_HOME(object):
             new_filename = re.sub(foo.decode('utf8', 'ignore'), bar.decode('utf8', 'ignore'), old_filename)
             if old_filename == new_filename: continue
 
-            old_path = info['path']
+            old_path = info['path'].encode('utf8')
             dir_ = os.path.split(old_path)[0]
-            new_path = os.path.join(dir_, new_filename)
+            new_path = os.path.join(dir_, new_filename).encode('utf8')
 
             print s % (1, 97, '  ++ rename:'), old_path
             self.rename(old_path, new_path)
 
     def rnre(self, foo, bar, dirs):
+        tinfos = []
         for path in dirs:
             meta = self._meta([path])
             if meta:
@@ -1367,10 +1368,10 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        tinfos = infos
+                        t = infos
                         if args.type_ == 'f' or args.type_ == 'd':
-                            tinfos = self._sift(infos)
-                        self._rnre_do(foo, bar, tinfos)
+                            t = self._sift(infos)
+                        tinfos += t
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
@@ -1382,11 +1383,14 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! path is not existed.\n'), \
                     ' --------------\n ', path
 
+        if tinfos:
+            self._rnre_do(foo, bar, tinfos)
+
     def _rmre_do(self, infos):
         if args.recursive and args.type_ == 'f':
-            paths = [i['path'] for i in infos if not i['isdir']]
+            paths = [i['path'].encode('utf8')  for i in infos if not i['isdir']]
         else:
-            paths = [i['path'] for i in infos]
+            paths = [i['path'].encode('utf8')  for i in infos]
 
         if not paths: return
 
@@ -1399,6 +1403,7 @@ class panbaiducom_HOME(object):
             print s % (1, 92, '  ++ aborted.')
 
     def rmre(self, dirs):
+        tinfos = []
         for path in dirs:
             meta = self._meta([path])
             if meta:
@@ -1407,8 +1412,7 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        tinfos = self._sift(infos)
-                        self._rmre_do(tinfos)
+                        tinfos += infos
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
@@ -1420,11 +1424,15 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! path is not existed.\n'), \
                     ' --------------\n ', path
 
+        tinfos = self._sift(tinfos)
+        if tinfos:
+            self._rmre_do(tinfos)
+
     def _cmre_do(self, type, infos, todir):
         if args.recursive and args.type_ == 'f':
-            paths = [i['path'] for i in infos if not i['isdir']]
+            paths = [i['path'].encode('utf8')  for i in infos if not i['isdir']]
         else:
-            paths = [i['path'] for i in infos]
+            paths = [i['path'].encode('utf8')  for i in infos]
 
         if not paths: return
 
@@ -1440,6 +1448,7 @@ class panbaiducom_HOME(object):
             print s % (1, 92, '  ++ aborted.')
 
     def cmre(self, type, dirs, todir):
+        tinfos = []
         for path in dirs:
             meta = self._meta([path])
             if meta:
@@ -1448,8 +1457,7 @@ class panbaiducom_HOME(object):
                     y = 1
                     for dir_ in directorys:
                         infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
-                        tinfos = self._sift(infos)
-                        self._cmre_do(type, tinfos, todir)
+                        tinfos += infos
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
                             directorys[y:y] = subdirs
@@ -1460,6 +1468,10 @@ class panbaiducom_HOME(object):
             else:
                 print s % (1, 91, '  !! path is not existed.\n'), \
                     ' --------------\n ', path
+
+        tinfos = self._sift(tinfos)
+        if tinfos:
+            self._cmre_do(type, tinfos, todir)
 
     ##############################################################
     # for add_task
