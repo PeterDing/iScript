@@ -81,10 +81,11 @@
 
     参数:
 
-        -p, --play            play with mpv
-        -d, --undescription   不加入disk的描述
-        -t TAGS, --tags TAGS  收藏用的tags,用英文逗号分开, eg: -t piano,cello,guitar
-        -n, --undownload      不下载,用于修改已存在的MP3的id3 tags
+        -p, --play                 play with mpv
+        -d, --undescription        不加入disk的描述
+        -f num, --from_ num        从第num个开始
+        -t TAGS, --tags TAGS       收藏用的tags,用英文逗号分开, eg: -t piano,cello,guitar
+        -n, --undownload           不下载,用于修改已存在的MP3的id3 tags
 
 3. 用法
 
