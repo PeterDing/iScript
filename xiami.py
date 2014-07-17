@@ -449,22 +449,24 @@ class xiami(object):
         self.download()
 
     def download_album(self):
-        self.song_infos = self.get_album_infos(self.album_id)
+        self.song_infos = self.get_album_infos(self.album_id)[args.from_ - 1:]
         amount_songs = unicode(len(self.song_infos))
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
-        self.download(amount_songs)
+        self.download(amount_songs, args.from_)
 
     def download_collect(self):
         j = ss.get(url_collect % self.showcollect_id).json()
         d = modificate_text(j['collect']['name'])
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        amount_songs = unicode(len(j['collect']['songs']))
+        j = j['collect']['songs']
+        amount_songs = unicode(len(j))
+        j = j[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
-        n = 1
-        for i in j['collect']['songs']:
+        n = args.from_
+        for i in j:
             song_id = i['song_id']
             song_info = self.get_song_infos(song_id)
             self.song_infos = [song_info]
@@ -544,8 +546,9 @@ class xiami(object):
             self.disc_description_archives = {}
             n += 1
 
-    def display_infos(self, i):
+    def display_infos(self, i, nn, n):
         print '\n  ----------------'
+        print '  >>', n, '/', nn
         print '  >>', s % (2, 94, i['file_name'])
         print '  >>', s % (2, 95, i['album_name'])
         print '  >>', s % (2, 92, 'http://www.xiami.com/song/%s' % i['song_id'])
@@ -561,13 +564,13 @@ class xiami(object):
         else:
             return 'l'
 
-    def play(self, nnn=None, nn=None):
+    def play(self, nn=u'1', n=u'1'):
         for i in self.song_infos:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
             mp3_quality = self.get_mp3_quality(durl)
             i['durl_is_H'] = mp3_quality
-            self.display_infos(i)
+            self.display_infos(i, nn, n)
             os.system('mpv --really-quiet %s' % durl)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -691,6 +694,9 @@ def main(argv):
         help='命令对象.')
     p.add_argument('-p', '--play', action='store_true', \
         help='play with mpv')
+    p.add_argument('-f', '--from_', action='store', \
+        default=1, type=int, \
+        help='从第几个开始下载，eg: -f 42')
     p.add_argument('-d', '--undescription', action='store_true', \
         help='no add disk\'s distribution')
     p.add_argument('-t', '--tags', action='store', \
