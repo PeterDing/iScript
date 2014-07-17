@@ -237,7 +237,7 @@ class yunpan360(object):
         cookie = '; '.join(['%s=%s' % (x, y) for x, y in ss.cookies.items()]).encode('utf8')
         if args.aria2c:
             if args.limit:
-                cmd = 'aria2c -c -s10 ' \
+                cmd = 'aria2c -c -s10 -x10 ' \
                     '--max-download-limit %s ' \
                     '-o "%s.tmp" -d "%s" ' \
                     '--user-agent "%s" ' \
@@ -246,7 +246,7 @@ class yunpan360(object):
                     % (args.limit, infos['name'], infos['dir_'],\
                         headers['User-Agent'], cookie, infos['apihost'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -s10 ' \
+                cmd = 'aria2c -c -s10 -x10 ' \
                     '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
                     '--header "Cookie:%s" ' \
                     '--header "Referer:http://%s/" "%s"' \

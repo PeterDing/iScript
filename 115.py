@@ -216,7 +216,7 @@ class pan115(object):
         if args.aria2c:
             # 115 普通用户只能有4下载通道。
             if args.limit:
-                cmd = 'aria2c -c -s4 ' \
+                cmd = 'aria2c -c -s4 -x4 ' \
                     '--max-download-limit %s ' \
                     '-o "%s.tmp" -d "%s" ' \
                     '--user-agent "%s" ' \
@@ -224,7 +224,7 @@ class pan115(object):
                     % (args.limit, infos['name'], infos['dir_'],\
                         headers['User-Agent'], infos['dlink'])
             else:
-                cmd = 'aria2c -c -s4 ' \
+                cmd = 'aria2c -c -s4 -x4 ' \
                     '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
                     '--header "Referer:http://m.115.com/" "%s"' \
                     % (infos['name'], infos['dir_'], headers['User-Agent'], \
