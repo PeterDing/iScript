@@ -571,6 +571,7 @@ class xiami(object):
             mp3_quality = self.get_mp3_quality(durl)
             i['durl_is_H'] = mp3_quality
             self.display_infos(i, nn, n)
+            n += 1
             os.system('mpv --really-quiet %s' % durl)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
