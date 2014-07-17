@@ -113,7 +113,7 @@ class bt(object):
         ## some torrent stores
         urls = ['http://www.sobt.org/Tool/downbt?info=%s', \
                 #'http://www.win8down.com/url.php?hash=%s', \
-                'http://www.31bt.com/Torrent/%s', \
+                #'http://www.31bt.com/Torrent/%s', \
                 'http://zoink.it/torrent/%s.torrent', \
                 'http://torcache.net/torrent/%s.torrent', \
                 'http://torrentproject.se/torrent/%s.torrent', \
