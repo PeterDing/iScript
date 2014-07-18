@@ -117,11 +117,11 @@ class baidu_music(object):
     def url_parser(self):
         if '/album/' in self.url:
             self.album_id = re.search(r'/album/(\d+)', self.url).group(1)
-            print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
+            #print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
             self.get_album_infos()
         elif '/song/' in self.url:
             self.song_id = re.search(r'/song/(\d+)', self.url).group(1)
-            print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
+            #print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
             self.get_song_infos()
         else:
             print(s % (2, 91, u'   请正确输入baidu网址.'))
@@ -161,7 +161,8 @@ class baidu_music(object):
                 song_info['file_name'] = song_info['track'].zfill(z) + '.' + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.flac'
             else:
                 song_info['file_name'] = song_info['track'].zfill(z) + '.' + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.mp3'
-            song_info['album_name'] = modificate_text(i['albumName']).strip()
+            song_info['album_name'] = modificate_text(i['albumName']).strip() \
+                if i['albumName'] else modificate_text(self.song_infos[0]['album_name'])
             song_info['durl'] = i['songLink']
             self.song_infos.append(song_info)
             ii += 1
@@ -204,7 +205,8 @@ class baidu_music(object):
                 ii += 1
                 continue
             file_name_for_wget = file_name.replace('`', '\`')
-            if 'zhangmenshiting.baidu.com' in i['durl']:
+            if 'zhangmenshiting.baidu.com' in i['durl'] or \
+                'yinyueshiting.baidu.com' in i['durl']:
                 num = random.randint(0,100) % 7
                 col = s % (2, num + 90, i['file_name'])
                 print(u'\n  ++ 正在下载: %s' % col)
@@ -224,6 +226,7 @@ class baidu_music(object):
                 #time.sleep(10)
             else:
                 print s % (1, 91, '  !! Oops, you are unlucky, the song is not from zhangmenshiting.baidu.com')
+                print i['durl']
 
 def main(url):
     x = baidu_music(url)
