@@ -73,6 +73,27 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
+# https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+def sizeof_fmt(num):
+    for x in ['B','KB','MB','GB']:
+        if num < 1024.0:
+            return "%3.1f%s" % (num, x)
+        num /= 1024.0
+    return "%3.1f%s" % (num, 'TB')
+
+def print_process_bar(point, total, slice_size, start_time=None, pre='', suf='', msg=''):
+    length = 20
+    nowpoint = point / (total + 0.0)
+    percent = round(100 * nowpoint, 1)
+    now = time.time()
+    speed = sizeof_fmt(slice_size / (now - start_time)) + '/s'
+    t = int(nowpoint*length)
+
+    msg = ' '.join([pre, '[%s%s]' % ('='*t, ' '*(length - t)), \
+        str(percent) + '%', speed, msg, suf])
+    print msg
+    return now
+
 class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
@@ -763,6 +784,9 @@ class panbaiducom_HOME(object):
                     f = open(lpath, 'rb')
                     current_piece_point = len(self.upload_datas[lpath]['slice_md5s'])
                     f.seek(current_piece_point * slice)
+                    start_time = time.time()
+                    print_process_bar(f.tell(), __current_file_size, 0, start_time, \
+                        pre='     ', msg='%s/%s' % (str(current_piece_point+1), str(pieces)))
                     for piece in xrange(current_piece_point, pieces):
                         self.__slice_block = f.read(slice)
                         if self.__slice_block:
@@ -775,8 +799,8 @@ class panbaiducom_HOME(object):
                                     print s % (1, 91, '  |-- slice_md5 does\'n match, retry.')
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
                             self.save_upload_datas()
-                            percent = round(100*((piece + 1.0) / pieces), 2)
-                            print s % (1, 97, '  |-- upload: %s%s' % (percent, '%')), piece + 1, '/', pieces
+                            start_time = print_process_bar(f.tell(), __current_file_size, slice, start_time, \
+                                pre='     ', msg='%s/%s' % (str(piece+1), str(pieces)))
                     result = self._combine_file(lpath, rpath)
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
@@ -1141,14 +1165,6 @@ class panbaiducom_HOME(object):
             sys.exit(1)
 
     def _find_display(self, info):
-        # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
-        def sizeof_fmt(num):
-            for x in ['','KB','MB','GB']:
-                if num < 1024.0:
-                    return "%3.1f%s" % (num, x)
-                num /= 1024.0
-            return "%3.1f%s" % (num, 'TB')
-
         if args.type_ == 'f':
             if info['isdir']:
                 return
@@ -1166,13 +1182,13 @@ class panbaiducom_HOME(object):
                 if base_dir != '/' else '/', \
                 filename.encode('utf8') \
                 if not info['isdir'] else s % (2, 92, filename.encode('utf8')))
-            template = '  %s %s %s' % (isdir, size, path)
+            template = '%s %s %s' % (isdir, size, path)
             print template
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
             size = sizeof_fmt(info['size']).rjust(7)
             path = info['path'].encode('utf8')
-            template = '  %s %s %s' % (isdir, size, path)
+            template = '%s %s %s' % (isdir, size, path)
             print template
 
     def find(self, keyword, **arguments):
