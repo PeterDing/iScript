@@ -648,6 +648,7 @@ class panbaiducom_HOME(object):
 
     def _upload_one_file(self, lpath, rpath):
         print '  |-- upload_function:', s % (1, 97, '_upload_one_file')
+        start_time = time.time()
         p = {
             "method": "upload",
             "app_id": "250528",
@@ -663,6 +664,8 @@ class panbaiducom_HOME(object):
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
         r = ss.post(url, params=p, data=data, verify=False, headers=theaders)
         if r.ok:
+            t = self.__current_file_size
+            print_process_bar(t, t, t, start_time, pre='     ')
             return ENoError
         else:
             sys.exit(1)
