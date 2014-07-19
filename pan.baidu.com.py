@@ -977,7 +977,7 @@ class panbaiducom_HOME(object):
         self.shareid = re.search(r'FileUtils.share_id="(.+?)"', html).group(1)
         self.bdstoken = re.search(r'bdstoken="(.+?)"', html).group(1)
 
-        isdirs = [int(x) for x in re.findall(r'\\"isdir\\":\\"(\d)\\"', html)]
+        isdirs = [int(x) for x in re.findall(r'\\"isdir\\":(\d)', html)]
         paths = [json.loads('"%s"' % x.replace('\\\\', '\\')) \
             for x in re.findall(r'\\"path\\":\\"(.+?)\\",\\"', html)]
         z = zip(isdirs, paths)
