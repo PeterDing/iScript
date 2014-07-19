@@ -241,6 +241,8 @@
         # 关于-H, -T, -I, -E
         sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+        # 显示文件size, md5
+        sl path1 path2 .. -v
 
         # 离线下载
         a 或 add http https ftp ed2k .. remotepath
@@ -258,8 +260,9 @@
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
         -v, --view                          view detail
-                                            eg: b a magnet /path -v  # 离线下载并显示下载的文件
-                                            b d -p url1 url2 .. -v  # 显示播放文件的完整路径
+                                            eg: a magnet /path -v  # 离线下载并显示下载的文件
+                                            d -p url1 url2 .. -v  # 显示播放文件的完整路径
+                                            l path1 path2 .. -v  # 显示文件的size, md5
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始下载，eg: -f 42
         -t ext, --type_ ext                 类型参数.

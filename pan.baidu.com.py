@@ -1185,14 +1185,18 @@ class panbaiducom_HOME(object):
                 if base_dir != '/' else '/', \
                 filename.encode('utf8') \
                 if not info['isdir'] else s % (2, 92, filename.encode('utf8')))
-            template = '%s %s %s' % (isdir, size, path)
-            print template
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
             size = sizeof_fmt(info['size']).rjust(7)
             path = info['path'].encode('utf8')
+
+        if args.view and info.get('md5'):
+            smd5 = info['md5'].encode('utf8')
+            template = '%s %s %s %s %s' % (isdir, size, info['size'], smd5, path)
+        else:
             template = '%s %s %s' % (isdir, size, path)
-            print template
+
+        print template
 
     def find(self, keyword, **arguments):
         infos = self._search(keyword, arguments.get('directory'))
@@ -2039,6 +2043,8 @@ def main(argv):
  # 关于-H, -T, -I, -E
  sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
  sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+ # 显示文件size, md5
+ sl path1 path2 .. -v
 
  # 离线下载
  a 或 add http https ftp ed2k .. remotepath
@@ -2069,8 +2075,9 @@ def main(argv):
  -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
  -p, --play                          play with mpv
  -v, --view                          view detail
-                                     eg: b a magnet /path -v  # 离线下载并显示下载的文件
-                                     b d -p url1 url2 .. -v  # 显示播放文件的完整路径
+                                     eg: bp a magnet /path -v  # 离线下载并显示下载的文件
+                                     bp d -p url1 url2 .. -v  # 显示播放文件的完整路径
+                                     bp l path1 path2 .. -v  # 显示文件的size, md5
  -s SECRET, --secret SECRET          提取密码
  -f number, --from_ number           从第几个开始下载，eg: -f 42
  -t ext, --type_ ext                 类型参数.
