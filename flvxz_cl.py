@@ -113,8 +113,9 @@ def main(url):
     yes = True if len(j['files']) > 1 else False
     dir_ = os.path.join(os.getcwd(), j['title'].encode('utf8')) if yes else os.getcwd()
 
-    n = 1
+    n = args.from_
     amount = len(j['files'])
+    j['files'] = j['files'][args.from_ - 1:]
     for i in j['files']:
         infos = {
             'filename': os.path.join(dir_, '%s_%s.%s' % (j['title'].encode('utf8'), n, i['ftype'].encode('utf8'))),
@@ -134,5 +135,8 @@ if __name__ == '__main__':
     p.add_argument('url', help='site url')
     p.add_argument('-p', '--play', action='store_true', \
                 help='play with mpv')
+    p.add_argument('-f', '--from_', action='store', \
+        default=1, type=int, \
+        help='从第几个开始下载，eg: -f 42')
     args = p.parse_args()
     main(args.url)
