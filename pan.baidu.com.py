@@ -1551,12 +1551,11 @@ class panbaiducom_HOME(object):
         doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
         archivetype = {".7z", ".a", ".ace", ".afa", ".alz", ".android", ".apk", ".ar", ".arc", ".arj", ".b1", ".b1", ".ba", ".bh", ".bz2", ".cab", ".cab", ".cfs", ".chm", ".cpio", ".cpt", ".cqm", ".dar", ".dd", ".dgc", ".dmg", ".ear", ".ecc", ".eqe", ".exe", ".f", ".gca", ".gz", ".ha", ".hki", ".html", ".ice", ".id", ".infl", ".iso", ".jar", ".kgb", ".lbr", ".lha", ".lqr", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", ".mar", ".ms", ".net", ".package", ".pak", ".paq6", ".paq7", ".paq8", ".par", ".par2", ".partimg", ".pea", ".pim", ".pit", ".qda", ".rar", ".rk", ".rz", ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx", ".tar", ".tbz2", ".tgz", ".tlz", ".tqt", ".uc", ".uc0", ".uc2", ".uca", ".ucn", ".ue2", ".uha", ".ur2", ".war", ".web", ".wim", ".x", ".xar", ".xp3", ".xz", ".yz1", ".z", ".zip", ".zipx", ".zoo", ".zpaq", ".zz"}
 
-        if not args.type_:
-            return []
         types = args.type_.split(',')
+        if not args.type_: return []
+        if 'a' in types: return []
+
         idx = []
-        if 'a' in types:
-            return []
         if 'm' in types:
             for i in xrange(len(infos)):
                 idx.append(i+1) if os.path.splitext(infos[i]['file_name'])[-1].lower() in mediatype else None
@@ -1572,6 +1571,7 @@ class panbaiducom_HOME(object):
         idx = list(set(idx))
         idx.sort()
         idx = [str(i) for i in idx]
+        if not idx: return None
         return idx
 
     def _add_bt(self, url, remotepath):
@@ -1586,6 +1586,9 @@ class panbaiducom_HOME(object):
                 return
 
         selected_idx = self._get_selected_idx(bt_info)
+        if selected_idx == None:
+            print s % (1, 93, '  !! _get_selected_idx: match nothing.'), url
+            return
 
         p = {
             "bdstoken": self._get_bdstoken(),
