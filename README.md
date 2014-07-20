@@ -455,15 +455,19 @@
     命令:
 
         # magnet 2 torrent
-        mt 或 m magnet_link1 magnet_link2 .. [-d /path/to/save]
+        m 或 mt magnet_link1 magnet_link2 .. [-d /path/to/save]
 
         # torrent 2 magnet, 输出magnet
-        tm 或 t path1 path2 ..
+        t 或 tm path1 path2 ..
 
         # 过滤敏.感.词
-        ct 或 c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]  
+        c 或 ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
+
+        # 使用正则表达式过滤敏.感.词
+        cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
+        # foo bar 都是 regex
 
     参数:
 
@@ -486,6 +490,10 @@
         # 用torrage.com
         bt m magnet_link1 path1 .. -p 127.0.0.1:8087
         bt c magnet_link1 path1 .. -p 127.0.0.1:8087
+
+        # 使用正则表达式过滤敏.感.词
+        bp cr '.*(old).*' '\1'  magnet_link
+        bp cr 'old.iso' 'new.iso' /path/to/torrent
 
 4. 参考:
 

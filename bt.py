@@ -27,7 +27,7 @@ s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789']
 
 class bt(object):
-    def transfer(self, string, tpath):
+    def transfer(self, string, tpath, foo=None, bar=None):
         self.dir_dict = {}
         self.sub_dir_index = 0
 
@@ -39,10 +39,16 @@ class bt(object):
         if dstring['info'].get('files'):
             for fl in dstring['info']['files']:
                 filename = fl['path'][-1]
-                ext = os.path.splitext(filename)[-1]
-                ext = self._check_ext(ext)
-                path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                    + ['%s%s' % (file_index, ext)]
+                newfilename = re.sub(foo, bar, filename, re.I) if foo and bar else filename
+                if filename != newfilename:
+                    print filename, s % (1, 92, '==>'), newfilename
+                    path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
+                        + [newfilename]
+                else:
+                    ext = os.path.splitext(filename)[-1]
+                    ext = self._check_ext(ext)
+                    path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
+                        + ['%s%s' % (file_index, ext)]
                 file_index += 1
                 fl['path'] = path
 
@@ -205,7 +211,7 @@ class bt(object):
             else:
                 print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
 
-    def change(self, ups, dir_):
+    def change(self, ups, dir_, foo=None, bar=None):
         for up in ups:
             path = up
             if path.startswith('magnet:'):
@@ -218,7 +224,7 @@ class bt(object):
                 if string:
                     tpath = os.path.join(dir_, hh + '.torrent')
                     print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
-                    self.transfer(string, tpath)
+                    self.transfer(string, tpath, foo=foo, bar=bar)
                 else:
                     print s % (1, 91, '  !! Can\'t get torrent from web.'), path
 
@@ -232,7 +238,7 @@ class bt(object):
                                     print s % (1, 97, '  ++ transfer:'), ipath
                                     string = open(ipath).read()
                                     tpath = os.path.join(dir_, 'change_' + i)
-                                    self.transfer(string, tpath)
+                                    self.transfer(string, tpath, foo=foo, bar=bar)
                                     paths.update(ipath)
                                 if os.getcwd() == os.path.abspath(dir_):
                                     do()
@@ -244,7 +250,7 @@ class bt(object):
                         print s % (1, 97, '  ++ transfer:'), path
                         string = open(path).read()
                         tpath = os.path.join(dir_, 'change_' + os.path.basename(path))
-                        self.transfer(string, tpath)
+                        self.transfer(string, tpath, foo=foo, bar=bar)
             else:
                 print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
 
@@ -278,15 +284,22 @@ def main(argv):
         x = bt()
         x.magnet2torrent(urls, dir_)
 
-    elif comd == 'tm' or comd == 't':   # torrent ot magnet
+    elif comd == 't' or comd == 'tm':   # torrent ot magnet
         paths = xxx
         x = bt()
         x.torrent2magnet(paths)
 
-    elif comd == 'ct' or comd == 'c':   # change
+    elif comd == 'c' or comd == 'ct':   # change
         ups = xxx
         x = bt()
-        x.change(ups, dir_)
+        x.change(ups, dir_, foo=None, bar=None)
+
+    elif comd == 'cr' or comd == 'ctre':   # change
+        foo = xxx[0]
+        bar = xxx[1]
+        ups = xxx[2:]
+        x = bt()
+        x.change(ups, dir_, foo=foo, bar=bar)
 
     else:
         print s % (2, 91, '  !! 命令错误\n')
