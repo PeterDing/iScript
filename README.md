@@ -264,6 +264,7 @@
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
+        -q, --quiet                         无输出模式
         -v, --view                          view detail
                                             eg: a magnet /path -v  # 离线下载并显示下载的文件
                                             d -p url1 url2 .. -v  # 显示播放文件的完整路径
@@ -327,13 +328,13 @@
         bp d http://pan.baidu.com/s/1i3FVlw5  -s vuej
 
         # 下载用aria2, url 是上面的
-        bp d url -a
-        bp d url -s [secret] -a
+        bp d url -a 5 -q
+        bp d url -s [secret] -a 10
 
     播放:
 
         # url 是上面的
-        bp p url1 url2 .. path1 path2 ..
+        bp p url1 url2 .. path1 path2 .. -q
         bp p url -s [secret]
 
     离线下载:

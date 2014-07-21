@@ -495,30 +495,22 @@ class panbaiducom_HOME(object):
         print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
         if args.aria2c:
-            if args.limit:
-                cmd = 'aria2c -c -x %s -s %s ' \
-                    '--max-download-limit %s ' \
-                    '-o "%s.tmp" -d "%s" \
-                    --user-agent "%s" ' \
-                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.aria2c, args.aria2c, args.limit, infos['name'], \
+            quiet = ' --quiet=true' if args.quiet else ''
+            taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
+            tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
+            cmd = 'aria2c -c%s%s%s ' \
+                '-o "%s.tmp" -d "%s" '\
+                '--user-agent "%s" ' \
+                '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                % (quiet, taria2c, tlimit, infos['name'], \
                     infos['dir_'], headers['User-Agent'], infos['dlink'])
-            else:
-                cmd = 'aria2c -c -x %s -s %s ' \
-                    '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
-                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.aria2c, args.aria2c, infos['name'], infos['dir_'], headers['User-Agent'], \
-                        infos['dlink'])
         else:
-            if args.limit:
-                cmd = 'wget -c --limit-rate %s ' \
-                    '-O "%s.tmp" --user-agent "%s" ' \
-                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (args.limit, infos['file'], headers['User-Agent'], infos['dlink'])
-            else:
-                cmd = 'wget -c -O "%s.tmp" --user-agent "%s" ' \
-                    '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (infos['file'], headers['User-Agent'], infos['dlink'])
+            quiet = ' -q' if args.quiet else ''
+            tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
+            cmd = 'wget -c%s%s ' \
+                '-O "%s.tmp" --user-agent "%s" ' \
+                '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
+                % (quiet, tlimit, infos['file'], headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
@@ -542,15 +534,17 @@ class panbaiducom_HOME(object):
             s % (1, 97, infos['total_file']), '#', col
 
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
-            cmd = 'mplayer -really-quiet -cache 10000 ' \
+            quiet = ' -really-quiet' if args.quiet else ''
+            cmd = 'mplayer%s -cache 10000 ' \
                 '-http-header-fields "user-agent:%s" ' \
                 '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (headers['User-Agent'], infos['dlink'])
+                % (quiet, headers['User-Agent'], infos['dlink'])
         else:
-            cmd = 'mpv --really-quiet --cache 10000 --cache-default 10000 ' \
+            quiet = ' --really-quiet' if args.quiet else ''
+            cmd = 'mpv%s --cache 10000 --cache-default 10000 ' \
                 '--http-header-fields "user-agent:%s" '\
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (headers['User-Agent'], infos['dlink'])
+                % (quiet, headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         timeout = 1
@@ -2116,6 +2110,8 @@ def main(argv):
         help='play with mpv')
     p.add_argument('-v', '--view', action='store_true', \
         help='view details')
+    p.add_argument('-q', '--quiet', action='store_true', \
+        help='quiet for download and play')
     p.add_argument('-s', '--secret', action='store', \
         default=None, help='提取密码')
     p.add_argument('-f', '--from_', action='store', \
