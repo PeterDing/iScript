@@ -1546,7 +1546,7 @@ class panbaiducom_HOME(object):
             return j['magnet_info'], ''
 
     def _get_selected_idx(self, infos):
-        mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov"}
+        mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov", ".mdf"}
         imagetype = {".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico"}
         doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
         archivetype = {".7z", ".a", ".ace", ".afa", ".alz", ".android", ".apk", ".ar", ".arc", ".arj", ".b1", ".b1", ".ba", ".bh", ".bz2", ".cab", ".cab", ".cfs", ".chm", ".cpio", ".cpt", ".cqm", ".dar", ".dd", ".dgc", ".dmg", ".ear", ".ecc", ".eqe", ".exe", ".f", ".gca", ".gz", ".ha", ".hki", ".html", ".ice", ".id", ".infl", ".iso", ".jar", ".kgb", ".lbr", ".lha", ".lqr", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", ".mar", ".ms", ".net", ".package", ".pak", ".paq6", ".paq7", ".paq8", ".par", ".par2", ".partimg", ".pea", ".pim", ".pit", ".qda", ".rar", ".rk", ".rz", ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx", ".tar", ".tbz2", ".tgz", ".tlz", ".tqt", ".uc", ".uc0", ".uc2", ".uca", ".ucn", ".ue2", ".uha", ".ur2", ".war", ".web", ".wim", ".x", ".xar", ".xp3", ".xz", ".yz1", ".z", ".zip", ".zipx", ".zoo", ".zpaq", ".zz"}
@@ -2145,8 +2145,11 @@ def main(argv):
     p.add_argument('-c', '--ls_color', action='store', default='on', \
         choices=['on', 'off'], type=str, help='递归 ls')
     global args
-    args = p.parse_args(argv[2:])
     comd = argv[1]
+    if comd == 'rnr' or comd == 'rnre':
+        args = p.parse_args(argv[4:])
+    else:
+        args = p.parse_args(argv[2:])
     xxx = args.xxx
     #######################################################
 
@@ -2341,15 +2344,15 @@ def main(argv):
             x.ls('size', 1, xxx)
 
     elif comd == 'rnr' or comd == 'rnre':
-        if len(xxx) < 3:
+        if len(xxx) < 1:
             print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
                 ' a url1 url2 .. [directory]\n' \
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
 
-        foo = xxx[0]
-        bar = xxx[1]
-        dirs = xxx[2:]
+        foo = argv[2]
+        bar = argv[3]
+        dirs = xxx
         e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
         if e:
             print s % (1, 91, '  !! path is incorrect.')
