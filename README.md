@@ -162,6 +162,8 @@
 
     下载的文件，保存在当前目录下。
 
+    下载默认为非递归，递归下载加 -R
+
     搜索时，默认在 /。
 
     上传模式默认是 c (续传)。
@@ -186,10 +188,13 @@
         signout                                              退出登录
         user                                                 用户信息
 
-        d  或 download url1 url2 .. path1 path2 ..           下载
         p  或 play url1 url2 .. path1 path2 ..               播放
         u  或 upload localpath remotepath                    上传
         s  或 save url remotepath [-s secret]                转存
+
+        # 下载
+        d  或 download url1 url2 .. path1 path2 ..           非递归下载
+        d  或 download url1 url2 .. path1 path2 .. -R        递归下载
 
         # 文件操作
         md 或 mkdir path1 path2 ..                           创建文件夹
@@ -266,8 +271,7 @@
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始下载，eg: -f 42
         -t ext, --type_ ext                 类型参数.
-                                            eg: d -t mp3    # 要下载的文件的后缀
-                                            l -t f (文件); l -t d (文件夹)
+                                            eg: l -t f (文件); l -t d (文件夹)
                                             a -t m,d,p,a
                                             u -t r  # 只进行 rapidupload
                                             u -t e  # 如果云端已经存在则不上传(不比对md5)
@@ -306,8 +310,13 @@
         bp d /path/to/filename1 /path/to/filename2 ..
 
         # 递归下载自己网盘中的*单个或多个文件夹*
-        bp d http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2 ..
+        bp d -R http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2 ..
         # or
+        bp d -R /path/to/directory1 /path/to/directory2 ..
+        # 递归下载后缀为 .mp3 的文件
+        bp d -R /path/to/directory1 /path/to/directory2 .. -T .mp3
+
+        # 非递归下载
         bp d /path/to/directory1 /path/to/directory2 ..
 
         # 下载别人分享的*单个文件*

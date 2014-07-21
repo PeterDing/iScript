@@ -257,13 +257,13 @@ class panbaiducom_HOME(object):
         exclude = args.exclude
         if head or tail or include or exclude:
             tdict = {fileslist[i]['server_filename'] : i for i in xrange(len(fileslist))}
-            keys1 = [i for i in tdict.keys() if i.lower().startswith(head.encode('utf8').lower())] \
+            keys1 = [i for i in tdict.keys() if i.lower().startswith(head.decode('utf8', 'ignore').lower())] \
                 if head else []
             keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())] \
                 if tail else []
-            keys3 = [i for i in tdict.keys() if re.search(include, i.encode('utf8'), flags=re.I)] \
+            keys3 = [i for i in tdict.keys() if re.search(include, i.decode('utf8', 'ignore'), flags=re.I)] \
                 if include else []
-            keys4 = [i for i in tdict.keys() if not re.search(exclude, i.encode('utf8'), flags=re.I)] \
+            keys4 = [i for i in tdict.keys() if not re.search(exclude, i.decode('utf8', 'ignore'), flags=re.I)] \
                 if exclude else []
 
             # intersection
@@ -425,16 +425,13 @@ class panbaiducom_HOME(object):
                     for d in dir_loop:
                         j = self._get_file_list('name', None, d)
                         if j['list']:
-                            for i in j['list']:
-                                dir_loop.append(i['path'].encode('utf8')) if i['isdir'] else None
+                            if args.recursive:
+                                for i in j['list']:
+                                    dir_loop.append(i['path'].encode('utf8')) \
+                                        if i['isdir'] else None
 
                             if args.head or args.tail or args.include or args.exclude:
                                 j['list'] = self._sift(j['list'])
-
-                            if args.type_:
-                                j['list'] = [x for x in j['list'] if x['isdir'] \
-                                    or x['server_filename'][-len(args.type_):] \
-                                    == unicode(args.type_)]
 
                             total_file = len([i for i in j['list'] if not i['isdir']])
 
@@ -1992,10 +1989,13 @@ def main(argv):
  signout                                              退出登录
  user                                                 用户信息
 
- d  或 download url1 url2 .. path1 path2 ..           下载
  p  或 play url1 url2 .. path1 path2 ..               播放
  u  或 upload localpath remotepath                    上传
  s  或 save url remotepath [-s secret]                转存
+
+ # 下载
+ d  或 download url1 url2 .. path1 path2 ..           非递归下载
+ d  或 download url1 url2 .. path1 path2 .. -R        递归下载
 
  # 文件操作
  md 或 mkdir path1 path2 ..                           创建文件夹
@@ -2084,8 +2084,7 @@ def main(argv):
  -s SECRET, --secret SECRET          提取密码
  -f number, --from_ number           从第几个开始下载，eg: -f 42
  -t ext, --type_ ext                 类型参数.
-                                     eg: d -t mp3    # 要下载的文件的后缀
-                                     l -t f (文件); l -t d (文件夹)
+                                     eg: l -t f (文件); l -t d (文件夹)
                                      a -t m,d,p,a
                                      u -t r  # 只进行 rapidupload
                                      u -t e  # 如果云端已经存在则不上传(不比对md5)
@@ -2124,7 +2123,7 @@ def main(argv):
         help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
         default=None, type=str, \
-        help='类型参数，eg: -t mp3. 或者ls 文件(f)、文件夹(d)的参数')
+        help='类型参数，eg: ls -t f (文件(f)、文件夹(d))')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
     # for upload
