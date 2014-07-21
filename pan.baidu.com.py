@@ -1179,7 +1179,7 @@ class panbaiducom_HOME(object):
 
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
-            size = s % (1, 91, sizeof_fmt(info['size']).rjust(7))
+            size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
             base_dir, filename = os.path.split(info['path'])
             path = os.path.join(s % (2, 95, base_dir.encode('utf8'))
                 if base_dir != '/' else '/', \
@@ -1187,7 +1187,7 @@ class panbaiducom_HOME(object):
                 if not info['isdir'] else s % (2, 92, filename.encode('utf8')))
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
-            size = sizeof_fmt(info['size']).rjust(7)
+            size = sizeof_fmt(info['size']).rjust(8)
             path = info['path'].encode('utf8')
 
         if args.view and info.get('md5'):
