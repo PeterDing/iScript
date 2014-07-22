@@ -210,10 +210,10 @@
         mvr 或 mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
         cpr 或 cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
         # 递归加 -R
-        # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
-        # 可以用 -t 指定操作的文件类型, eg:
-                                            -t f # 文件
-                                            -t d # 文件夹
+        # rmr, mvr, cpr 中 -t, -I, -E, -H, -T 至少要有一个
+        # 可以用 -t 指定操作的文件类型
+            -t f # 文件
+            -t d # 文件夹
         # rnr 中 foo bar 都是 regex
 
         # 搜索
