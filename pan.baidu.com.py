@@ -1189,8 +1189,11 @@ class panbaiducom_HOME(object):
 
         print template
 
-    def find(self, keyword, **arguments):
-        infos = self._search(keyword, arguments.get('directory'))
+    def find(self, keywords, **arguments):
+        infos = []
+        for keyword in keywords:
+            infos += self._search(keyword, arguments.get('directory'))
+        infos = {i['fs_id']: i for i in infos}.values()
         infos = self._sift(infos, name=arguments.get('name'), \
             size=arguments.get('size'), time=arguments.get('time'), \
             desc=arguments.get('desc'))
@@ -2011,18 +2014,18 @@ def main(argv):
  # rnr 中 foo bar 都是 regex
 
  # 搜索
- f   或 find keyword .. [directory]             非递归搜索
- ff  keyword .. [directory]                     非递归搜索 反序
- ft  keyword .. [directory]                     非递归搜索 by time
- ftt keyword .. [directory]                     非递归搜索 by time 反序
- fs  keyword .. [directory]                     非递归搜索 by size
- fss keyword .. [directory]                     非递归搜索 by size 反序
- fn  keyword .. [directory]                     非递归搜索 by name
- fnn keyword .. [directory]                     非递归搜索 by name 反序
+ f   或 find keyword1 keyword2 .. [directory]             非递归搜索
+ ff  keyword1 keyword2 .. [directory]                     非递归搜索 反序
+ ft  keyword1 keyword2 .. [directory]                     非递归搜索 by time
+ ftt keyword1 keyword2 .. [directory]                     非递归搜索 by time 反序
+ fs  keyword1 keyword2 .. [directory]                     非递归搜索 by size
+ fss keyword1 keyword2 .. [directory]                     非递归搜索 by size 反序
+ fn  keyword1 keyword2 .. [directory]                     非递归搜索 by name
+ fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
                                                 # 递归搜索加 -R
  # 关于-H, -T, -I, -E
- f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
- f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+ f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
+ f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
 
  # 列出文件
  l path1 path2 ..                               ls by name
@@ -2260,35 +2263,34 @@ def main(argv):
         or comd == 'fs' or comd == 'fss' \
         or comd == 'fn' or comd == 'fnn':
         if len(xxx) < 1:
-            print s % (1, 91, '  !! 参数错误\n find keyword [directory]\n' \
-                ' f keyword [directory]')
+            print s % (1, 91, '  !! 参数错误\n find keyword1 keyword2 .. [directory]\n' \
+                ' f keyword1 keyword2 .. [directory]')
             sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
-        keyword = ''
         directory = None
         if xxx[-1][0] == '/':
-            keyword = ' '.join(xxx[:-1])
+            keywords = xxx[:-1]
             directory = xxx[-1]
         else:
-            keyword = ' '.join(xxx)
+            keywords = xxx
 
         if comd == 'f' or comd == 'find':
-            x.find(keyword, desc=None, directory=directory)
+            x.find(keywords, directory=directory)
         elif comd == 'ff':
-            x.find(keyword, desc=1, directory=directory)
+            x.find(keywords, directory=directory)
         elif comd == 'ft':
-            x.find(keyword, desc=None, time='no_reverse', directory=directory)
+            x.find(keywords, time='no_reverse', directory=directory)
         elif comd == 'ftt':
-            x.find(keyword, desc=1, time='reverse', directory=directory)
+            x.find(keywords, time='reverse', directory=directory)
         elif comd == 'fs':
-            x.find(keyword, desc=None, size='no_reverse', directory=directory)
+            x.find(keywords, ize='no_reverse', directory=directory)
         elif comd == 'fss':
-            x.find(keyword, desc=1, size='reverse', directory=directory)
+            x.find(keywords, size='reverse', directory=directory)
         elif comd == 'fn':
-            x.find(keyword, desc=None, name='no_reverse', directory=directory)
+            x.find(keywords, name='no_reverse', directory=directory)
         elif comd == 'fnn':
-            x.find(keyword, desc=1, name='reverse', directory=directory)
+            x.find(keywords, name='reverse', directory=directory)
 
     elif comd == 'mv' or comd == 'move' \
         or comd == 'rm' or comd == 'remove' \

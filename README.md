@@ -217,18 +217,19 @@
         # rnr 中 foo bar 都是 regex
 
         # 搜索
-        f   或 find keyword .. [directory]             非递归搜索
-        ff  keyword .. [directory]                     非递归搜索 反序
-        ft  keyword .. [directory]                     非递归搜索 by time
-        ftt keyword .. [directory]                     非递归搜索 by time 反序
-        fs  keyword .. [directory]                     非递归搜索 by size
-        fss keyword .. [directory]                     非递归搜索 by size 反序
-        fn  keyword .. [directory]                     非递归搜索 by name
-        fnn keyword .. [directory]                     非递归搜索 by name 反序
-                                                       # 递归搜索加 -R
+        f   或 find keyword1 keyword2 .. [directory]             非递归搜索
+        ff  keyword1 keyword2 .. [directory]                     非递归搜索 反序
+        ft  keyword1 keyword2 .. [directory]                     非递归搜索 by time
+        ftt keyword1 keyword2 .. [directory]                     非递归搜索 by time 反序
+        fs  keyword1 keyword2 .. [directory]                     非递归搜索 by size
+        fss keyword1 keyword2 .. [directory]                     非递归搜索 by size 反序
+        fn  keyword1 keyword2 .. [directory]                     非递归搜索 by name
+        fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
+        # 递归搜索加 -R
+        # directory 默认为 /
         # 关于-H, -T, -I, -E
-        f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
-        f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+        f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
+        f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
 
         # 列出文件
         l path1 path2 ..                               ls by name
@@ -358,8 +359,8 @@
         m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t d,p   -t i,p
         remotepath 默认为 /
 
-        bp a magnet1 magnet2 .. [remotepath] -t m,d
-        bp a remote_torrent1 remote_torrent2 .. [remotepath] -t m,i
+        bp a magnet1 magnet2 .. /path/to/save -t m,d
+        bp a remote_torrent1 remote_torrent2 .. -t m,i
 
     离线任务操作:
 
@@ -399,22 +400,21 @@
 
     搜索:
 
-        bp f keyword
-        bp f "this is one keyword" /path/to/search
-        bp f this is also a keyword
+        bp f keyword1 keyword2
+        bp f "this is one keyword" "this is another keyword" /path/to/search
 
-        bp ff  keyword .. [directory]                     非递归搜索 反序
-        bp ft  keyword .. [directory]                     非递归搜索 by time
-        bp ftt keyword .. [directory]                     非递归搜索 by time 反序
-        bp fs  keyword .. [directory]                     非递归搜索 by size
-        bp fss keyword .. [directory]                     非递归搜索 by size 反序
-        bp fn  keyword .. [directory]                     非递归搜索 by name
-        bp fnn keyword .. [directory]                     非递归搜索 by name 反序
+        bp ff  keyword1 keyword2 .. /path/to/music       非递归搜索 反序
+        bp ft  keyword1 keyword2 .. /path/to/doc         非递归搜索 by time
+        bp ftt keyword1 keyword2 .. /path/to/other       非递归搜索 by time 反序
+        bp fs  keyword1 keyword2 ..                      非递归搜索 by size
+        bp fss keyword1 keyword2 ..                      非递归搜索 by size 反序
+        bp fn  keyword1 keyword2 ..                      非递归搜索 by name
+        bp fnn keyword1 keyword2 ..                      非递归搜索 by name 反序
 
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
-        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword ... [directory]
-        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword ... [directory]
+        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... /path/to/search
+        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ...
 
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
