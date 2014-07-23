@@ -193,8 +193,11 @@
         s  或 save url remotepath [-s secret]                转存
 
         # 下载
-        d  或 download url1 url2 .. path1 path2 ..           非递归下载
-        d  或 download url1 url2 .. path1 path2 .. -R        递归下载
+        d  或 download url1 url2 .. path1 path2 ..           非递归下载 到当前目录(cwd)
+        d  或 download url1 url2 .. path1 path2 .. -R        递归下载 到当前目录(cwd)
+        # !! 注意:
+        # d /path/to/download -R      递归下载 *download文件夹* 到当前目录(cwd)
+        # d /path/to/download/ -R     递归下载 *download文件夹中的文件* 到当前目录(cwd)
 
         # 文件操作
         md 或 mkdir path1 path2 ..                           创建文件夹
