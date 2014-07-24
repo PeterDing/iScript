@@ -339,6 +339,7 @@ class xiami(object):
     def get_song_info(self, album_description, z, cd_serial_auth, i):
         song_info = {}
         song_info['song_id'] = i['song_id']
+        song_info['album_id'] = i['album_id']
         song_info['song_url'] = u'http://www.xiami.com/song/' + i['song_id']
         song_info['track'] = i['track']
         song_info['album_description'] = album_description
@@ -551,7 +552,8 @@ class xiami(object):
         print '  >>', n, '/', nn
         print '  >>', s % (2, 94, i['file_name'])
         print '  >>', s % (2, 95, i['album_name'])
-        print '  >>', s % (2, 92, 'http://www.xiami.com/song/%s' % i['song_id'])
+        print '  >>', 'http://www.xiami.com/song/%s' % i['song_id']
+        print '  >>', 'http://www.xiami.com/album/%s' % i['album_id']
         if i['durl_is_H'] == 'h':
             print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')
         else:
