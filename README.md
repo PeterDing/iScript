@@ -329,17 +329,18 @@
         bp d http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284 ..
 
         # 下载别人加密分享的*单个文件*，密码参数-s
-        bp d http://pan.baidu.com/s/1i3FVlw5  -s vuej
+        bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej
 
-        # 下载用aria2, url 是上面的
-        bp d url -a 5 -q
+        # 用aria2下载
+        bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej -a 5
+        bp d /movie/her.mkv -a 4
         bp d url -s [secret] -a 10
 
     播放:
 
-        # url 是上面的
-        bp p url1 url2 .. path1 path2 .. -q
-        bp p url -s [secret]
+        bp p /movie/her.mkv
+        bp p http://pan.baidu.com/s/xxxxxxxxx -s [secret]
+        bp p /movie -R     # 递归播放 /movie 中所有媒体文件
 
     离线下载:
 
@@ -347,10 +348,14 @@
         bp a https://github.com/PeterDing/iScript/archive/master.zip /path/to/save
         bp a ftp://ftp.netscape.com/testfile /path/to/save
 
-        bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v
+        bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t a
         bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
 
-        bp a /path/to/a.torrent .. /path/to/save -v -t m,i   # 使用网盘中torrent
+        bp a     /path/to/a.torrent ..        /path/to    -v -t m,i   # 使用网盘中torrent
+        # 注意   ---------------------        --------
+                           |                      |
+                           |                      |
+                  网盘中的torrent           只能是 /path/to/a.torrent 中的 /path/to
 
     magnet离线下载 -- 文件选择:
 
@@ -362,8 +367,8 @@
         m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t d,p   -t i,p
         remotepath 默认为 /
 
-        bp a magnet1 magnet2 .. /path/to/save -t m,d
-        bp a remote_torrent1 remote_torrent2 .. -t m,i
+        bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t p,d
+        bp a /path/to/a.torrent .. /path/to -v -t m,i,d    # 使用网盘中torrent
 
     离线任务操作:
 
@@ -376,19 +381,19 @@
 
     上传:
 
-        bp u localpath1 localpath2 .. remotepath [-m [o, c]]
+        bp u ~/Documents/reading/三体\ by\ 刘慈欣.mobi /doc -m o
         # 上传模式:
-        # o --> 重传
-        # c --> 续传 (默认)
+        # -m o --> 重传
+        # -m c --> 续传 (默认)
 
-        bp u localpath1 localpath2 .. remotepath -t r
+        bp u ~/Videos/*.mkv /videos -t r
         # 只进行rapidupload
 
-        bp u localpath1 localpath2 .. remotepath -t e
+        bp u ~/Documents ~/Videos ~/Documents /backup -t e
         # 如果云端已经存在则不上传(不比对md5)
         # 用 -t e 时, -m o 无效
 
-        bp u localpath1 localpath2 .. remotepath -t r,e  # 以上两种模式
+        bp u ~/Documents ~/Videos ~/Documents /backup -t r,e  # 以上两种模式
 
     转存:
 
@@ -406,6 +411,10 @@
         bp f keyword1 keyword2
         bp f "this is one keyword" "this is another keyword" /path/to/search
 
+        bp f ooxx -R
+        bp f 三体 /doc/fiction -R
+        bp f 晓波 /doc -R
+
         bp ff  keyword1 keyword2 .. /path/to/music       非递归搜索 反序
         bp ft  keyword1 keyword2 .. /path/to/doc         非递归搜索 by time
         bp ftt keyword1 keyword2 .. /path/to/other       非递归搜索 by time 反序
@@ -416,8 +425,8 @@
 
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
-        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... /path/to/search
-        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ...
+        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... /path/to/search -R
+        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... -R
 
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
