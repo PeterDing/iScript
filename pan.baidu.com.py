@@ -348,9 +348,37 @@ class panbaiducom_HOME(object):
         url = 'http://pan.baidu.com/disk/home'
         r = ss.get(url)
         html = r.content
-        sign1 = re.search(r'sign1="(.+?)";', html).group(1)
-        sign3 = re.search(r'sign3="(.+?)";', html).group(1)
-        timestamp = re.search(r'timestamp="(.+?)";', html).group(1)
+        sign1 = re.search(r'sign1 = \'(.+?)\';', html).group(1)
+        sign3 = re.search(r'sign3 = \'(.+?)\';', html).group(1)
+        timestamp = re.search(r'timestamp = \'(.+?)\';', html).group(1)
+
+        # following javascript code from http://pan.baidu.com/disk/home
+        #yunData.sign2 = function s(j, r) {
+        #    var a = [];
+        #    var p = [];
+        #    var o = \x22\ x22;
+        #    var v = j.length;
+        #    for (var q = 0; q < 256; q++) {
+        #        a[q] = j.substr((q % v), 1).charCodeAt(0);
+        #        p[q] = q
+        #    }
+        #    for (var u = q = 0; q < 256; q++) {
+        #        u = (u + p[q] + a[q]) % 256;
+        #        var t = p[q];
+        #        p[q] = p[u];
+        #        p[u] = t
+        #    }
+        #    for (var i = u = q = 0; q < r.length; q++) {
+        #        i = (i + 1) % 256;
+        #        u = (u + p[i]) % 256;
+        #        var t = p[i];
+        #        p[i] = p[u];
+        #        p[u] = t;
+        #        k = p[((p[i] + p[u]) % 256)];
+        #        o += String.fromCharCode(r.charCodeAt(q) ^ k)
+        #    }
+        #    return o
+        #};
 
         def sign2(j, r):
             a = []
@@ -394,7 +422,7 @@ class panbaiducom_HOME(object):
                 "channel": "chunlei",
                 "clienttype": 0,
                 "web": 1,
-                #"bdstoken": token
+                #"bdstoken": self._get_bdstoken()
             }
 
             data = {
@@ -409,6 +437,9 @@ class panbaiducom_HOME(object):
             j = r.json()
             if j['errno'] == 0:
                 dlink = j['dlink'][0]['dlink'].encode('utf8')
+                dlink = re.sub(r'prisign=.+?(&|$)', r'prisign=unknow\1', dlink)
+                dlink = dlink.replace('chkbd=0', 'chkbd=1')
+                dlink = dlink.replace('chkv=0', 'chkv=1')
                 return dlink
             else:
                 self._get_dsign()
@@ -478,7 +509,7 @@ class panbaiducom_HOME(object):
                         'file': t,
                         'path': meta['info'][0]['path'].encode('utf8'),
                         'dir_': os.path.split(t)[0],
-                        #'dlink': self.get_dlink(i),
+                        #'dlink': self._get_dlink(meta['info'][0]),
                         'dlink': meta['info'][0]['dlink'].encode('utf8'),
                         'name': meta['info'][0]['server_filename'].encode('utf8')
                     }
