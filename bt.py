@@ -98,7 +98,18 @@ class bt(object):
     def get_torrent(self, hh):
         print s % (1, 93, '\n  ++ get torrent from web')
 
+        ## with xunlei
+        print s % (1, 94, '  >> try:'), 'http://bt.box.n0808.com'
+        url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' % (hh[:2], hh[-2:], hh)
+        ss.headers['Referer'] = 'http://bt.box.n0808.com'
+        r = ss.get(url)
+        if r.ok and r.content and '<head>' not in r.content:
+            return r.content
+        else:
+            print s % (1, 91, u'  × not get.')
+
         ## with https://zoink.it
+        if ss.headers.get('Referer'): del ss.headers['Referer']
         if args.proxy:
             print s % (1, 94, '  >> try:'), 'http://torrage.com'
             proxies = {
@@ -117,6 +128,7 @@ class bt(object):
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with http://btcache.me
+        if ss.headers.get('Referer'): del ss.headers['Referer']
         print s % (1, 94, '  >> try:'), 'http://btcache.me'
         url = 'http://btcache.me/torrent/%s' % hh
         r = ss.get(url)
@@ -137,6 +149,7 @@ class bt(object):
             print s % (1, 91, u'  × not get.')
 
         ## some torrent stores
+        if ss.headers.get('Referer'): del ss.headers['Referer']
         urls = ['http://www.sobt.org/Tool/downbt?info=%s', \
                 #'http://www.win8down.com/url.php?hash=%s', \
                 #'http://www.31bt.com/Torrent/%s', \
