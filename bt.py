@@ -116,11 +116,31 @@ class bt(object):
             except:
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
+        ## with http://btcache.me
+        print s % (1, 94, '  >> try:'), 'http://btcache.me'
+        url = 'http://btcache.me/torrent/%s' % hh
+        r = ss.get(url)
+        key = re.search(r'name="key" value="(.+?)"', r.content)
+        if key:
+            data = {
+                "key": key.group(1)
+            }
+            ss.headers['Referer'] = url
+            url = 'http://btcache.me/download'
+            r = ss.post(url, data=data)
+            if r.ok and r.content and '<head>' not in r.content:
+                print s % (1, 92, u'  √ get torrent.')
+                return r.content
+            else:
+                print s % (1, 91, u'  × not get.')
+        else:
+            print s % (1, 91, u'  × not get.')
+
         ## some torrent stores
         urls = ['http://www.sobt.org/Tool/downbt?info=%s', \
                 #'http://www.win8down.com/url.php?hash=%s', \
                 #'http://www.31bt.com/Torrent/%s', \
-                'http://178.73.198.210/torrent/$s', \
+                'http://178.73.198.210/torrent/%s', \
                 'http://zoink.it/torrent/%s.torrent', \
                 'http://torcache.net/torrent/%s.torrent', \
                 'http://torrentproject.se/torrent/%s.torrent', \
@@ -140,32 +160,6 @@ class bt(object):
                     print s % (1, 91, u'  × not get.')
             except:
                 print s % (1, 91, '  !! Error at connection')
-
-        ## with http://www.btspread.com
-        print s % (1, 94, '  >> try:'), 'http://www.btspread.com'
-        print s % (1, 93, '    |-- btspread.com will take a while, please be patient.')
-        #ss.get('http://www.btspread.com/')
-        url = 'http://www.btspread.com/convert/magnet'
-        data = {
-            "magnetLinkInput": "Converting",
-            "magnetLink": "magnet:?xt=urn:btih:%s" % hh
-        }
-        #url = 'http://www.btspread.com/torrent/detail/hash/%s' % hh
-        try:
-            r = ss.post(url, data=data)
-            if r.ok:
-                html = r.content
-                durl = re.search(r'"(http://www.btspread.com/torrent/download/key/.+?)"', html)
-                if durl:
-                    durl = durl.group(1)
-                    r = ss.get(durl)
-                    if r.ok and r.content and '<head>' not in r.content:
-                        print s % (1, 92, u'  √ get torrent.')
-                        return r.content
-                    else:
-                        print s % (1, 91, u'  × not get.')
-        except:
-            print s % (1, 91, '  !! Error at connection')
 
         return False
 

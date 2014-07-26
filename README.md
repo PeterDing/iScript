@@ -459,10 +459,11 @@
 
     磁力连接转种子，用的是
 
+        http://btcache.me
         http://www.sobt.org  # 302 --> http://www.win8down.com/url.php?hash=
         http://www.31bt.com
         http://178.73.198.210
-        http://www.btspread.com
+        http://www.btspread.com  # link to http://btcache.me
         http://torcache.net
         http://zoink.it
         http://torrage.com   # 用torrage.com需要设置代理, eg: -p 127.0.0.1:8087
