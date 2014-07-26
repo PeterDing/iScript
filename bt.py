@@ -104,6 +104,7 @@ class bt(object):
         ss.headers['Referer'] = 'http://bt.box.n0808.com'
         r = ss.get(url)
         if r.ok and r.content and '<head>' not in r.content:
+            print s % (1, 92, u'  √ get torrent.')
             return r.content
         else:
             print s % (1, 91, u'  × not get.')
