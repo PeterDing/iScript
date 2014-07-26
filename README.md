@@ -459,6 +459,7 @@
 
     磁力连接转种子，用的是
 
+        http://bt.box.n0808.com
         http://btcache.me
         http://www.sobt.org  # 302 --> http://www.win8down.com/url.php?hash=
         http://www.31bt.com
