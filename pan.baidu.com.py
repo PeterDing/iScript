@@ -305,6 +305,7 @@ class panbaiducom_HOME(object):
         else:
             t = '/'
         t = urllib.unquote_plus(t)
+        t = urllib.unquote_plus(t)
         return t
 
     def _get_file_list(self, order, desc, dir_):
@@ -1993,8 +1994,8 @@ class panbaiducom(object):
             self.get_infos2(path)
 
 def sighandler(signum, frame):
-    print s % (1, 91, "  !! Signal %s received, Abort" % signum)
-    print s % (1, 91, "  !! Frame: %s" % frame)
+    print s % (1, 91, "  !! Signal:"), signum
+    #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
 def main(argv):

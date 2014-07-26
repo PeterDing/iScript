@@ -355,8 +355,7 @@
 
         bp a     /path/to/a.torrent ..        /path/to    -v -t m,i   # 使用网盘中torrent
         # 注意   ---------------------        --------
-                           |                      |
-                           |                      |
+                           ↓                      ↓
                   网盘中的torrent           只能是 /path/to/a.torrent 中的 /path/to
 
     magnet离线下载 -- 文件选择:
