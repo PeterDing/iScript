@@ -1676,10 +1676,10 @@ class panbaiducom_HOME(object):
                 print ''
                 self.job([str(j['task_id'])])
                 if args.view:
-                    files = [os.path.join(remotepath, bt_info[int(i) - 1]['file_name']) \
-                        for i in selected_idx]
-                    for i in files:
-                        print i
+                    for i in selected_idx:
+                        size = sizeof_fmt(int(bt_info[int(i) - 1]['size'])).rjust(7)
+                        filepath = os.path.join(remotepath, bt_info[int(i) - 1]['file_name'])
+                        print s % (1, 91, size), filepath
                 return
 
     def _add_task(self, url, remotepath):
@@ -2064,6 +2064,8 @@ def main(argv):
  # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
                                      -t d # 文件夹
  # rnr 中 foo bar 都是 regex
+ # -y, --yes 参数不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不用使用。
+ rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
  # 搜索
  f   或 find keyword1 keyword2 .. [directory]             非递归搜索
@@ -2126,6 +2128,7 @@ def main(argv):
 
  -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
  -p, --play                          play with mpv
+ -y, --yes                           yes # 用于 rmre, mvre, cpre, ！！慎用
  -v, --view                          view detail
                                      eg: bp a magnet /path -v  # 离线下载并显示下载的文件
                                      bp d -p url1 url2 .. -v  # 显示播放文件的完整路径
@@ -2195,7 +2198,7 @@ def main(argv):
     p.add_argument('-E', '--exclude', action='store', \
         default=None, type=str, help='排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"')
     p.add_argument('-c', '--ls_color', action='store', default='on', \
-        choices=['on', 'off'], type=str, help='递归 ls')
+        choices=['on', 'off'], type=str, help='ls 颜色，默认是on')
     global args
     comd = argv[1]
     if comd == 'rnr' or comd == 'rnre':

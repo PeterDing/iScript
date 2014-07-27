@@ -102,9 +102,11 @@ class bt(object):
 
         def do(url, proxies=None, data=None):
             r = ss.get(url, proxies=proxies) if not data else ss.post(url, data=data, proxies=proxies)
-            if r.ok and r.content and '<head>' not in r.content:
+            cnt = r.content
+            if r.ok and cnt and '<head>' not in cnt \
+                and ':announce' in cnt and ':path' in cnt:
                 print s % (1, 92, u'  √ get torrent.')
-                return r.content
+                return cnt
             else:
                 print s % (1, 91, u'  × not get.')
                 return None

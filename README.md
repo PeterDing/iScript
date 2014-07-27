@@ -272,6 +272,7 @@
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
+        -y, --yes                           yes # 用于 rmre, mvre, cpre, ！！慎用
         -q, --quiet                         无输出模式
         -v, --view                          view detail
                                             eg: a magnet /path -v  # 离线下载并显示下载的文件
