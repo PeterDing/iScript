@@ -220,6 +220,8 @@
             -t f # 文件
             -t d # 文件夹
         # rnr 中 foo bar 都是 regex
+        # -y, --yes 参数不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不用使用。
+        rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
         # 搜索
         f   或 find keyword1 keyword2 .. [directory]             非递归搜索

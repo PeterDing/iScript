@@ -1454,11 +1454,15 @@ class panbaiducom_HOME(object):
 
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
-        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower()
-        if ipt == 'y':
+        if args.yes:
+            print s % (1, 93, '  yes, to delete all the files')
             self.remove(paths)
         else:
-            print s % (1, 92, '  ++ aborted.')
+            ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower()
+            if ipt == 'y':
+                self.remove(paths)
+            else:
+                print s % (1, 92, '  ++ aborted.')
 
     def rmre(self, dirs):
         tinfos = []
@@ -1496,14 +1500,21 @@ class panbaiducom_HOME(object):
 
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
-        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower()
-        if ipt == 'y':
+        if args.yes:
+            print s % (1, 93, '  yes, to cmre all the files')
             if type == 'move':
                 self.move(paths, todir)
             elif type == 'copy':
                 self.copy(paths, todir)
         else:
-            print s % (1, 92, '  ++ aborted.')
+            ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower()
+            if ipt == 'y':
+                if type == 'move':
+                    self.move(paths, todir)
+                elif type == 'copy':
+                    self.copy(paths, todir)
+            else:
+                print s % (1, 92, '  ++ aborted.')
 
     def cmre(self, type, dirs, todir):
         tinfos = []
@@ -2154,6 +2165,8 @@ def main(argv):
         help='play with mpv')
     p.add_argument('-v', '--view', action='store_true', \
         help='view details')
+    p.add_argument('-y', '--yes', action='store_true', \
+        help='yes')
     p.add_argument('-q', '--quiet', action='store_true', \
         help='quiet for download and play')
     p.add_argument('-s', '--secret', action='store', \
