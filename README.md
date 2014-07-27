@@ -473,6 +473,7 @@
         http://torrentbox.sx
         http://www.torrenthound.com
         http://www.silvertorrent.org
+        http://magnet.vuze.com
 
     如果有更好的种子库，请提交issue
 

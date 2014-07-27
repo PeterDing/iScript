@@ -6,6 +6,8 @@ import os
 import sys
 import re
 from hashlib import sha1
+import binascii
+import base64
 import requests
 import urlparse
 import argparse
@@ -98,39 +100,40 @@ class bt(object):
     def get_torrent(self, hh):
         print s % (1, 93, '\n  ++ get torrent from web')
 
+        def do(url, proxies=None, data=None):
+            r = ss.get(url, proxies=proxies) if not data else ss.post(url, data=data, proxies=proxies)
+            if r.ok and r.content and '<head>' not in r.content:
+                print s % (1, 92, u'  √ get torrent.')
+                return r.content
+            else:
+                print s % (1, 91, u'  × not get.')
+                return None
+
         ## with xunlei
-        print s % (1, 94, '  >> try:'), 'http://bt.box.n0808.com'
+        print s % (1, 94, '  >> try:'), 'bt.box.n0808.com'
         url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' % (hh[:2], hh[-2:], hh)
         ss.headers['Referer'] = 'http://bt.box.n0808.com'
-        r = ss.get(url)
-        if r.ok and r.content and '<head>' not in r.content:
-            print s % (1, 92, u'  √ get torrent.')
-            return r.content
-        else:
-            print s % (1, 91, u'  × not get.')
+        result = do(url)
+        if result: return result
 
-        ## with https://zoink.it
+        ## with https://torrage.com
         if ss.headers.get('Referer'): del ss.headers['Referer']
         if args.proxy:
-            print s % (1, 94, '  >> try:'), 'http://torrage.com'
+            print s % (1, 94, '  >> try:'), 'torrage.com'
             proxies = {
                 'http': args.proxy if args.proxy.startswith('http://') \
                 else 'http://' + args.proxy
             }
             url = 'http://torrage.com/torrent/%s.torrent' % hh
             try:
-                r = ss.get(url, proxies=proxies)
-                if r.ok:
-                    print s % (1, 92, u'  √ get torrent.')
-                    return r.content
-                else:
-                    print s % (1, 91, u'  × not get.')
+                result = do(url, proxies=proxies)
+                if result: return result
             except:
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with http://btcache.me
         if ss.headers.get('Referer'): del ss.headers['Referer']
-        print s % (1, 94, '  >> try:'), 'http://btcache.me'
+        print s % (1, 94, '  >> try:'), 'btcache.me'
         url = 'http://btcache.me/torrent/%s' % hh
         r = ss.get(url)
         key = re.search(r'name="key" value="(.+?)"', r.content)
@@ -140,12 +143,8 @@ class bt(object):
             }
             ss.headers['Referer'] = url
             url = 'http://btcache.me/download'
-            r = ss.post(url, data=data)
-            if r.ok and r.content and '<head>' not in r.content:
-                print s % (1, 92, u'  √ get torrent.')
-                return r.content
-            else:
-                print s % (1, 91, u'  × not get.')
+            result = do(url, data=data, proxies=proxies)
+            if result: return result
         else:
             print s % (1, 91, u'  × not get.')
 
@@ -166,14 +165,18 @@ class bt(object):
             print s % (1, 94, '  >> try:'), urlparse.urlparse(url).hostname
             url = url % hh
             try:
-                r = ss.get(url)
-                if r.ok and len(r.content) > 100 and '<head>' not in r.content:
-                    print s % (1, 92, u'  √ get torrent.')
-                    return r.content
-                else:
-                    print s % (1, 91, u'  × not get.')
+                result = do(url)
+                if result: return result
             except:
                 print s % (1, 91, '  !! Error at connection')
+
+        ## with Vuze
+        print s % (1, 94, '  >> try:'), 'magnet.vuze.com'
+        if ss.headers.get('Referer'): del ss.headers['Referer']
+        chh = base64.b32encode(binascii.unhexlify(hh))
+        url = 'http://magnet.vuze.com/magnetLookup?hash=%s' % chh
+        result = do(url)
+        if result: return result
 
         return False
 
