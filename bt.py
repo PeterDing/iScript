@@ -268,17 +268,47 @@ class bt(object):
             else:
                 print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
 
-def main(argv):
-    if len(argv) <= 1:
-        print usage
-        sys.exit()
+def import_magnet(froms):
+    ml = []
+    m_re = re.compile(r'btih:([a-zA-Z0-9]{40})')
 
+    def get_magnet(cm):
+        ls = m_re.findall(cm)
+        ls = ['magnet:?xt=urn:btih:' + i for i in ls]
+        return ls
+
+    for path in froms:
+        if path[0] == '~':
+            path = os.path.expanduser(path)
+        else:
+            path = os.path.abspath(path)
+
+        if os.path.isfile(path):
+            cm = open(path).read()
+            ls = get_magnet(cm)
+            ml += ls
+        elif os.path.isdir(path):
+            for a, b, c in os.walk(path):
+                for i in c:
+                    p = os.path.join(a, i)
+                    cm = open(p).read()
+                    ls = get_magnet(cm)
+                    ml += ls
+        else:
+            print s % (1, 91, '  !! path is wrong:'), path
+
+    t = set(ml)
+    return list(t)
+
+def main(argv):
     ######################################################
     # for argparse
     p = argparse.ArgumentParser(description='magnet torrent 互转，数字命名bt内容文件名' \
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
+    p.add_argument('-i', '--import_from', type=str, nargs='*', \
+        help='import magnet from local.')
     p.add_argument('-p', '--proxy', action='store', default='127.0.0.1:8087', \
         type=str, help='proxy for torrage.com, eg: -p 127.0.0.1:8087')
     p.add_argument('-d', '--directory', action='store', default=None, \
@@ -293,8 +323,8 @@ def main(argv):
     dir_ = os.getcwd() if not args.directory else args.directory
     if not os.path.exists(dir_):
         os.mkdir(dir_)
-    if comd == 'mt' or comd == 'm':   # magnet to torrent
-        urls = xxx
+    if comd == 'm' or comd == 'mt':   # magnet to torrent
+        urls = xxx if not args.import_from else import_magnet(args.import_from)
         x = bt()
         x.magnet2torrent(urls, dir_)
 
@@ -304,14 +334,14 @@ def main(argv):
         x.torrent2magnet(paths)
 
     elif comd == 'c' or comd == 'ct':   # change
-        ups = xxx
+        ups = xxx if not args.import_from else import_magnet(args.import_from)
         x = bt()
         x.change(ups, dir_, foo=None, bar=None)
 
     elif comd == 'cr' or comd == 'ctre':   # change
         foo = xxx[0]
         bar = xxx[1]
-        ups = xxx[2:]
+        ups = xxx[2:] if not args.import_from else import_magnet(args.import_from)
         x = bt()
         x.change(ups, dir_, foo=foo, bar=bar)
 

@@ -486,12 +486,14 @@
 
         # magnet 2 torrent
         m 或 mt magnet_link1 magnet_link2 .. [-d /path/to/save]
+        m -i /there/are/files -d new
 
         # torrent 2 magnet, 输出magnet
         t 或 tm path1 path2 ..
 
         # 过滤敏.感.词
         c 或 ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]
+        c -i /there/are/files and_other_dir -d new
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
 
@@ -504,6 +506,7 @@
         -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087 (默认)
         -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
         -n NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
+        -i localpath1 localpath2 .., --import_from localpath1 localpath2 ..      从本地文本文件导入magnet (用正则表达式匹配)
 
 3. 用法
 
