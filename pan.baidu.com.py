@@ -1311,6 +1311,8 @@ class panbaiducom_HOME(object):
         j = r.json()
         if j['errno'] == 0:
             print s % (1, 92, '  ++ success.')
+        elif j['errno'] == 12:
+            print s % (1, 91, '  !! Error at filemanager:'), "部分文件已存在于目标文件夹中"
         else:
             print s % (1, 91, '  !! Error at filemanager')
 
