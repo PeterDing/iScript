@@ -54,6 +54,12 @@ wget_es = {
 }
 ############################################################
 
+# file extensions
+mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov", ".mdf"}
+imagetype = {".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico"}
+doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
+archivetype = {".7z", ".a", ".ace", ".afa", ".alz", ".android", ".apk", ".ar", ".arc", ".arj", ".b1", ".b1", ".ba", ".bh", ".bz2", ".cab", ".cab", ".cfs", ".chm", ".cpio", ".cpt", ".cqm", ".dar", ".dd", ".dgc", ".dmg", ".ear", ".ecc", ".eqe", ".exe", ".f", ".gca", ".gz", ".ha", ".hki", ".html", ".ice", ".id", ".infl", ".iso", ".jar", ".kgb", ".lbr", ".lha", ".lqr", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", ".mar", ".ms", ".net", ".package", ".pak", ".paq6", ".paq7", ".paq8", ".par", ".par2", ".partimg", ".pea", ".pim", ".pit", ".qda", ".rar", ".rk", ".rz", ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx", ".tar", ".tbz2", ".tgz", ".tlz", ".tqt", ".uc", ".uc0", ".uc2", ".uca", ".ucn", ".ue2", ".uha", ".ur2", ".war", ".web", ".wim", ".x", ".xar", ".xp3", ".xz", ".yz1", ".z", ".zip", ".zipx", ".zoo", ".zpaq", ".zz"}
+
 s = '\x1b[%s;%sm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookies')
@@ -261,9 +267,9 @@ class panbaiducom_HOME(object):
                 if head else []
             keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())] \
                 if tail else []
-            keys3 = [i for i in tdict.keys() if re.search(include, i.decode('utf8', 'ignore'), flags=re.I)] \
+            keys3 = [i for i in tdict.keys() if re.search(include.decode('utf8', 'ignore'), i, flags=re.I)] \
                 if include else []
-            keys4 = [i for i in tdict.keys() if not re.search(exclude, i.decode('utf8', 'ignore'), flags=re.I)] \
+            keys4 = [i for i in tdict.keys() if not re.search(exclude.decode('utf8', 'ignore'), i, flags=re.I)] \
                 if exclude else []
 
             # intersection
@@ -470,6 +476,10 @@ class panbaiducom_HOME(object):
                                 for i in j['list']:
                                     dir_loop.append(i['path'].encode('utf8')) \
                                         if i['isdir'] else None
+
+                            if args.play:
+                                j['list'] = [i for i in j['list'] \
+                                    if not i['isdir'] and os.path.splitext(i['server_filename'])[-1] in mediatype]
 
                             if args.head or args.tail or args.include or args.exclude:
                                 j['list'] = self._sift(j['list'])
@@ -1592,11 +1602,6 @@ class panbaiducom_HOME(object):
             return j['magnet_info'], ''
 
     def _get_selected_idx(self, infos):
-        mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov", ".mdf"}
-        imagetype = {".jpg", ".jpeg", ".gif", ".bmp", ".png", ".jpe", ".cur", ".svg", ".svgz", ".tif", ".tiff", ".ico"}
-        doctype = {".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".vsd", ".txt", ".pdf", ".ods", ".ots", ".odt", ".rtf", ".dot", ".dotx", ".odm", ".pps", ".pot", ".xlt", ".xltx", ".csv", ".ppsx", ".potx", ".epub", ".apk", ".exe", ".msi", ".ipa", ".torrent", ".mobi"}
-        archivetype = {".7z", ".a", ".ace", ".afa", ".alz", ".android", ".apk", ".ar", ".arc", ".arj", ".b1", ".b1", ".ba", ".bh", ".bz2", ".cab", ".cab", ".cfs", ".chm", ".cpio", ".cpt", ".cqm", ".dar", ".dd", ".dgc", ".dmg", ".ear", ".ecc", ".eqe", ".exe", ".f", ".gca", ".gz", ".ha", ".hki", ".html", ".ice", ".id", ".infl", ".iso", ".jar", ".kgb", ".lbr", ".lha", ".lqr", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", ".mar", ".ms", ".net", ".package", ".pak", ".paq6", ".paq7", ".paq8", ".par", ".par2", ".partimg", ".pea", ".pim", ".pit", ".qda", ".rar", ".rk", ".rz", ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx", ".tar", ".tbz2", ".tgz", ".tlz", ".tqt", ".uc", ".uc0", ".uc2", ".uca", ".ucn", ".ue2", ".uha", ".ur2", ".war", ".web", ".wim", ".x", ".xar", ".xp3", ".xz", ".yz1", ".z", ".zip", ".zipx", ".zoo", ".zpaq", ".zz"}
-
         types = args.type_.split(',')
         if not args.type_: return []
         if 'a' in types: return []
