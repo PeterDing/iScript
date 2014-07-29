@@ -173,12 +173,12 @@ class bt(object):
                 print s % (1, 91, '  !! Error at connection')
 
         ## with Vuze
-        print s % (1, 94, '  >> try:'), 'magnet.vuze.com'
-        if ss.headers.get('Referer'): del ss.headers['Referer']
-        chh = base64.b32encode(binascii.unhexlify(hh))
-        url = 'http://magnet.vuze.com/magnetLookup?hash=%s' % chh
-        result = do(url)
-        if result: return result
+        #print s % (1, 94, '  >> try:'), 'magnet.vuze.com'
+        #if ss.headers.get('Referer'): del ss.headers['Referer']
+        #chh = base64.b32encode(binascii.unhexlify(hh))
+        #url = 'http://magnet.vuze.com/magnetLookup?hash=%s' % chh
+        #result = do(url)
+        #if result: return result
 
         return False
 
