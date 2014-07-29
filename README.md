@@ -260,6 +260,14 @@
         # 显示文件size, md5
         l path1 path2 .. -v
 
+        # 查看文件占用空间
+        du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
+        du path1 path2 .. -R            文件夹下所有*文件(包含下层文件夹)*总大小
+                                        如果下层文件多，会花一些时间
+        # 相当于 l path1 path2 .. -t du [-R]
+        # eg:
+        du /doc /videos -R
+
         # 离线下载
         a 或 add http https ftp ed2k .. remotepath
         a 或 add magnet .. remotepath [-t {m,i,d,p}]
@@ -289,6 +297,7 @@
                                             u -t r  # 只进行 rapidupload
                                             u -t e  # 如果云端已经存在则不上传(不比对md5)
                                             u -t r,e
+                                            l -t du  # 查看文件占用空间
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
         -R, --recursive                     递归, 用于ls, find, rmre, rnre, rmre, cpre

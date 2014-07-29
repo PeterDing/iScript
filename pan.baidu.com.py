@@ -508,6 +508,7 @@ class panbaiducom_HOME(object):
                                     'dir_': os.path.split(t)[0],
                                     'dlink': i['dlink'].encode('utf8'),
                                     'name': i['server_filename'].encode('utf8'),
+                                    'size': i['size'],
                                     'nn': nn,
                                     'total_file': total_file
                                 }
@@ -522,7 +523,8 @@ class panbaiducom_HOME(object):
                         'dir_': os.path.split(t)[0],
                         #'dlink': self._get_dlink(meta['info'][0]),
                         'dlink': meta['info'][0]['dlink'].encode('utf8'),
-                        'name': meta['info'][0]['server_filename'].encode('utf8')
+                        'name': meta['info'][0]['server_filename'].encode('utf8'),
+                        'size': meta['info'][0]['size'],
                     }
                     self._download_do(infos)
 
@@ -540,7 +542,8 @@ class panbaiducom_HOME(object):
                 return 0
 
         num = random.randint(0, 7) % 7
-        col = s % (2, num + 90, infos['file'])
+        col = sizeof_fmt(infos['size']) + ' # ' + s % (2, num + 90, infos['path']) \
+            if args.view else s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
         print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
@@ -577,8 +580,8 @@ class panbaiducom_HOME(object):
     @staticmethod
     def _play_do(infos):
         num = random.randint(0, 7) % 7
-        col = s % (2, num + 90, infos['path']) if args.view \
-            else s % (2, num + 90, infos['name'])
+        col = sizeof_fmt(infos['size']) + ' # ' + s % (2, num + 90, infos['path']) \
+            if args.view else s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
         print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', \
@@ -1259,23 +1262,29 @@ class panbaiducom_HOME(object):
             print dir_ + ':'
             for info in infos:
                 self._find_display(info)
+            print ''
         else:
             self._find_display(infos)
 
     def _ls_directory(self, order, desc, path):
         directorys = [path.decode('utf8', 'ignore')]
         y = 1
+        sum_size = 0
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
             tinfos = infos
             if args.head or args.tail or args.include or args.exclude:
                 tinfos = self._sift(infos)
-            self._ls_display(tinfos, dir_)
+            if args.type_ != 'du':
+                self._ls_display(tinfos, dir_)
+            else:
+                sum_size += sum([i['size'] for i in tinfos])
             if args.recursive:
                 subdirs = [i['path'] for i in infos if i['isdir']]
                 directorys[y:y] = subdirs
                 y += 1
-            print ''
+
+        if args.type_ == 'du': print 'd', s % (1, 91, sizeof_fmt(sum_size)), sum_size, directorys[0]
 
     def ls(self, order, desc, paths):
         for path in paths:
@@ -1284,6 +1293,7 @@ class panbaiducom_HOME(object):
                 if meta['info'][0]['isdir']:
                     self._ls_directory(order, desc, path)
                 else:
+                    if args.type_ == 'du': args.view = True
                     self._ls_display(meta['info'][0])
             else:
                 print s % (1, 91, '  !! path is not existed.\n'), \
@@ -2107,6 +2117,14 @@ def main(argv):
  # 显示文件size, md5
  sl path1 path2 .. -v
 
+ # 查看文件占用空间
+ du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
+ du path1 path2 .. -R            文件夹下所有*文件(包含下层文件夹)*总大小
+                                 如果下层文件多，会花一些时间
+ # 相当于 l path1 path2 .. -t du [-R]
+ # eg:
+ du /doc /videos -R
+
  # 离线下载
  a 或 add http https ftp ed2k .. remotepath
  a 或 add magnet .. remotepath [-t {m,i,d,p}]
@@ -2148,6 +2166,7 @@ def main(argv):
                                      u -t r  # 只进行 rapidupload
                                      u -t e  # 如果云端已经存在则不上传(不比对md5)
                                      u -t r,e
+                                     l -t du  # 查看文件占用空间
  -l amount, --limit amount           下载速度限制，eg: -l 100k
  -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
  -R, --recursive                     递归, 用于ls, find, rmre, rnre, rmre, cpre
@@ -2361,6 +2380,7 @@ def main(argv):
         or comd == 'cp' or comd == 'copy' \
         or comd == 'rn' or comd == 'rename' \
         or comd == 'l' or comd == 'll' \
+        or comd == 'du' \
         or comd == 'ln' or comd == 'lnn'\
         or comd == 'ls' or comd == 'lss' \
         or comd == 'lt' or comd == 'ltt':
@@ -2392,6 +2412,9 @@ def main(argv):
         elif comd == 'rn' or comd == 'rename':
             x.rename(xxx[0], xxx[1])
         elif comd == 'l' or comd == 'ln':
+            x.ls('name', None, xxx)
+        elif comd == 'du':
+            args.type_ = 'du'
             x.ls('name', None, xxx)
         elif comd == 'll' or comd == 'lnn':
             x.ls('name', 1, xxx)
