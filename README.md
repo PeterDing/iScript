@@ -181,6 +181,8 @@
     <a name="cmd"></a>
     命令:
 
+    **!!注意：命令参数中，所有网盘的路径必须是 绝对路径**
+
         # 登录
         g
         login
@@ -233,6 +235,7 @@
         fn  keyword1 keyword2 .. [directory]                     非递归搜索 by name
         fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
         # 递归搜索加 -R
+        f 'ice and fire' /doc -R
         # directory 默认为 /
         # 关于-H, -T, -I, -E
         f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
@@ -247,15 +250,15 @@
         ltt path1 path2 ..                             ls by time 反序
         ls path1 path2 ..                              ls by size
         lss path1 path2 ..                             ls by size 反序
-        # sl 是以上ls命令中的一个.
-        # 以下是只ls文件或文件夹
-        sl -t f path1 path2 ..                         ls files
-        sl -t d path1 path2 ..                         ls directorys
+        l /doc/books /videos
+        # 以下是只列出文件或文件夹
+        l -t f path1 path2 ..                         ls files
+        l -t d path1 path2 ..                         ls directorys
         # 关于-H, -T, -I, -E
-        sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
-        sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+        l -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+        l -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         # 显示文件size, md5
-        sl path1 path2 .. -v
+        l path1 path2 .. -v
 
         # 离线下载
         a 或 add http https ftp ed2k .. remotepath
