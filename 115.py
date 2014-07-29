@@ -153,7 +153,7 @@ class pan115(object):
         }
 
         url = 'http://web.api.115.com/files'
-        j = json.loads(ss.get(url, params=params).content[3:])
+        j = ss.get(url, params=params).json()
 
         dir_loop1 = [{'dir': j['path'][-1]['name'], 'cid': j['cid']}]
         dir_loop2 = []
@@ -161,7 +161,7 @@ class pan115(object):
         while dir_loop1:
             for d in dir_loop1:
                 params['cid'] = d['cid']
-                j = json.loads(ss.get(url, params=params).content[3:])
+                j = ss.get(url, params=params).json()
                 if j['errNo'] == 0 and j['data']:
                     if args.type_:
                         j['data'] = [x for x in j['data'] if x.get('ns') \
