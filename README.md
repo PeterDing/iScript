@@ -881,7 +881,13 @@
 
     \# tm是tumblr.py的马甲 (alias tm='python2 /path/to/tumblr.py')
 
+        # 下载某个tumblr
         tm http://sosuperawesome.tumblr.com/
+        tm http://sosuperawesome.tumblr.com/ -t beautiful
+
+        # 指定tag下载
+        tm beautiful
+        tm cool
 
 ---
 
