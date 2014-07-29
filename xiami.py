@@ -150,7 +150,7 @@ class xiami(object):
         self.template_song = 'http://www.xiami.com/song/gethqsong/sid/%s'
         self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
 
-        self.showcollect_id = ''
+        self.collect_id = ''
         self.album_id = ''
         self.artist_id = ''
         self.song_id = ''
@@ -297,8 +297,8 @@ class xiami(object):
 
     def url_parser(self, urls):
         for url in urls:
-            if '/showcollect/' in url:
-                self.showcollect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
+            if '/collect/' in url:
+                self.collect_id = re.search(r'/collect/(\d+)', url).group(1)
                 #print(s % (2, 92, u'\n  -- 正在分析精选集信息 ...'))
                 self.download_collect()
             elif '/album/' in url:
@@ -457,7 +457,7 @@ class xiami(object):
         self.download(amount_songs, args.from_)
 
     def download_collect(self):
-        j = ss.get(url_collect % self.showcollect_id).json()
+        j = ss.get(url_collect % self.collect_id).json()
         d = modificate_text(j['collect']['name'])
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
@@ -659,9 +659,9 @@ class xiami(object):
         tags = args.tags
         for url in urls:
             if '/showcollect/' in url:
-                showcollect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
-                print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/showcollect/' + showcollect_id
-                result = self._save_do(showcollect_id, 4, tags)
+                collect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/showcollect/' + collect_id
+                result = self._save_do(collect_id, 4, tags)
 
             elif '/album/' in url:
                 album_id = re.search(r'/album/(\d+)', url).group(1)
