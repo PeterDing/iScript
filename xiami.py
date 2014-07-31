@@ -450,8 +450,9 @@ class xiami(object):
         self.download()
 
     def download_album(self):
-        self.song_infos = self.get_album_infos(self.album_id)[args.from_ - 1:]
-        amount_songs = unicode(len(self.song_infos))
+        song_infos = self.get_album_infos(self.album_id)
+        amount_songs = unicode(len(song_infos))
+        self.song_infos = song_infos[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         self.download(amount_songs, args.from_)
@@ -566,14 +567,14 @@ class xiami(object):
         else:
             return 'l'
 
-    def play(self, nn=u'1', n=u'1'):
+    def play(self, nn=u'1', n=1):
         for i in self.song_infos:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
             mp3_quality = self.get_mp3_quality(durl)
             i['durl_is_H'] = mp3_quality
             self.display_infos(i, nn, n)
-            n == int(n) + 1
+            n = int(n) + 1
             os.system('mpv --really-quiet %s' % durl)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
