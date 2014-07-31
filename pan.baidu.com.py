@@ -461,7 +461,7 @@ class panbaiducom_HOME(object):
 
     def download(self, paths):
         for path in paths:
-            path = self._get_path(path)
+            path = self._get_path(path) if path[0] != '/' else path
             base_dir = '' if os.path.split(path)[0] == '/' \
                 else os.path.split(path)[0]
 
@@ -2294,7 +2294,7 @@ def main(argv):
 
         for path in paths:
             if path[0] == '/':
-                paths1.append('path=%s' % path)
+                paths1.append(path)
             elif '/disk/home' in path or 'path=' in path:
                 paths1.append(path)
             elif 'baidu.com/pcloud/album/file' in path:
