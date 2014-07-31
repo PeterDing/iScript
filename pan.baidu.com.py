@@ -553,18 +553,19 @@ class panbaiducom_HOME(object):
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
             tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
             cmd = 'aria2c -c%s%s%s ' \
-                '-o "%s.tmp" -d "%s" '\
-                '--user-agent "%s" ' \
+                '-o "%s.tmp" -d "%s" ' \
+                '--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
                 % (quiet, taria2c, tlimit, infos['name'], \
-                    infos['dir_'], headers['User-Agent'], infos['dlink'])
+                    infos['dir_'], infos['dlink'])
         else:
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
             cmd = 'wget -c%s%s ' \
-                '-O "%s.tmp" --user-agent "%s" ' \
+                '-O "%s.tmp" ' \
+                '--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, tlimit, infos['file'], headers['User-Agent'], infos['dlink'])
+                % (quiet, tlimit, infos['file'], infos['dlink'])
 
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
