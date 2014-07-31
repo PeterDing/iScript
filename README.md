@@ -222,7 +222,7 @@
             -t f # 文件
             -t d # 文件夹
         # rnr 中 foo bar 都是 regex
-        # -y, --yes 参数不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不用使用。
+        # -y, --yes   # 不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不要使用。
         rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
         # 搜索
@@ -505,7 +505,7 @@
 
         # 过滤敏.感.词
         c 或 ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]
-        c -i /there/are/files and_other_dir -d new
+        c -i /there/are/files and_other_dir -d new    # 从文件或文件夹中寻找 magnet，再过滤
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
 
@@ -535,6 +535,9 @@
         # 用torrage.com
         bt m magnet_link1 path1 .. -p 127.0.0.1:8087
         bt c magnet_link1 path1 .. -p 127.0.0.1:8087
+
+        # 从文件或文件夹中寻找 magnet，再过滤
+        bt c -i ~/Downloads -d new
 
         # 使用正则表达式过滤敏.感.词
         bp cr '.*(old).*' '\1'  magnet_link

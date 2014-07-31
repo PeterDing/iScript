@@ -479,7 +479,7 @@ class panbaiducom_HOME(object):
 
                             if args.play:
                                 j['list'] = [i for i in j['list'] \
-                                    if not i['isdir'] and os.path.splitext(i['server_filename'])[-1] in mediatype]
+                                    if not i['isdir'] and os.path.splitext(i['server_filename'])[-1].lower() in mediatype]
 
                             if args.head or args.tail or args.include or args.exclude:
                                 j['list'] = self._sift(j['list'])
@@ -2081,7 +2081,7 @@ def main(argv):
  # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
                                      -t d # 文件夹
  # rnr 中 foo bar 都是 regex
- # -y, --yes 参数不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不用使用。
+ # -y, --yes  # 不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不要使用。
  rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
  # 搜索
