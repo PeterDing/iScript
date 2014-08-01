@@ -591,15 +591,15 @@ class panbaiducom_HOME(object):
         if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
             quiet = ' -really-quiet' if args.quiet else ''
             cmd = 'mplayer%s -cache 10000 ' \
-                '-http-header-fields "user-agent:%s" ' \
+                '-http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, headers['User-Agent'], infos['dlink'])
+                % (quiet, infos['dlink'])
         else:
             quiet = ' --really-quiet' if args.quiet else ''
             cmd = 'mpv%s --cache 10000 --cache-default 10000 ' \
-                '--http-header-fields "user-agent:%s" '\
+                '--http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, headers['User-Agent'], infos['dlink'])
+                % (quiet, infos['dlink'])
 
         status = os.system(cmd)
         timeout = 1
@@ -1742,6 +1742,7 @@ class panbaiducom_HOME(object):
                         print s % (1, 91, '  !! file is not existed.\n'), \
                             ' --------------\n ', url
                         continue
+                    remotepath = os.path.split(url)[0]
                 self._add_bt(url, remotepath)
             elif url.startswith('http'):
                 self._add_task(url, remotepath)
@@ -2519,7 +2520,7 @@ def main(argv):
 
         args.type_ = 'm' if not args.type_ else args.type_  # default args.type_
 
-        if xxx[-1].startswith('/'):
+        if xxx[-1].startswith('/') and not xxx[0].startswith('/'):
             remotepath = xxx[-1] if xxx[-1][-1] == '/' else xxx[-1] + '/'
             urls = xxx[:-1]
         else:

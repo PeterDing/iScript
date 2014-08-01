@@ -368,10 +368,10 @@
         bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t a
         bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
 
-        bp a     /path/to/a.torrent ..        /path/to    -v -t m,i   # 使用网盘中torrent
-        # 注意   ---------------------        --------
-                           ↓                      ↓
-                  网盘中的torrent           只能是 /path/to/a.torrent 中的 /path/to
+        bp a     /path/to/a.torrent .. -v -t m,i   # 使用网盘中torrent，下载到/path/to
+        # 注意   ---------------------
+                           ↓
+                  网盘中的torrent
 
     magnet离线下载 -- 文件选择:
 
