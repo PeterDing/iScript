@@ -271,7 +271,7 @@
         # 离线下载
         a 或 add http https ftp ed2k .. remotepath
         a 或 add magnet .. remotepath [-t {m,i,d,p}]
-        a 或 add remote_torrent .. remotepath [-t {m,i,d,p}]   # 使用网盘中torrent
+        a 或 add remote_torrent .. [-t {m,i,d,p}]   # 使用网盘中torrent
 
         # 离线任务操作
         j  或 job                               # 列出离线下载任务
@@ -384,7 +384,7 @@
         remotepath 默认为 /
 
         bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t p,d
-        bp a /path/to/a.torrent .. /path/to -v -t m,i,d    # 使用网盘中torrent
+        bp a /download/a.torrent -v -t m,i,d    # 使用网盘中torrent，下载到/download
 
     离线任务操作:
 
