@@ -1784,8 +1784,8 @@ class panbaiducom_HOME(object):
                       s % (2, 97, ' source:'), "%s")
 
         for i in infos:
-            status_color = 92 if i['status'] == '0' else 91
             if i['result'] == 0:
+                status_color = 92 if i['status'] == '0' else 91
                 print template % (
                         i['id'].encode('utf8'),
                         status_color, self.jobstatus[i['status'].encode('utf8')],
@@ -1799,7 +1799,8 @@ class panbaiducom_HOME(object):
                       '%s %s\n' \
                       '------------------------------\n' \
                       % (s % (2, 97, '     id:'), s % (1, 97, i['id'].encode('utf8', 'ignore')), \
-                         s % (2, 91, '  Error:'), s % (2, 97, '要查询的task_id不存在'))
+                         #s % (2, 91, '  Error:'), s % (2, 97, '要查询的task_id不存在'))
+                         s % (2, 91, '  Error, info:'), i)
 
     def _query_task(self, jobids):
         p = {
