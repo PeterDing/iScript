@@ -129,14 +129,13 @@ class pan115(object):
 
     def get_dlink(self, pc):
         params = {
-            "ct": "app",
-            "ac": "get",
-            "pick_code": pc.encode('utf8')
+            "pickcode": pc.encode('utf8'),
+            "_": int(time.time()*1000),
         }
-        url = 'http://115.com'
+        url = 'http://web.api.115.com/files/download'
         r = ss.get(url, params=params)
         j = r.json()
-        dlink = j['data']['url'].encode('utf8')
+        dlink = j['file_url'].encode('utf8')
         return dlink
 
     def get_infos(self, cid):
@@ -215,30 +214,19 @@ class pan115(object):
 
         if args.aria2c:
             # 115 普通用户只能有4下载通道。
-            if args.limit:
-                cmd = 'aria2c -c -s4 -x4 ' \
-                    '--max-download-limit %s ' \
-                    '-o "%s.tmp" -d "%s" ' \
-                    '--user-agent "%s" ' \
-                    '--header "Referer:http://m.115.com/" "%s"' \
-                    % (args.limit, infos['name'], infos['dir_'],\
-                        headers['User-Agent'], infos['dlink'])
-            else:
-                cmd = 'aria2c -c -s4 -x4 ' \
-                    '-o "%s.tmp" -d "%s" --user-agent "%s" ' \
-                    '--header "Referer:http://m.115.com/" "%s"' \
-                    % (infos['name'], infos['dir_'], headers['User-Agent'], \
-                        infos['dlink'])
+            tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
+            cmd = 'aria2c -c -s4 -x4%s ' \
+                '-o "%s.tmp" -d "%s" ' \
+                '--user-agent "%s" ' \
+                '--header "Referer:http://m.115.com/" "%s"' \
+                % (tlimit, infos['name'], infos['dir_'],\
+                    headers['User-Agent'], infos['dlink'])
         else:
-            if args.limit:
-                cmd = 'wget -c --limit-rate %s ' \
-                    '-O "%s.tmp" --user-agent "%s" ' \
-                    '--header "Referer:http://m.115.com/" "%s"' \
-                    % (args.limit, infos['file'], headers['User-Agent'], infos['dlink'])
-            else:
-                cmd = 'wget -c -O "%s.tmp" --user-agent "%s" ' \
-                    '--header "Referer:http://m.115.com/" "%s"' \
-                    % (infos['file'], headers['User-Agent'], infos['dlink'])
+            tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
+            cmd = 'wget -c%s ' \
+                '-O "%s.tmp" --user-agent "%s" ' \
+                '--header "Referer:http://m.115.com/" "%s"' \
+                % (tlimit, infos['file'], headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
