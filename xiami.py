@@ -575,7 +575,11 @@ class xiami(object):
             i['durl_is_H'] = mp3_quality
             self.display_infos(i, nn, n)
             n = int(n) + 1
-            os.system('mpv --really-quiet %s' % durl)
+            cmd = 'mpv --really-quiet ' \
+                '--user-agent "%s" ' \
+                '"%s"' \
+                % (headers['User-Agent'], durl)
+            os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
             if ii:
