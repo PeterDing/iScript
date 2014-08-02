@@ -53,7 +53,11 @@
 
 2. 使用说明
 
-    初次使用需要登录 xm login  # **暂时不支持淘宝账户**
+    初次使用需要登录 xm login
+
+    **支持淘宝账户**         xm logintaobao
+
+    **对于淘宝账户，登录后只保存有关虾米的cookies，删除了有关淘宝的cookies**
 
     **vip账户**支持高品质音乐的下载和播放。
 
@@ -67,11 +71,17 @@
 
     命令:
 
-        # 登录
+        # 虾米账号登录
         g
         login
         login username
         login username password
+
+        # 淘宝账号登录
+        gt
+        logintaobao
+        logintaobao username
+        logintaobao username password
 
         signout                      # 退出登录
 
@@ -134,6 +144,8 @@
 > http://www.blackglory.me/xiami-vip-audition-with-no-quality-difference-between-downloading/
 
 > https://gist.github.com/lepture/1014329
+
+> 淘宝登录代码: https://github.com/ly0/xiami-tools
 
 ---
 

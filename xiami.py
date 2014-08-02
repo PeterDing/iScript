@@ -208,6 +208,78 @@ class xiami(object):
         ss.post(url, data=data)
         self.save_cookies()
 
+    # {{{ code from https://github.com/ly0/xiami-tools/blob/master/xiami.py
+    def login_taobao(self, username, password):
+        print s % (1, 97, '\n  -- login taobao')
+
+        p = {
+            "lang": "zh_cn",
+            "appName": "xiami",
+            "appEntrance": "taobao",
+            "cssLink": "",
+            "styleType": "vertical",
+            "bizParams": "",
+            "notLoadSsoView": "",
+            "notKeepLogin": "",
+            "appName": "xiami",
+            "appEntrance": "taobao",
+            "cssLink": "https://h.alipayobjects.com/static/applogin/assets/login/mini-login-form-min.css",
+            "styleType": "vertical",
+            "bizParams": "",
+            "notLoadSsoView": "true",
+            "notKeepLogin": "true",
+            "rnd": str(random.random()),
+        }
+        url = 'https://passport.alipay.com/mini_login.htm'
+        r = ss.get(url, params=p)
+        cm = r.content
+
+        data = {
+            "loginId": username,
+            "password": password,
+            "appName": "xiami",
+            "appEntrance": "taobao",
+            "hsid": re.search(r'"hsid" value="(.+?)"', cm).group(1),
+            "cid": re.search(r'"cid" value="(.+?)"', cm).group(1),
+            "rdsToken": re.search(r'"rdsToken" value="(.+?)"', cm).group(1),
+            "umidToken": re.search(r'"umidToken" value="(.+?)"', cm).group(1),
+            "_csrf_token": re.search(r'"_csrf_token" value="(.+?)"', cm).group(1),
+            "checkCode": "",
+        }
+        url = 'https://passport.alipay.com/newlogin/login.do?fromSite=0'
+        theaders = headers
+        theaders['Referer'] = 'https://passport.alipay.com/mini_login.htm'
+
+        while True:
+            r = ss.post(url, data=data, headers=theaders)
+            j = r.json()
+
+            if j['content']['status'] == -1:
+                if 'titleMsg' not in j['content']['data']: continue
+                err_msg = j['content']['data']['titleMsg']
+                if err_msg == u'请输入验证码' or err_msg == u'验证码错误，请重新输入':
+                    captcha_url = 'http://pin.aliyun.com/get_img?identity=passport.alipay.com&sessionID=%s' % data['cid']
+                    tr = ss.get(captcha_url, headers=theaders)
+                    path = os.path.join(os.path.expanduser('~'), 'vcode.jpg')
+                    with open(path, 'w') as g:
+                        img = tr.content
+                        g.write(img)
+                    print "  ++ 验证码已经保存至", s % (2, 91, path)
+                    captcha = raw_input((s % (2, 92, u'  请输入验证码: ')).encode('utf8'))
+                    data['checkCode'] = captcha
+                    continue
+
+            url = 'http://www.xiami.com/accounts/back?st=%s' % j['content']['data']['st']
+            ss.get(url, headers=theaders)
+
+            # delete taobao cookies, only save xiami cookies
+            for i in ss.cookies.keys():
+                if i not in ('_unsign_token', '_xiamitoken', 'member_auth', 'user'):
+                    ss.cookies.__delitem__(i)
+            self.save_cookies()
+            return
+    # }}}
+
     def get_validate(self):
         url = 'https://login.xiami.com/coop/checkcode?forlogin=1&%s' \
             % int(time.time())
@@ -716,9 +788,12 @@ def main(argv):
     comd = argv[1]
     xxx = args.xxx
 
-    if comd == 'login' or comd == 'g':
+    if comd == 'login' or comd == 'g' \
+        or comd == 'logintaobao' or comd == 'gt':
         if len(xxx) < 1:
-            email = raw_input(s % (1, 97, '     email: '))
+            email = raw_input(s % (1, 97, '  username: ') \
+                if comd == 'logintaobao' or comd == 'gt' \
+                else s % (1, 97, '     email: '))
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx) == 1:
             email = xxx[0]
@@ -727,10 +802,13 @@ def main(argv):
             email = xxx[0]
             password = xxx[1]
         else:
-            print s % (1, 91, '  login\n  login email\n  login email password')
+            print s % (1, 91, '  login\n  login email\n  login email password\n  logintaobao\n  logintaobao username\n  logintaobao username password')
 
         x = xiami()
-        x.login(email, password)
+        if comd == 'logintaobao' or comd == 'gt':
+            x.login_taobao(email, password)
+        else:
+            x.login(email, password)
         is_signin = x.check_login()
         if is_signin:
             print s % (1, 92, '  ++ login succeeds.')
