@@ -100,8 +100,8 @@ class bt(object):
     def get_torrent(self, hh):
         print s % (1, 93, '\n  ++ get torrent from web')
 
-        def do(url, proxies=None, data=None):
-            r = ss.get(url, proxies=proxies) if not data else ss.post(url, data=data, proxies=proxies)
+        def do(url, proxies=None, data=None, timeout=None):
+            r = ss.get(url, proxies=proxies, timeout=timeout)
             cnt = r.content
             if r.ok and cnt and '<head>' not in cnt \
                 and ':announce' in cnt and ':path' in cnt:
@@ -115,7 +115,7 @@ class bt(object):
         print s % (1, 94, '  >> try:'), 'bt.box.n0808.com'
         url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' % (hh[:2], hh[-2:], hh)
         ss.headers['Referer'] = 'http://bt.box.n0808.com'
-        result = do(url)
+        result = do(url, timeout=4)
         if result: return result
 
         ## with https://torrage.com

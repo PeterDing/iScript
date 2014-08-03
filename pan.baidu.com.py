@@ -1424,6 +1424,7 @@ class panbaiducom_HOME(object):
     # for file operate with regex
 
     def _rnre_do(self, foo, bar, infos):
+        ls = []
         for info in infos:
             # no change directory if recursion
             if args.recursive and info['isdir']: continue
@@ -1436,8 +1437,20 @@ class panbaiducom_HOME(object):
             dir_ = os.path.split(old_path)[0]
             new_path = os.path.join(dir_, new_filename).encode('utf8')
 
-            print s % (1, 97, '  ++ rename:'), old_path
-            self.rename(old_path, new_path)
+            ls.append((old_path, new_path))
+
+        if not ls: return
+
+        print '\n'.join([' '.join([o, s % (1, 92, '==>'), n]) for o, n in ls])
+        print s % (1, 93, '  matched above ↑')
+
+        ipt = raw_input(s % (1, 91, '  sure you want to rename all the files [y/n]: ')).lower() if not args.yes else True
+        if ipt == 'y':
+            for o, n in ls:
+                print s % (1, 97, '  ++ rename:'), ' '.join([o, s % (1, 92, ' ==> '), n])
+                self.rename(o, n)
+        else:
+            print s % (1, 92, '  ++ aborted.')
 
     def rnre(self, foo, bar, dirs):
         tinfos = []
@@ -1477,15 +1490,12 @@ class panbaiducom_HOME(object):
 
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
-        if args.yes:
-            print s % (1, 93, '  yes, to delete all the files')
+
+        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower() if not args.yes else True
+        if ipt == 'y':
             self.remove(paths)
         else:
-            ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower()
-            if ipt == 'y':
-                self.remove(paths)
-            else:
-                print s % (1, 92, '  ++ aborted.')
+            print s % (1, 92, '  ++ aborted.')
 
     def rmre(self, dirs):
         tinfos = []
@@ -1523,21 +1533,15 @@ class panbaiducom_HOME(object):
 
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
-        if args.yes:
-            print s % (1, 93, '  yes, to cmre all the files')
+
+        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower() if not args.yes else True
+        if ipt == 'y':
             if type == 'move':
                 self.move(paths, todir)
             elif type == 'copy':
                 self.copy(paths, todir)
         else:
-            ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower()
-            if ipt == 'y':
-                if type == 'move':
-                    self.move(paths, todir)
-                elif type == 'copy':
-                    self.copy(paths, todir)
-            else:
-                print s % (1, 92, '  ++ aborted.')
+            print s % (1, 92, '  ++ aborted.')
 
     def cmre(self, type, dirs, todir):
         tinfos = []
@@ -1585,7 +1589,7 @@ class panbaiducom_HOME(object):
         r = ss.post(url, params=p)
         j = r.json()
         if j.get('error_code'):
-            print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
+            print s % (1, 91, '  !! Error at _get_torrent_info:'), j['error_msg']
             return None, None
         else:
             return j['torrent_info']['file_info'], j['torrent_info']['sha1']
