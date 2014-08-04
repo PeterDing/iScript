@@ -1444,7 +1444,7 @@ class panbaiducom_HOME(object):
         print '\n'.join([' '.join([o, s % (1, 92, '==>'), n]) for o, n in ls])
         print s % (1, 93, '  matched above ↑')
 
-        ipt = raw_input(s % (1, 91, '  sure you want to rename all the files [y/n]: ')).lower() if not args.yes else True
+        ipt = raw_input(s % (1, 91, '  sure you want to rename all the files [y/n]: ')).lower() if not args.yes else 'y'
         if ipt == 'y':
             for o, n in ls:
                 print s % (1, 97, '  ++ rename:'), ' '.join([o, s % (1, 92, ' ==> '), n])
@@ -1491,7 +1491,7 @@ class panbaiducom_HOME(object):
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
 
-        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower() if not args.yes else True
+        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower() if not args.yes else 'y'
         if ipt == 'y':
             self.remove(paths)
         else:
@@ -1534,7 +1534,7 @@ class panbaiducom_HOME(object):
         print '\n'.join(paths)
         print s % (1, 93, '  matched above ↑')
 
-        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower() if not args.yes else True
+        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower() if not args.yes else 'y'
         if ipt == 'y':
             if type == 'move':
                 self.move(paths, todir)
