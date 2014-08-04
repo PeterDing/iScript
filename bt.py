@@ -134,21 +134,21 @@ class bt(object):
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with http://btcache.me
-        #if ss.headers.get('Referer'): del ss.headers['Referer']
-        #print s % (1, 94, '  >> try:'), 'btcache.me'
-        #url = 'http://btcache.me/torrent/%s' % hh
-        #r = ss.get(url)
-        #key = re.search(r'name="key" value="(.+?)"', r.content)
-        #if key:
-            #data = {
-                #"key": key.group(1)
-            #}
-            #ss.headers['Referer'] = url
-            #url = 'http://btcache.me/download'
-            #result = do(url, data=data, proxies=proxies)
-            #if result: return result
-        #else:
-            #print s % (1, 91, u'  × not get.')
+        if ss.headers.get('Referer'): del ss.headers['Referer']
+        print s % (1, 94, '  >> try:'), 'btcache.me'
+        url = 'http://btcache.me/torrent/%s' % hh
+        r = ss.get(url)
+        key = re.search(r'name="key" value="(.+?)"', r.content)
+        if key:
+            data = {
+                "key": key.group(1)
+            }
+            ss.headers['Referer'] = url
+            url = 'http://btcache.me/download'
+            result = do(url, data=data, proxies=proxies)
+            if result: return result
+        else:
+            print s % (1, 91, u'  × not get.')
 
         ## some torrent stores
         if ss.headers.get('Referer'): del ss.headers['Referer']
