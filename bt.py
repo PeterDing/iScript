@@ -104,7 +104,7 @@ class bt(object):
             r = ss.get(url, proxies=proxies, timeout=timeout)
             cnt = r.content
             if r.ok and cnt and '<head>' not in cnt \
-                and ':announce' in cnt and ':path' in cnt:
+                and '4:name' in cnt:
                 print s % (1, 92, u'  √ get torrent.')
                 return cnt
             else:
@@ -134,35 +134,37 @@ class bt(object):
                 print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
 
         ## with http://btcache.me
-        if ss.headers.get('Referer'): del ss.headers['Referer']
-        print s % (1, 94, '  >> try:'), 'btcache.me'
-        url = 'http://btcache.me/torrent/%s' % hh
-        r = ss.get(url)
-        key = re.search(r'name="key" value="(.+?)"', r.content)
-        if key:
-            data = {
-                "key": key.group(1)
-            }
-            ss.headers['Referer'] = url
-            url = 'http://btcache.me/download'
-            result = do(url, data=data, proxies=proxies)
-            if result: return result
-        else:
-            print s % (1, 91, u'  × not get.')
+        #if ss.headers.get('Referer'): del ss.headers['Referer']
+        #print s % (1, 94, '  >> try:'), 'btcache.me'
+        #url = 'http://btcache.me/torrent/%s' % hh
+        #r = ss.get(url)
+        #key = re.search(r'name="key" value="(.+?)"', r.content)
+        #if key:
+            #data = {
+                #"key": key.group(1)
+            #}
+            #ss.headers['Referer'] = url
+            #url = 'http://btcache.me/download'
+            #result = do(url, data=data, proxies=proxies)
+            #if result: return result
+        #else:
+            #print s % (1, 91, u'  × not get.')
 
         ## some torrent stores
         if ss.headers.get('Referer'): del ss.headers['Referer']
-        urls = ['http://www.sobt.org/Tool/downbt?info=%s', \
-                #'http://www.win8down.com/url.php?hash=%s', \
-                #'http://www.31bt.com/Torrent/%s', \
-                'http://178.73.198.210/torrent/%s', \
-                'http://zoink.it/torrent/%s.torrent', \
-                'http://torcache.net/torrent/%s.torrent', \
-                'http://torrentproject.se/torrent/%s.torrent', \
-                'http://istoretor.com/fdown.php?hash=%s', \
-                'http://torrentbox.sx/torrent/%s', \
-                'http://www.torrenthound.com/torrent/%s', \
-                'http://www.silvertorrent.org/download.php?id=%s']
+        urls = [
+                #'http://www.sobt.org/Tool/downbt?info=%s',
+                'http://www.win8down.com/url.php?hash=%s&name=name',
+                #'http://www.31bt.com/Torrent/%s',
+                'http://178.73.198.210/torrent/%s',
+                'http://zoink.it/torrent/%s.torrent',
+                'http://torcache.net/torrent/%s.torrent',
+                'http://torrentproject.se/torrent/%s.torrent',
+                'http://istoretor.com/fdown.php?hash=%s',
+                'http://torrentbox.sx/torrent/%s',
+                'http://www.torrenthound.com/torrent/%s',
+                'http://www.silvertorrent.org/download.php?id=%s',
+        ]
         for url in urls:
             print s % (1, 94, '  >> try:'), urlparse.urlparse(url).hostname
             url = url % hh
