@@ -15,49 +15,13 @@ import select
 from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
 
-#############################################################
-# Xiami api for android
-#{{{
-# url_action_fav = "http://www.xiami.com/app/android/fav?id=%s&type=%s"
-# url_action_unfav = "http://www.xiami.com/app/android/unfav?id=%s&type=%s"
-# url_album = "http://www.xiami.com/app/android/album?id=%s&uid=%s"
-# url_song = "http://www.xiami.com/app/android/song?id=%s&uid=%s"
-# url_artist = "http://www.xiami.com/app/android/artist?id=%s"
-# url_artist_albums = "http://www.xiami.com/app/android/artist-albums?id=%s&page=%s"
-# url_artist_radio = "http://www.xiami.com/app/android/radio-artist?id=%s"
-# url_artist_top_song = "http://www.xiami.com/app/android/artist-topsongs?id=%s"
-# url_artsit_similars = "http://www.xiami.com/app/android/artist-similar?id=%s"
-# url_collect = "http://www.xiami.com/app/android/collect?id=%s&uid=%s"
-# url_grade = "http://www.xiami.com/app/android/grade?id=%s&grade=%s"
-# url_lib_albums = "http://www.xiami.com/app/android/lib-albums?uid=%s&page=%s"
-# url_lib_artists = "http://www.xiami.com/app/android/lib-artists?uid=%s&page=%s"
-# url_lib_collects = "http://www.xiami.com/app/android/lib-collects?uid=%s&page=%s"
-# url_lib_songs = "http://www.xiami.com/app/android/lib-songs?uid=%s&page=%s"
-# url_myplaylist = "http://www.xiami.com/app/android/myplaylist?uid=%s"
-# url_myradiosongs = "http://www.xiami.com/app/android/lib-rnd?uid=%s"
-# url_playlog = "http://www.xiami.com/app/android/playlog?id=%s&uid=%s"
-# url_push_songs = "http://www.xiami.com/app/android/push-songs?uid=%s&deviceid=%s"
-# url_radio = "http://www.xiami.com/app/android/radio?id=%s&uid=%s"
-# url_radio_categories = "http://www.xiami.com/app/android/radio-category"
-# url_radio_similar = "http://www.xiami.com/app/android/radio-similar?id=%s&uid=%s"
-# url_rndsongs = "http://www.xiami.com/app/android/rnd?uid=%s"
-# url_search_all = "http://www.xiami.com/app/android/searchv1?key=%s"
-# url_search_parts = "http://www.xiami.com/app/android/search-part?key=%s&type=%s&page=%s"
-#}}}
-#############################################################
-
-############################################################
-# Xiami api for android
-# {{{
-url_song = "http://www.xiami.com/app/android/song?id=%s"
-url_album = "http://www.xiami.com/app/android/album?id=%s"
-url_collect = "http://www.xiami.com/app/android/collect?id=%s"
-url_artist_albums = "http://www.xiami.com/app/android/artist-albums?id=%s&page=%s"
-url_artist_top_song = "http://www.xiami.com/app/android/artist-topsongs?id=%s"
-url_lib_songs = "http://www.xiami.com/app/android/lib-songs?uid=%s&page=%s"
-url_rndsongs = "http://www.xiami.com/app/android/rnd?uid=%s"
-# }}}
-############################################################
+url_song = "http://www.xiami.com/song/%s"
+url_album = "http://www.xiami.com/album/%s"
+url_collect = "http://www.xiami.com/collect/%s"
+url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
+url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
+url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
+#url_rndsongs = "http://www.xiami.com/app/android/rnd?uid=%s"
 
 ############################################################
 # wget exit status
@@ -77,7 +41,7 @@ wget_es = {
 ############################################################
 
 parser = HTMLParser()
-s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.Xiami.cookies')
 
@@ -126,6 +90,7 @@ def modificate_text(text):
     text = text.replace('/', '-')
     text = text.replace('\\', '-')
     text = re.sub(r'\s\s+', ' ', text)
+    text = text.strip()
     return text
 
 def modificate_file_name_for_wget(file_name):
@@ -143,10 +108,7 @@ def z_index(song_infos):
 
 class xiami(object):
     def __init__(self):
-        self.song_infos = []
         self.dir_ = os.getcwd().decode('utf8')
-        self.template_wgets = 'wget -c -T 5 -nv -U "%s" -O' \
-            % headers['User-Agent'] + ' "%s.tmp" %s'
         self.template_song = 'http://www.xiami.com/song/gethqsong/sid/%s'
         self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
 
@@ -362,7 +324,7 @@ class xiami(object):
         #id3.add(TSST(encoding=3, text=info['sub_title']))
         #id3.add(TSRC(encoding=3, text=info['disc_code']))
         id3.add(COMM(encoding=3, desc=u'Comment', \
-            text=u'\n\n'.join([info['song_url'], info['album_description']])))
+            text=info['comment']))
         id3.add(APIC(encoding=3, mime=u'image/jpeg', type=3, \
             desc=u'Front Cover', data=self.get_cover(info)))
         id3.save(file_name)
@@ -408,154 +370,152 @@ class xiami(object):
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
-    def get_song_info(self, album_description, z, cd_serial_auth, i):
-        song_info = {}
-        song_info['song_id'] = i['song_id']
-        song_info['album_id'] = i['album_id']
-        song_info['song_url'] = u'http://www.xiami.com/song/' + i['song_id']
-        song_info['track'] = i['track']
-        song_info['album_description'] = album_description
-        #song_info['lyric_url'] = i['lyric']
-        #song_info['sub_title'] = i['sub_title']
-        #song_info['composer'] = i['composer']
-        #song_info['disc_code'] = i['disc_code']
-        #if not song_info['sub_title']: song_info['sub_title'] = u''
-        #if not song_info['composer']: song_info['composer'] = u''
-        #if not song_info['disc_code']: song_info['disc_code'] = u''
-        t = time.gmtime(int(i['gmt_publish']))
-        #song_info['year'] = unicode('-'.join([str(t.tm_year), \
-            #str(t.tm_mon), str(t.tm_mday)]))
-        song_info['year'] = unicode('-'.join([str(t.tm_year), \
-            str(t.tm_mon), str(t.tm_mday)]))
-        song_info['song_name'] = modificate_text(i['name']).strip()
-        song_info['artist_name'] = modificate_text(i['artist_name']).strip()
-        song_info['album_pic_url'] = re.sub(r'_\d*\.', '_4.', i['album_logo'])
-        song_info['cd_serial'] = i['cd_serial']
-        if cd_serial_auth:
-            if not args.undescription:
-                disc_description = self.get_disc_description(\
-                    'http://www.xiami.com/album/%s' % i['album_id'], song_info)
-                if u''.join(self.disc_description_archives.values()) != u'':
-                    if disc_description:
-                        song_info['album_name'] = modificate_text(i['title']).strip() \
-                            + ' [Disc-' + song_info['cd_serial'] + '] ' + disc_description
-                        file_name = '[Disc-' + song_info['cd_serial'] + '] ' \
-                            + disc_description + ' ' + song_info['track'] + '.' \
-                            + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.mp3'
-                        song_info['file_name'] = file_name
-                        #song_info['cd_serial'] = u'1'
-                    else:
-                        song_info['album_name'] = modificate_text(i['title']).strip() \
-                            + ' [Disc-' + song_info['cd_serial'] + ']'
-                        file_name = '[Disc-' + song_info['cd_serial'] + '] ' \
-                            + song_info['track'] + '.' + song_info['song_name'] \
-                            + ' - ' + song_info['artist_name'] + '.mp3'
-                        song_info['file_name'] = file_name
-                        #song_info['cd_serial'] = u'1'
+    def get_songs(self, album_id, song_id=None):
+        html = ss.get(url_album % album_id).content
+        html = html.split('<div id="wall"')[0]
+        html1, html2 = html.split('<div id="album_acts"')
+
+        t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
+        album_name = modificate_text(t)
+
+        t = re.search(r'艺人：.+?>([^<>]+?)</a>', html1, re.DOTALL).group(1)
+        artist_name = modificate_text(t)
+
+        t = re.findall(r'(\d+)年(\d+)月(\d+)', html1)[0]
+        year = '-'.join(t)
+
+        album_description = ''
+        t = re.search(r'专辑介绍：(.+?)<div class="album_intro_toggle">', html2, re.DOTALL)
+        if t:
+            t = t.group(1)
+            t = re.sub(r'<.+?>', '', t).decode('utf8', 'ignore')
+            t = parser.unescape(t)
+            t = parser.unescape(t)
+            t = re.sub(r'\s\s+', u'\n', t).strip()
+            t = re.sub(r'<.+?(http://.+?)".+?>', r'\1', t)
+            t = re.sub(r'<.+?>([^\n])', r'\1', t)
+            t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
+            album_description = t.encode('utf8')
+
+        t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
+        tt = t.rfind('.')
+        t = '%s_4%s' % (t[:tt], t[tt:])
+        album_pic_url = t.decode('utf8', 'ignore')
+
+        songs = []
+        for c in html2.split('trackname')[1:]:
+            disc = re.search(r'>disc (\d+)', c).group(1)
+
+            t = re.search(r'>disc .+?\[(.+?)\]', c)
+            disc_description = modificate_text(t.group(1)) + '\n\n' if t else ''
+
+            tracks = re.findall(r'"trackid">(\d+)', c)
+            t = re.findall(r'"song_name"><a href="/song/(\d+)".+?>(.+?)</', c)
+            song_ids = [i[0] for i in t]
+            song_names = [modificate_text(i[1].decode('utf8', 'ignore')) for i in t]
+            z = len(str(len(tracks)))
+
+            if len(tracks) != len(song_ids) != len(song_names):
+                print s % (1, 91, '  !! Error: len(tracks) != len(song_ids) != len(song_names)')
+                sys.exit(1)
+
+            for i in xrange(len(tracks)):
+                def do():
+                    song_info = {}
+                    song_info['song_id'] = song_ids[i].decode('utf8', 'ignore')
+                    song_info['album_id'] = album_id.decode('utf8', 'ignore')
+                    song_info['song_url'] = u'http://www.xiami.com/song/' + song_ids[i].decode('utf8', 'ignore')
+                    song_info['track'] = tracks[i].decode('utf8', 'ignore')
+                    song_info['cd_serial'] = disc.decode('utf8', 'ignore')
+                    song_info['year'] = year.decode('utf8', 'ignore')
+                    song_info['album_pic_url'] = album_pic_url.decode('utf8', 'ignore')
+                    song_info['song_name'] = song_names[i]
+                    song_info['album_name'] = album_name.decode('utf8', 'ignore')
+                    song_info['artist_name'] = artist_name.decode('utf8', 'ignore')
+                    song_info['z'] = z
+                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description.decode('utf8', 'ignore') , album_description.decode('utf8', 'ignore') )
+                    song_info['comment'] = t
+
+                    songs.append(song_info)
+
+                if song_id:
+                    if song_id == song_ids[i]:
+                        do()
                 else:
-                    song_info['album_name'] = modificate_text(i['title']).strip()
-                    file_name = '[Disc-' + song_info['cd_serial'] + '] ' \
-                        + song_info['track'] + '.' + song_info['song_name'] \
-                        + ' - ' + song_info['artist_name'] + '.mp3'
-                    song_info['file_name'] = file_name
+                    do()
+
+        cd_serial_auth = int(songs[-1]['cd_serial']) > 1
+        for i in xrange(len(songs)):
+            z = songs[i]['z']
+            file_name = songs[i]['track'].zfill(z) + '.' + songs[i]['song_name'] + \
+                ' - ' + songs[i]['artist_name'] + '.mp3'
+            if cd_serial_auth:
+                songs[i]['file_name'] = '[Disc-' + songs[i]['cd_serial'] + '] ' + file_name
             else:
-                song_info['album_name'] = modificate_text(i['title']).strip()
-                file_name = '[Disc-' + song_info['cd_serial'] + '] ' + song_info['track'] \
-                    + '.' + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.mp3'
-                song_info['file_name'] = file_name
+                songs[i]['file_name'] = file_name
 
-        else:
-            song_info['album_name'] = modificate_text(i['title']).strip()
-            file_name = song_info['track'].zfill(z) + '.' + song_info['song_name'] \
-                + ' - ' + song_info['artist_name'] + '.mp3'
-            song_info['file_name'] = file_name
-        # song_info['low_mp3'] = i['location']
-        return song_info
+        return songs
 
-    def get_song_infos(self, song_id):
-        j = ss.get(url_song % song_id).json()
-        album_id = j['song']['album_id']
-        j = ss.get(url_album % album_id).json()
-        t = j['album']['description']
-        t = parser.unescape(t)
-        t = parser.unescape(t)
-        t = re.sub(r'<.+?(http://.+?)".+?>', r'\1', t)
-        t = re.sub(r'<.+?>([^\n])', r'\1', t)
-        t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
-        album_description = re.sub(r'\s\s+', u'\n', t).strip()
-        cd_serial_auth = j['album']['songs'][-1]['cd_serial'] > u'1'
-        z = 0
-        if not cd_serial_auth:
-            z = z_index(j['album']['songs'])
-        for i in j['album']['songs']:
-            if i['song_id'] == song_id:
-                song_info = self.get_song_info(album_description, z, cd_serial_auth, i)
-                return song_info
-
-    def get_album_infos(self, album_id):
-        j = ss.get(url_album % album_id).json()
-        t = j['album']['description']
-        t = parser.unescape(t)
-        t = parser.unescape(t)
-        t = re.sub(r'<.+?(http://.+?)".+?>', r'\1', t)
-        t = re.sub(r'<.+?>([^\n])', r'\1', t)
-        t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
-        album_description = re.sub(r'\s\s+', u'\n', t).strip()
-        d = modificate_text(j['album']['title'] + ' - ' + j['album']['artist_name'])
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
-        self.dir_ = modificate_file_name_for_wget(dir_)
-        cd_serial_auth = j['album']['songs'][-1]['cd_serial'] > u'1'
-        z = 0
-        if not cd_serial_auth:
-            z = z_index(j['album']['songs'])
-        song_infos = []
-        for i in j['album']['songs']:
-            song_info = self.get_song_info(album_description, z, cd_serial_auth, i)
-            song_infos.append(song_info)
-        return song_infos
+    def get_song(self, song_id):
+        html = ss.get(url_song % song_id).content
+        html = html.split('<div id="wall"')[0]
+        album_id = re.search(r'album/(\d+)', html).group(1)
+        songs = self.get_songs(album_id, song_id=song_id)
+        return songs
 
     def download_song(self):
-        song_info = self.get_song_infos(self.song_id)
+        songs = self.get_song(self.song_id)
         print(s % (2, 97, u'\n  >> ' + u'1 首歌曲将要下载.')) \
             if not args.play else ''
-        self.song_infos = [song_info]
-        self.download()
+        #self.song_infos = [song_info]
+        self.download(songs)
 
     def download_album(self):
-        song_infos = self.get_album_infos(self.album_id)
-        amount_songs = unicode(len(song_infos))
-        self.song_infos = song_infos[args.from_ - 1:]
-        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
-            if not args.play else ''
-        self.download(amount_songs, args.from_)
+        songs = self.get_songs(self.album_id)
+        song = songs[0]
 
-    def download_collect(self):
-        j = ss.get(url_collect % self.collect_id).json()
-        d = modificate_text(j['collect']['name'])
+        d = song['album_name'] + ' - ' + song['artist_name']
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        j = j['collect']['songs']
-        amount_songs = unicode(len(j))
-        j = j[args.from_ - 1:]
+
+        amount_songs = unicode(len(songs))
+        songs = songs[args.from_ - 1:]
+        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
+            if not args.play else ''
+        self.download(songs, amount_songs, args.from_)
+
+    def download_collect(self):
+        html = ss.get(url_collect % self.collect_id).content
+        html = html.split('<div id="wall"')[0]
+        collect_name = re.search(r'<h2>(.+?)<', html).group(1).decode('utf8')
+        d = collect_name
+        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+        song_ids = re.findall('/song/(\d+)"', html)
+        amount_songs = unicode(len(song_ids))
+        song_ids = song_ids[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         n = args.from_
-        for i in j:
-            song_id = i['song_id']
-            song_info = self.get_song_infos(song_id)
-            self.song_infos = [song_info]
-            self.download(amount_songs, n)
+        for i in song_ids:
+            songs = self.get_song(i)
+            self.download(songs, amount_songs, n)
             self.html = ''
             self.disc_description_archives = {}
             n += 1
 
     def download_artist_albums(self):
         ii = 1
+        album_ids = []
         while True:
-            j = ss.get(url_artist_albums % (self.artist_id, str(ii))).json()
-            if j['albums']:
-                for i in j['albums']:
-                    self.album_id = i['album_id']
+            html = ss.get(url_artist_albums % (self.artist_id, str(ii))).content
+            t = re.findall(r'/album/(\d+)"', html)
+            if album_ids == t: break
+            album_ids = t
+            if album_ids:
+                for i in album_ids:
+                    print i
+                    self.album_id = i
                     self.download_album()
                     self.html = ''
                     self.disc_description_archives = {}
@@ -564,19 +524,19 @@ class xiami(object):
             ii += 1
 
     def download_artist_top_20_songs(self):
-        j = ss.get(url_artist_top_song % self.artist_id).json()
-        d = modificate_text(j['songs'][0]['artist_name'] + u' - top 20')
+        html = ss.get(url_artist_top_song % self.artist_id).content
+        song_ids = re.findall(r'/song/(.+?)"', html)
+        artist_name = re.search(r'/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
+        d = modificate_text(artist_name + u' - top 20')
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        amount_songs = unicode(len(j['songs']))
+        amount_songs = unicode(len(song_ids))
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
         n = 1
-        for i in j['songs']:
-            song_id = i['song_id']
-            song_info = self.get_song_infos(song_id)
-            self.song_infos = [song_info]
-            self.download(amount_songs, n)
+        for i in song_ids:
+            songs = self.get_song(i)
+            self.download(songs, amount_songs, n)
             self.html = ''
             self.disc_description_archives = {}
             n += 1
@@ -588,13 +548,12 @@ class xiami(object):
         ii = 1
         n = 1
         while True:
-            j = ss.get(url_lib_songs % (self.user_id, str(ii))).json()
-            if j['songs']:
-                for i in j['songs']:
-                    song_id = i['song_id']
-                    song_info = self.get_song_infos(song_id)
-                    self.song_infos = [song_info]
-                    self.download(n)
+            html = ss.get(url_lib_songs % (self.user_id, str(ii))).content
+            song_ids = re.findall(r'/song/(.+?)"', html)
+            if song_ids:
+                for i in song_ids:
+                    songs = self.get_song(i)
+                    self.download(songs, n)
                     self.html = ''
                     self.disc_description_archives = {}
                     n += 1
@@ -639,8 +598,8 @@ class xiami(object):
         else:
             return 'l'
 
-    def play(self, nn=u'1', n=1):
-        for i in self.song_infos:
+    def play(self, songs, nn=u'1', n=1):
+        for i in songs:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
             mp3_quality = self.get_mp3_quality(durl)
@@ -659,7 +618,7 @@ class xiami(object):
             else:
                 pass
 
-    def download(self, amount_songs=u'1', n=None):
+    def download(self, songs, amount_songs=u'1', n=None):
         dir_ = modificate_file_name_for_wget(self.dir_)
         cwd = os.getcwd().decode('utf8')
         if dir_ != cwd:
@@ -667,7 +626,7 @@ class xiami(object):
                 os.mkdir(dir_)
 
         ii = 1
-        for i in self.song_infos:
+        for i in songs:
             num = random.randint(0, 100) % 7
             col = s % (2, num + 90, i['file_name'])
             t = modificate_file_name_for_wget(i['file_name'])
@@ -697,14 +656,17 @@ class xiami(object):
                     print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
 
                 file_name_for_wget = file_name.replace('`', '\`')
-                wget = self.template_wgets % (file_name_for_wget, durl)
-                wget = wget.encode('utf8')
-                status = os.system(wget)
+                cmd = 'wget -c -T 5 -nv ' \
+                    '-U "%s" ' \
+                    '-O "%s.tmp" %s' \
+                    % (headers['User-Agent'], file_name_for_wget, durl)
+                cmd = cmd.encode('utf8')
+                status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
                     wget_exit_status_info = wget_es[status]
                     print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
                         '(%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
-                    print s % (1, 91, '  ===> '), wget
+                    print s % (1, 91, '  ===> '), cmd
                     sys.exit(1)
                 else:
                     os.rename('%s.tmp' % file_name, file_name)
