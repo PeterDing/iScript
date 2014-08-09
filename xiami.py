@@ -378,7 +378,7 @@ class xiami(object):
         t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
         album_name = modificate_text(t)
 
-        t = re.search(r'艺人：.+?>([^<>]+?)</a>', html1, re.DOTALL).group(1)
+        t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1)
         artist_name = modificate_text(t)
 
         t = re.findall(r'(\d+)年(\d+)月(\d+)', html1)[0]
@@ -407,13 +407,15 @@ class xiami(object):
             disc = re.search(r'>disc (\d+)', c).group(1)
 
             t = re.search(r'>disc .+?\[(.+?)\]', c)
-            disc_description = modificate_text(t.group(1)) + '\n\n' if t else ''
+            disc_description = modificate_text(t.group(1)) if t else ''
 
-            tracks = re.findall(r'"trackid">(\d+)', c)
+            t = re.findall(r'"trackid">(\d+)', c)
+            tracks = [i.lstrip('0') for i in t]
+            z = len(str(len(tracks)))
+
             t = re.findall(r'"song_name"><a href="/song/(\d+)".+?>(.+?)</', c)
             song_ids = [i[0] for i in t]
             song_names = [modificate_text(i[1].decode('utf8', 'ignore')) for i in t]
-            z = len(str(len(tracks)))
 
             if len(tracks) != len(song_ids) != len(song_names):
                 print s % (1, 91, '  !! Error: len(tracks) != len(song_ids) != len(song_names)')
@@ -433,7 +435,8 @@ class xiami(object):
                     song_info['album_name'] = album_name.decode('utf8', 'ignore')
                     song_info['artist_name'] = artist_name.decode('utf8', 'ignore')
                     song_info['z'] = z
-                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description.decode('utf8', 'ignore') , album_description.decode('utf8', 'ignore') )
+                    song_info['disc_description'] = disc_description.decode('utf8', 'ignore')
+                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description.decode('utf8', 'ignore') + u'\n\n' if disc_description else '', album_description.decode('utf8', 'ignore'))
                     song_info['comment'] = t
 
                     songs.append(song_info)
@@ -450,7 +453,7 @@ class xiami(object):
             file_name = songs[i]['track'].zfill(z) + '.' + songs[i]['song_name'] + \
                 ' - ' + songs[i]['artist_name'] + '.mp3'
             if cd_serial_auth:
-                songs[i]['file_name'] = '[Disc-' + songs[i]['cd_serial'] + '] ' + file_name
+                songs[i]['file_name'] = ''.join(['[Disc-', songs[i]['cd_serial'], ' #' + songs[i]['disc_description'] if songs[i]['disc_description'] else '', '] ', file_name])
             else:
                 songs[i]['file_name'] = file_name
 
@@ -608,8 +611,9 @@ class xiami(object):
             n = int(n) + 1
             cmd = 'mpv --really-quiet ' \
                 '--user-agent "%s" ' \
+                '--http-header-fields="Referer:http://img.xiami.com/static/swf/seiya/1.4/player.swf?v=%s" ' \
                 '"%s"' \
-                % (headers['User-Agent'], durl)
+                % (headers['User-Agent'], int(time.time()*1000), durl)
             os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -658,8 +662,9 @@ class xiami(object):
                 file_name_for_wget = file_name.replace('`', '\`')
                 cmd = 'wget -c -T 5 -nv ' \
                     '-U "%s" ' \
+                    '--header "Referer:http://img.xiami.com/static/swf/seiya/1.4/player.swf?v=%s" ' \
                     '-O "%s.tmp" %s' \
-                    % (headers['User-Agent'], file_name_for_wget, durl)
+                    % (headers['User-Agent'], int(time.time()*1000), file_name_for_wget, durl)
                 cmd = cmd.encode('utf8')
                 status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
@@ -673,6 +678,7 @@ class xiami(object):
 
             self.modified_id3(file_name, i)
             ii += 1
+            n += 1
             time.sleep(5)
 
     def _save_do(self, id_, type, tags):
