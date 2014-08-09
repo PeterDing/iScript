@@ -811,13 +811,13 @@ class panbaiducom_HOME(object):
                 'remotepaths': set()
             }
 
-        if args.type_ and 'e' in args.type_.split(','):
+        if args.type_ and 'e' in args.type_:
             path = os.path.join(rpath, os.path.basename(lpath))
             meta = self._meta([path])
             if meta:
                 self.upload_datas[lpath]['is_over'] = True
                 self.upload_datas[lpath]['remotepaths'].update([rpath])
-                self.save_upload_datas()
+                #self.save_upload_datas()
                 print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
                 return
             else:
@@ -835,7 +835,7 @@ class panbaiducom_HOME(object):
                     f.seek(current_piece_point * slice)
                     start_time = time.time()
                     print_process_bar(f.tell(), __current_file_size, 0, start_time, \
-                        pre='     ', msg='%s/%s' % (str(current_piece_point+1), str(pieces)))
+                        pre='     ', msg='%s/%s' % (str(current_piece_point), str(pieces)))
                     for piece in xrange(current_piece_point, pieces):
                         self.__slice_block = f.read(slice)
                         if self.__slice_block:
@@ -847,7 +847,7 @@ class panbaiducom_HOME(object):
                                 else:
                                     print s % (1, 91, '  |-- slice_md5 does\'n match, retry.')
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
-                            self.save_upload_datas()
+                            #self.save_upload_datas()
                             start_time = print_process_bar(f.tell(), __current_file_size, slice, start_time, \
                                 pre='     ', msg='%s/%s' % (str(piece+1), str(pieces)))
                     result = self._combine_file(lpath, rpath)
@@ -855,7 +855,7 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         del self.upload_datas[lpath]['slice_md5s']
-                        self.save_upload_datas()
+                        #self.save_upload_datas()
                         print s % (1, 92, '  |-- success.\n')
                         break
                     else:
@@ -867,7 +867,7 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_upload_datas()
+                        #self.save_upload_datas()
                         print s % (1, 92, '  |-- success.\n')
                         break
                     else:
@@ -879,7 +879,7 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_upload_datas()
+                        #self.save_upload_datas()
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
@@ -950,6 +950,8 @@ class panbaiducom_HOME(object):
             else:
                 print s % (1, 91, '  !! Error: localpath ?')
                 sys.exit(1)
+
+        self.save_upload_datas()
 
     def save_upload_datas(self):
         f = open(self.upload_datas_path, 'wb')
@@ -1746,6 +1748,10 @@ class panbaiducom_HOME(object):
                         print s % (1, 91, '  !! file is not existed.\n'), \
                             ' --------------\n ', url
                         continue
+                    elif meta['info'][0]['isdir']:
+                        print s % (1, 91, '  !! file is a directory.\n'), \
+                            ' --------------\n ', url
+                        continue
                     remotepath = os.path.split(url)[0]
                 self._add_bt(url, remotepath)
             elif url.startswith('http'):
@@ -2030,6 +2036,8 @@ class panbaiducom(object):
 
 def sighandler(signum, frame):
     print s % (1, 91, "  !! Signal:"), signum
+    if args.comd in ('u', 'upload'):
+        px.save_upload_datas()
     #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
@@ -2239,6 +2247,7 @@ def main(argv):
     else:
         args = p.parse_args(argv[2:])
     xxx = args.xxx
+    args.comd = comd
     #######################################################
 
     if comd == 'login' or comd == 'g':
@@ -2281,9 +2290,10 @@ def main(argv):
             print s % (1, 91, '  !! 参数错误\n  upload localpath1 localpath2 .. remotepath\n' \
                 '  u localpath1 localpath2 .. remotepath')
             sys.exit(1)
-        x = panbaiducom_HOME()
-        x.init()
-        x.upload(xxx[:-1], xxx[-1])
+        global px
+        px = panbaiducom_HOME()
+        px.init()
+        px.upload(xxx[:-1], xxx[-1])
 
     elif comd == 'd' or comd == 'download' \
         or comd == 'p' or comd == 'play':
