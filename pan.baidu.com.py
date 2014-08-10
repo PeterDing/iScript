@@ -2445,10 +2445,8 @@ def main(argv):
             x.ls('size', 1, xxx)
 
     elif comd == 'rnr' or comd == 'rnre':
-        if len(xxx) < 1:
-            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+        if len(xxx) < 3:
+            print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")
             sys.exit(1)
 
         foo = argv[2]
@@ -2465,9 +2463,7 @@ def main(argv):
 
     elif comd == 'rmr' or comd == 'rmre':
         if len(xxx) < 1:
-            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            print s % (1, 91, '  !! 参数错误\n rmr dir1 dir2 .. -I regex1 -E regex2 -H head -T tail')
             sys.exit(1)
 
         if not (args.include or args.exclude or args.head or args.tail or args.type_):
@@ -2486,9 +2482,7 @@ def main(argv):
 
     elif comd == 'mvr' or comd == 'mvre':
         if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            print s % (1, 91, '  !! 参数错误\n mvr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
             sys.exit(1)
 
         if not (args.include or args.exclude or args.head or args.tail or args.type_):
@@ -2507,9 +2501,7 @@ def main(argv):
 
     elif comd == 'cpr' or comd == 'cpre':
         if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n add url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory]\n' \
-                ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
+            print s % (1, 91, '  !! 参数错误\n cpr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
             sys.exit(1)
 
         if not (args.include or args.exclude or args.head or args.tail or args.type_):

@@ -21,7 +21,7 @@ url_collect = "http://www.xiami.com/collect/%s"
 url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
 url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
-#url_rndsongs = "http://www.xiami.com/app/android/rnd?uid=%s"
+url_rndsongs = "http://www.xiami.com/radio/xml/type/4/id/%s"
 
 ############################################################
 # wget exit status
@@ -375,14 +375,14 @@ class xiami(object):
         html = html.split('<div id="wall"')[0]
         html1, html2 = html.split('<div id="album_acts"')
 
-        t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
+        t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1).decode('utf8', 'ignore')
         album_name = modificate_text(t)
 
-        t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1)
+        t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1).decode('utf8', 'ignore')
         artist_name = modificate_text(t)
 
         t = re.findall(r'(\d+)年(\d+)月(\d+)', html1)[0]
-        year = '-'.join(t)
+        year = '-'.join(t).decode('utf8', 'ignore')
 
         album_description = ''
         t = re.search(r'专辑介绍：(.+?)<div class="album_intro_toggle">', html2, re.DOTALL)
@@ -395,7 +395,7 @@ class xiami(object):
             t = re.sub(r'<.+?(http://.+?)".+?>', r'\1', t)
             t = re.sub(r'<.+?>([^\n])', r'\1', t)
             t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
-            album_description = t.encode('utf8')
+            album_description = t
 
         t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
         tt = t.rfind('.')
@@ -404,17 +404,17 @@ class xiami(object):
 
         songs = []
         for c in html2.split('trackname')[1:]:
-            disc = re.search(r'>disc (\d+)', c).group(1)
+            disc = re.search(r'>disc (\d+)', c).group(1).decode('utf8', 'ignore')
 
             t = re.search(r'>disc .+?\[(.+?)\]', c)
-            disc_description = modificate_text(t.group(1)) if t else ''
+            disc_description = modificate_text(t.group(1).decode('utf8', 'ignore')) if t else ''
 
             t = re.findall(r'"trackid">(\d+)', c)
-            tracks = [i.lstrip('0') for i in t]
+            tracks = [i.lstrip('0').decode('utf8', 'ignore') for i in t]
             z = len(str(len(tracks)))
 
             t = re.findall(r'"song_name"><a href="/song/(\d+)".+?>(.+?)</', c)
-            song_ids = [i[0] for i in t]
+            song_ids = [i[0].decode('utf8', 'ignore') for i in t]
             song_names = [modificate_text(i[1].decode('utf8', 'ignore')) for i in t]
 
             if len(tracks) != len(song_ids) != len(song_names):
@@ -424,19 +424,19 @@ class xiami(object):
             for i in xrange(len(tracks)):
                 def do():
                     song_info = {}
-                    song_info['song_id'] = song_ids[i].decode('utf8', 'ignore')
+                    song_info['song_id'] = song_ids[i]
                     song_info['album_id'] = album_id.decode('utf8', 'ignore')
-                    song_info['song_url'] = u'http://www.xiami.com/song/' + song_ids[i].decode('utf8', 'ignore')
-                    song_info['track'] = tracks[i].decode('utf8', 'ignore')
-                    song_info['cd_serial'] = disc.decode('utf8', 'ignore')
-                    song_info['year'] = year.decode('utf8', 'ignore')
-                    song_info['album_pic_url'] = album_pic_url.decode('utf8', 'ignore')
+                    song_info['song_url'] = u'http://www.xiami.com/song/' + song_ids[i]
+                    song_info['track'] = tracks[i]
+                    song_info['cd_serial'] = disc
+                    song_info['year'] = year
+                    song_info['album_pic_url'] = album_pic_url
                     song_info['song_name'] = song_names[i]
-                    song_info['album_name'] = album_name.decode('utf8', 'ignore')
-                    song_info['artist_name'] = artist_name.decode('utf8', 'ignore')
+                    song_info['album_name'] = album_name
+                    song_info['artist_name'] = artist_name
                     song_info['z'] = z
-                    song_info['disc_description'] = disc_description.decode('utf8', 'ignore')
-                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description.decode('utf8', 'ignore') + u'\n\n' if disc_description else '', album_description.decode('utf8', 'ignore'))
+                    song_info['disc_description'] = disc_description
+                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description + u'\n\n' if disc_description else '', album_description)
                     song_info['comment'] = t
 
                     songs.append(song_info)
@@ -565,22 +565,19 @@ class xiami(object):
             ii += 1
 
     def download_user_radio(self):
-        j = ss.get(url_rndsongs % self.user_id).json()
-        d = modificate_text(u'%s 的虾米推荐')
+        d = modificate_text(u'%s 的虾米推荐' % self.user_id)
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        amount_songs = unicode(len(j['songs']))
-        print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
-            if not args.play else ''
         n = 1
-        for i in j['songs']:
-            song_id = i['song_id']
-            song_info = self.get_song_infos(song_id)
-            self.song_infos = [song_info]
-            self.download(amount_songs, n)
-            self.html = ''
-            self.disc_description_archives = {}
-            n += 1
+        while True:
+            xml = ss.get(url_rndsongs % self.user_id).content
+            song_ids = re.findall(r'<song_id>(\d+)', xml)
+            for i in song_ids:
+                songs = self.get_song(i)
+                self.download(songs, n=n)
+                self.html = ''
+                self.disc_description_archives = {}
+                n += 1
 
     def display_infos(self, i, nn, n):
         print '\n  ----------------'
