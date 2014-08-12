@@ -21,7 +21,8 @@ url_collect = "http://www.xiami.com/collect/%s"
 url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
 url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
-url_rndsongs = "http://www.xiami.com/radio/xml/type/4/id/%s"
+url_radio_my = "http://www.xiami.com/radio/xml/type/4/id/%s"  # 电台来源:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","我收藏的精选集"
+url_radio_c = "http://www.xiami.com/radio/xml/type/2/id/%s"  # 虾米猜, 基于你的虾米试听行为所建立的个性电台
 
 ############################################################
 # wget exit status
@@ -357,14 +358,19 @@ class xiami(object):
                 self.download_song()
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
-                code = raw_input('  >> m  #该用户歌曲库.\n' \
-                    '  >> r  #该用户的虾米推荐.\n  >> ')
+                code = raw_input('  >> m   # 该用户歌曲库.\n' \
+                    '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","收藏的精选集"\n'
+                    '  >> rc  # 虾米猜:基于试听行为所建立的个性电台\n  >> ')
                 if code == 'm':
                     #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
                     self.download_user_songs()
-                elif code == 'r':
+                elif code == 'rm':
                     #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
-                    self.download_user_radio()
+                    url_rndsongs = url_radio_my
+                    self.download_user_radio(url_rndsongs)
+                elif code == 'rc':
+                    url_rndsongs = url_radio_c
+                    self.download_user_radio(url_rndsongs)
                 else:
                     print(s % (1, 92, u'  --> Over'))
             else:
@@ -564,7 +570,7 @@ class xiami(object):
                 break
             ii += 1
 
-    def download_user_radio(self):
+    def download_user_radio(self, url_rndsongs):
         d = modificate_text(u'%s 的虾米推荐' % self.user_id)
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
