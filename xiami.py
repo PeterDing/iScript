@@ -344,14 +344,17 @@ class xiami(object):
 
             elif '/artist/' in url:
                 self.artist_id = re.search(r'/artist/(\d+)', url).group(1)
-                code = raw_input('  >> a  #下载该艺术家所有专辑.\n' \
-                    '  >> t  #下载该艺术家top 20歌曲.\n  >> ')
+                code = raw_input('  >> a  # 艺术家所有专辑.\n' \
+                    '  >> r  # 艺术家 radio\n' \
+                    '  >> t  # 艺术家top 20歌曲.\n  >> ')
                 if code == 'a':
                     #print(s % (2, 92, u'\n  -- 正在分析艺术家专辑信息 ...'))
                     self.download_artist_albums()
                 elif code == 't':
                     #print(s % (2, 92, u'\n  -- 正在分析艺术家top20信息 ...'))
                     self.download_artist_top_20_songs()
+                elif code == 'r':
+                    self.download_artist_radio()
                 else:
                     print(s % (1, 92, u'  --> Over'))
 
@@ -393,7 +396,13 @@ class xiami(object):
                 else:
                     print s % (1, 91, '  !! Error: missing genre id at url')
                     sys.exit(1)
-                self.download_genre(url_genre)
+
+                code = raw_input('  >> t  # 风格推荐\n' \
+                    '  >> r  # 风格radio\n  >> ')
+                if code == 't':
+                    self.download_genre(url_genre)
+                elif code == 'r':
+                    self.download_genre_radio(url_genre)
 
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
@@ -572,6 +581,26 @@ class xiami(object):
             self.disc_description_archives = {}
             n += 1
 
+    def download_artist_radio(self):
+        html = ss.get(url_artist_top_song % self.artist_id).content
+        artist_name = re.search(r'/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
+
+        d = modificate_text(artist_name + u' - radio')
+        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+
+        url_artist_radio = "http://www.xiami.com/radio/xml/type/5/id/%s" % self.artist_id
+        n = 1
+        while True:
+            xml = ss.get(url_artist_radio).content
+            song_ids = re.findall(r'<song_id>(\d+)', xml)
+            for i in song_ids:
+                songs = self.get_song(i)
+                self.download(songs, n=n)
+                self.html = ''
+                self.disc_description_archives = {}
+                n += 1
+
     def download_user_songs(self):
         dir_ = os.path.join(os.getcwd().decode('utf8'), \
             u'虾米用户 %s 收藏的歌曲' % self.user_id)
@@ -647,6 +676,29 @@ class xiami(object):
                 n += 1
             html = ss.get(url_genre % (self.chart_id, page)).content
             page += 1
+
+    def download_genre_radio(self, url_genre):
+        html = ss.get(url_genre % (self.genre_id, 1)).content
+        if '/gid/' in url_genre:
+            t = re.search(r'/genre/detail/gid/%s".+?title="(.+?)"' % self.genre_id, html).group(1).decode('utf8', 'ignore')
+            url_genre_radio = "http://www.xiami.com/radio/xml/type/12/id/%s" % self.genre_id
+        elif '/sid/' in url_genre:
+            t = re.search(r'/genre/detail/sid/%s" title="(.+?)"' % self.genre_id, html).group(1).decode('utf8', 'ignore')
+            url_genre_radio = "http://www.xiami.com/radio/xml/type/13/id/%s" % self.genre_id
+        d = modificate_text(u'%s - radio - xiami' % t)
+        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+
+        n = 1
+        while True:
+            xml = ss.get(url_genre_radio).content
+            song_ids = re.findall(r'<song_id>(\d+)', xml)
+            for i in song_ids:
+                songs = self.get_song(i)
+                self.download(songs, n=n)
+                self.html = ''
+                self.disc_description_archives = {}
+                n += 1
 
     def display_infos(self, i, nn, n):
         print '\n  ----------------'

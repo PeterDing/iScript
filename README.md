@@ -119,16 +119,16 @@
         # 下载精选集
         xm d http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
 
-        # 下载该艺术家所有专辑或 Top 20 歌曲
+        # 下载该艺术家所有专辑, Top 20 歌曲, radio
         xm d http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
-        # 下载用户的收藏或虾米推荐
+        # 下载用户的收藏, 虾米推荐, radio
         xm d http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
 
         # 下载排行榜
         xm d http://www.xiami.com/chart/index/c/2?spm=a1z1s.2943549.6827465.6.VrEAoY
 
-        # 下载 风格 genre
+        # 下载 风格 genre, radio
         xm d http://www.xiami.com/genre/detail/gid/2?spm=a1z1s.3057857.6850221.1.g9ySan
         xm d http://www.xiami.com/genre/detail/sid/2970?spm=a1z1s.3057857.6850221.4.pkepgt
 
