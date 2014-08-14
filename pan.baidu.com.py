@@ -2184,7 +2184,7 @@ def main(argv):
                                      l -t du  # 查看文件占用空间
  -l amount, --limit amount           下载速度限制，eg: -l 100k
  -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
- -R, --recursive                     递归, 用于ls, find, rmre, rnre, rmre, cpre
+ -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
  -H HEAD, --head HEAD                匹配开头的字符(不是regex)，eg: -H Headishere
  -T TAIL, --tail TAIL                匹配结尾的字符(不是regex)，eg: -T Tailishere
  -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
@@ -2243,6 +2243,10 @@ def main(argv):
     global args
     comd = argv[1]
     if comd == 'rnr' or comd == 'rnre':
+        if len(argv[2:]) < 3:
+            print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")
+            sys.exit(1)
+
         args = p.parse_args(argv[4:])
     else:
         args = p.parse_args(argv[2:])
@@ -2445,10 +2449,6 @@ def main(argv):
             x.ls('size', 1, xxx)
 
     elif comd == 'rnr' or comd == 'rnre':
-        if len(xxx) < 3:
-            print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")
-            sys.exit(1)
-
         foo = argv[2]
         bar = argv[3]
         dirs = xxx

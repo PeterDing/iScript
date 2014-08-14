@@ -312,7 +312,7 @@
                                             l -t du  # 查看文件占用空间
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
-        -R, --recursive                     递归, 用于ls, find, rmre, rnre, rmre, cpre
+        -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
         -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
         -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
         -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
