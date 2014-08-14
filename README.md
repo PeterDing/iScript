@@ -125,6 +125,13 @@
         # 下载用户的收藏或虾米推荐
         xm d http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
 
+        # 下载排行榜
+        xm d http://www.xiami.com/chart/index/c/2?spm=a1z1s.2943549.6827465.6.VrEAoY
+
+        # 下载 风格 genre
+        xm d http://www.xiami.com/genre/detail/gid/2?spm=a1z1s.3057857.6850221.1.g9ySan
+        xm d http://www.xiami.com/genre/detail/sid/2970?spm=a1z1s.3057857.6850221.4.pkepgt
+
     播放:
 
         # url 是上面的
