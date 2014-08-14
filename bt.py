@@ -115,7 +115,7 @@ class bt(object):
         print s % (1, 94, '  >> try:'), 'bt.box.n0808.com'
         url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' % (hh[:2], hh[-2:], hh)
         ss.headers['Referer'] = 'http://bt.box.n0808.com'
-        result = do(url, timeout=4)
+        result = do(url)
         if result: return result
 
         ## with https://torrage.com
