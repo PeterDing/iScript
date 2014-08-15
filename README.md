@@ -559,8 +559,8 @@
         bt c -i ~/Downloads -d new
 
         # 使用正则表达式过滤敏.感.词
-        bp cr '.*(old).*' '\1'  magnet_link
-        bp cr 'old.iso' 'new.iso' /path/to/torrent
+        bt cr '.*(old).*' '\1'  magnet_link
+        bt cr 'old.iso' 'new.iso' /path/to/torrent
 
 4. 参考:
 

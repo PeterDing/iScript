@@ -22,7 +22,7 @@ url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
 url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
 url_radio_my = "http://www.xiami.com/radio/xml/type/4/id/%s"  # 电台来源:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","我收藏的精选集"
-url_radio_c = "http://www.xiami.com/radio/xml/type/2/id/%s"  # 虾米猜, 基于你的虾米试听行为所建立的个性电台
+url_radio_c = "http://www.xiami.com/radio/xml/type/8/id/%s"  # 虾米猜, 基于你的虾米试听行为所建立的个性电台
 
 ############################################################
 # wget exit status
