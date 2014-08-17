@@ -469,6 +469,13 @@
         bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... /path/to/search -R
         bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... -R
 
+        # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
+        f bioloy \| d -R                          递归搜索后递归下载
+        ftt ooxx \| p -R -t f                     递归搜索(by time 反序)后递归播放
+        f sound \| rnr mp3 mp4 -R                 递归搜索后rename by regex
+        f ccav \| rm -R -T avi                    递归搜索后删除
+        f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
+
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
     见[命令](#cmd)
