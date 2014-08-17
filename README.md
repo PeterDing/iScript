@@ -259,6 +259,12 @@
         # 关于-H, -T, -I, -E
         f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
         f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
+        # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
+        f keyword1 keyword2 .. [directory] \| d -R              递归搜索后递归下载
+        ftt keyword1 keyword2 .. [directory] \| p -R            递归搜索(by time 反序)后递归播放
+        f keyword1 keyword2 .. [directory] \| rnr foo bar -R    递归搜索后rename by regex
+        f keyword1 keyword2 .. [directory] \| rm -R -T tail     递归搜索后删除
+        f keyword1 keyword2 .. [directory] \| mv /path/to -R    递归搜索后移动
 
         # 列出文件
         l path1 path2 ..                               ls by name

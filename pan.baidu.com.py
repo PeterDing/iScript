@@ -17,7 +17,7 @@ import select
 import base64
 import md5
 from zlib import crc32
-import StringIO
+import cStringIO
 import signal
 
 ############################################################
@@ -740,7 +740,7 @@ class panbaiducom_HOME(object):
             "BDUSS": ss.cookies['BDUSS'],
         }
 
-        file = StringIO.StringIO(self.__slice_block)
+        file = cStringIO.StringIO(self.__slice_block)
         files = {'file': ('file', file, '')}
         data = MultipartEncoder(files)
         theaders = headers
@@ -1254,8 +1254,56 @@ class panbaiducom_HOME(object):
         infos = self._sift(infos, name=arguments.get('name'), \
             size=arguments.get('size'), time=arguments.get('time'), \
             desc=arguments.get('desc'))
-        for info in infos:
-            self._find_display(info)
+        if not arguments.get('pipe'):
+            for info in infos:
+                self._find_display(info)
+
+        # pipe to download, play, rnre, remove, move
+        def warn(comd, display=True):
+            if display:
+                for info in infos:
+                    self._find_display(info)
+            print s % (1, 93, '  find above ↑')
+            ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % comd)).lower() if not args.yes else 'y'
+            if ipt != 'y':
+                print s % (1, 92, '  ++ aborted.')
+                sys.exit()
+
+        pipe = arguments.get('pipe')
+        if pipe:
+            comd = pipe[0]
+            if comd == 'd' or comd == 'download':
+                warn('download', display=True)
+                paths = [i['server_filename'].encode('utf8') for i in infos]
+                self.download(paths)
+            elif comd == 'p' or comd == 'play':
+                warn('move', display=True)
+                paths = [i['server_filename'].encode('utf8') for i in infos]
+                self._download_do = self._play_do
+                self.download(paths)
+            elif comd == 'rnr' or comd == 'rnre':
+                if len(pipe) < 3:
+                    print s % (1, 91, '  !! rnre foo bar')
+                    sys.exit(1)
+
+                foo = pipe[1]
+                bar = pipe[2]
+                self._rnre_do(foo, bar, infos)
+            elif comd == 'rm':
+                warn('remove', display=True)
+                paths = [i['server_filename'].encode('utf8') for i in infos]
+                self.remove(paths)
+            elif comd == 'mv':
+                if len(pipe) < 2:
+                    print s % (1, 91, '  !! mv /path/to')
+                    sys.exit(1)
+
+                warn('move', display=True)
+                paths = [i['server_filename'].encode('utf8') for i in infos]
+                remotepath = pipe[1]
+                self.move(paths, remotepath)
+            else:
+                print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
 
     ##############################################################
     # for ls
@@ -2112,6 +2160,12 @@ def main(argv):
  # 关于-H, -T, -I, -E
  f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
  f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
+ # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
+ f keyword1 keyword2 .. [directory] \\| d -R              递归搜索后递归下载
+ ftt keyword1 keyword2 .. [directory] \\| p -R            递归搜索(by time 反序)后递归播放
+ f keyword1 keyword2 .. [directory] \\| rnr foo bar -R    递归搜索后rename by regex
+ f keyword1 keyword2 .. [directory] \\| rm -R -T tail     递归搜索后删除
+ f keyword1 keyword2 .. [directory] \\| mv /path/to -R    递归搜索后移动
 
  # 列出文件
  l path1 path2 ..                               ls by name
@@ -2372,29 +2426,33 @@ def main(argv):
             sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
+
+        iii = xxx.index('|') if '|' in xxx else -1
+        fxxx = xxx[:iii] if iii != -1 else xxx
+        pxxx = xxx[iii+1:] if iii != -1 else None
         directory = None
-        if xxx[-1][0] == '/':
-            keywords = xxx[:-1]
-            directory = xxx[-1]
+        if fxxx[-1][0] == '/':
+            keywords = fxxx[:-1]
+            directory = fxxx[-1]
         else:
-            keywords = xxx
+            keywords = fxxx
 
         if comd == 'f' or comd == 'find':
-            x.find(keywords, directory=directory)
+            x.find(keywords, directory=directory, pipe=pxxx)
         elif comd == 'ff':
-            x.find(keywords, directory=directory)
+            x.find(keywords, directory=directory, pipe=pxxx)
         elif comd == 'ft':
-            x.find(keywords, time='no_reverse', directory=directory)
+            x.find(keywords, time='no_reverse', directory=directory, pipe=pxxx)
         elif comd == 'ftt':
-            x.find(keywords, time='reverse', directory=directory)
+            x.find(keywords, time='reverse', directory=directory, pipe=pxxx)
         elif comd == 'fs':
-            x.find(keywords, ize='no_reverse', directory=directory)
+            x.find(keywords, ize='no_reverse', directory=directory, pipe=pxxx)
         elif comd == 'fss':
-            x.find(keywords, size='reverse', directory=directory)
+            x.find(keywords, size='reverse', directory=directory, pipe=pxxx)
         elif comd == 'fn':
-            x.find(keywords, name='no_reverse', directory=directory)
+            x.find(keywords, name='no_reverse', directory=directory, pipe=pxxx)
         elif comd == 'fnn':
-            x.find(keywords, name='reverse', directory=directory)
+            x.find(keywords, name='reverse', directory=directory, pipe=pxxx)
 
     elif comd == 'mv' or comd == 'move' \
         or comd == 'rm' or comd == 'remove' \
