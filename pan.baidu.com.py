@@ -1290,11 +1290,11 @@ class panbaiducom_HOME(object):
             comd = pipe[0]
             if comd == 'd' or comd == 'download':
                 warn('download', display=True)
-                paths = [i['server_filename'].encode('utf8') for i in infos]
+                paths = [i['path'].encode('utf8') for i in infos]
                 self.download(paths)
             elif comd == 'p' or comd == 'play':
                 warn('move', display=True)
-                paths = [i['server_filename'].encode('utf8') for i in infos]
+                paths = [i['path'].encode('utf8') for i in infos]
                 self._download_do = self._play_do
                 self.download(paths)
             elif comd == 'rnr' or comd == 'rnre':
@@ -1307,7 +1307,7 @@ class panbaiducom_HOME(object):
                 self._rnre_do(foo, bar, infos)
             elif comd == 'rm':
                 warn('remove', display=True)
-                paths = [i['server_filename'].encode('utf8') for i in infos]
+                paths = [i['path'].encode('utf8') for i in infos]
                 self.remove(paths)
             elif comd == 'mv':
                 if len(pipe) < 2:
@@ -1315,7 +1315,7 @@ class panbaiducom_HOME(object):
                     sys.exit(1)
 
                 warn('move', display=True)
-                paths = [i['server_filename'].encode('utf8') for i in infos]
+                paths = [i['path'].encode('utf8') for i in infos]
                 remotepath = pipe[1]
                 self.move(paths, remotepath)
             else:
