@@ -1229,10 +1229,24 @@ class panbaiducom_HOME(object):
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
             base_dir, filename = os.path.split(info['path'])
-            path = os.path.join(s % (2, 95, base_dir.encode('utf8'))
-                if base_dir != '/' else '/', \
-                filename.encode('utf8') \
-                if not info['isdir'] else s % (2, 92, filename.encode('utf8')))
+            base_dir = s % (2, 95, base_dir.encode('utf8')) if base_dir != '/' else '/'
+            if info['isdir']:
+                t1, t2 = filename.split(info['highligh_text']) \
+                    if info.get('highligh_text') else (filename, u'')
+                t1 = s % (2, 94, t1.encode('utf8'))
+                t2 = s % (2, 94, t2.encode('utf8')) if t2 else ''
+                highligh_text = s % (2, 93, info['highligh_text'].encode('utf8')) \
+                    if info.get('highligh_text') else ''
+                filename = t1 + highligh_text + t2
+            else:
+                t1, t2 = filename.split(info['highligh_text']) \
+                    if info.get('highligh_text') else (filename, u'')
+                t1 = t1.encode('utf8')
+                t2 = t2.encode('utf8') if t2 else ''
+                highligh_text = s % (2, 93, info['highligh_text'].encode('utf8')) \
+                    if info.get('highligh_text') else ''
+                filename = t1 + highligh_text + t2
+            path = os.path.join(base_dir, filename)
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
             size = sizeof_fmt(info['size']).rjust(8)
@@ -1249,7 +1263,9 @@ class panbaiducom_HOME(object):
     def find(self, keywords, **arguments):
         infos = []
         for keyword in keywords:
-            infos += self._search(keyword, arguments.get('directory'))
+            t = self._search(keyword, arguments.get('directory'))
+            for i in xrange(len(t)): t[i]['highligh_text'] = keyword.decode('utf8', 'ignore')
+            infos += t
         infos = {i['fs_id']: i for i in infos}.values()
         infos = self._sift(infos, name=arguments.get('name'), \
             size=arguments.get('size'), time=arguments.get('time'), \
