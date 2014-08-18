@@ -270,7 +270,7 @@ class xiami(object):
                 durl = decry(row, encryed_url)
                 return durl
             except Exception as e:
-                print s % (1, 91, '   \\\n    \\-- Error, get_durl --'), e
+                print s % (1, 91, '  |-- Error, get_durl --'), e
                 time.sleep(5)
 
     def record(self, id_):
@@ -321,7 +321,7 @@ class xiami(object):
         #id3.add(USLT(encoding=3, text=self.get_lyric(info['lyric_url'])))
         #id3.add(TCOM(encoding=3, text=info['composer']))
         #id3.add(WXXX(encoding=3, desc=u'xiami_song_url', text=info['song_url']))
-        #id3.add(TCON(encoding=3, text=u'genres'))
+        #id3.add(TCON(encoding=3, text=u'genre'))
         #id3.add(TSST(encoding=3, text=info['sub_title']))
         #id3.add(TSRC(encoding=3, text=info['disc_code']))
         id3.add(COMM(encoding=3, desc=u'Comment', \
@@ -410,7 +410,7 @@ class xiami(object):
     def get_songs(self, album_id, song_id=None):
         html = ss.get(url_album % album_id).content
         html = html.split('<div id="wall"')[0]
-        html1, html2 = html.split('<div id="album_acts"')
+        html1, html2 = html.split('<div id="album_acts')
 
         t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1).decode('utf8', 'ignore')
         album_name = modificate_text(t)
@@ -459,30 +459,23 @@ class xiami(object):
                 sys.exit(1)
 
             for i in xrange(len(tracks)):
-                def do():
-                    song_info = {}
-                    song_info['song_id'] = song_ids[i]
-                    song_info['album_id'] = album_id.decode('utf8', 'ignore')
-                    song_info['song_url'] = u'http://www.xiami.com/song/' + song_ids[i]
-                    song_info['track'] = tracks[i]
-                    song_info['cd_serial'] = disc
-                    song_info['year'] = year
-                    song_info['album_pic_url'] = album_pic_url
-                    song_info['song_name'] = song_names[i]
-                    song_info['album_name'] = album_name
-                    song_info['artist_name'] = artist_name
-                    song_info['z'] = z
-                    song_info['disc_description'] = disc_description
-                    t = '%s\n\n%s%s' % (song_info['song_url'], disc_description + u'\n\n' if disc_description else '', album_description)
-                    song_info['comment'] = t
+                song_info = {}
+                song_info['song_id'] = song_ids[i]
+                song_info['album_id'] = album_id.decode('utf8', 'ignore')
+                song_info['song_url'] = u'http://www.xiami.com/song/' + song_ids[i]
+                song_info['track'] = tracks[i]
+                song_info['cd_serial'] = disc
+                song_info['year'] = year
+                song_info['album_pic_url'] = album_pic_url
+                song_info['song_name'] = song_names[i]
+                song_info['album_name'] = album_name
+                song_info['artist_name'] = artist_name
+                song_info['z'] = z
+                song_info['disc_description'] = disc_description
+                t = '%s\n\n%s%s' % (song_info['song_url'], disc_description + u'\n\n' if disc_description else '', album_description)
+                song_info['comment'] = t
 
-                    songs.append(song_info)
-
-                if song_id:
-                    if song_id == song_ids[i]:
-                        do()
-                else:
-                    do()
+                songs.append(song_info)
 
         cd_serial_auth = int(songs[-1]['cd_serial']) > 1
         for i in xrange(len(songs)):
@@ -490,9 +483,12 @@ class xiami(object):
             file_name = songs[i]['track'].zfill(z) + '.' + songs[i]['song_name'] + \
                 ' - ' + songs[i]['artist_name'] + '.mp3'
             if cd_serial_auth:
-                songs[i]['file_name'] = ''.join(['[Disc-', songs[i]['cd_serial'], ' #' + songs[i]['disc_description'] if songs[i]['disc_description'] else '', '] ', file_name])
+                songs[i]['file_name'] = ''.join(['[Disc-', songs[i]['cd_serial'], ' # ' + songs[i]['disc_description'] if songs[i]['disc_description'] else '', '] ', file_name])
             else:
                 songs[i]['file_name'] = file_name
+
+        t = [i for i in songs if i['song_id'] == song_id] if song_id else songs
+        songs = t
 
         return songs
 
@@ -769,6 +765,7 @@ class xiami(object):
                 else:
                     print(u'\n  ++ download: #%s/%s# %s' \
                         % (n, amount_songs, col))
+                    n += 1
 
                 durl = self.get_durl(i['song_id'])
                 mp3_quality = self.get_mp3_quality(durl)
@@ -796,7 +793,6 @@ class xiami(object):
 
             self.modified_id3(file_name, i)
             ii += 1
-            n += 1
             time.sleep(5)
 
     def _save_do(self, id_, type, tags):

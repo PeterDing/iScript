@@ -349,13 +349,17 @@ class neteaseMusic(object):
                     continue
             file_name_for_wget = file_name.replace('`', '\`')
             if not args.undownload:
+                q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
+                mp3_quality = q[i['mp3_quality']]
                 durl = i['durl']
                 if n == None:
-                    print(u'\n  ++ 正在下载: #%s/%s# %s' \
-                        % (ii, amount_songs, col))
+                    print(u'\n  ++ 正在下载: #%s/%s# %s\n' \
+                          u'  ++ mp3_quality: %s' \
+                        % (ii, amount_songs, col, s % (1, 91, mp3_quality)))
                 else:
-                    print(u'\n  ++ 正在下载: #%s/%s# %s' \
-                        % (n, amount_songs, col))
+                    print(u'\n  ++ 正在下载: #%s/%s# %s\n' \
+                          u'  ++ mp3_quality: %s' \
+                        % (n, amount_songs, col, s % (1, 91, mp3_quality)))
                 wget = self.template_wgets % (file_name_for_wget, durl)
                 wget = wget.encode('utf8')
                 status = os.system(wget)
