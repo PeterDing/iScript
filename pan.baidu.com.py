@@ -105,6 +105,10 @@ class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
+        self.highlights = {}
+        if args.tail: self.highlights['tail'] = {'text': args.tail.decode('utf8', 'ignore'), 'is_regex': 0}
+        if args.head: self.highlights['head'] = {'text': args.head.decode('utf8', 'ignore'), 'is_regex': 0}
+        if args.include: self.highlights['include'] = {'text': args.include.decode('utf8', 'ignore'), 'is_regex': 1}
 
     def init(self):
         if os.path.exists(cookie_file):
@@ -248,7 +252,7 @@ class panbaiducom_HOME(object):
                 reverse = False
             fileslist = sort(reverse, 'size')
 
-        # for size
+        # for time
         if arguments.get('time'):
             reverse = None
             if arguments['time'] == 'reverse':
@@ -291,14 +295,26 @@ class panbaiducom_HOME(object):
             fileslist = [fileslist[i] for i in indexs]
 
         dirs = [i for i in fileslist if i['isdir']]
+        t, tt = [], []
+        args.type_ = args.type_ if args.type_ else ''
+        if 'e' in args.type_:
+            for i in dirs:
+                d = i['path'].encode('utf8')
+                j = self._get_file_list('name', None, d, 1, all=False)
+                if not j['list']:
+                    t.append(i)
+                else:
+                    tt.append(i)
+        if 'e' in args.type_.split(','): dirs = t
+        if 'ne' in args.type_.split(','): dirs = tt
         files = [i for i in fileslist if not i['isdir']]
         if arguments.get('desc') == 1:
             dirs.reverse()
             files.reverse()
 
-        if args.type_ == 'f':
+        if 'f' in args.type_:
             fileslist = files
-        elif args.type_ == 'd':
+        elif 'd' in args.type_:
             fileslist = dirs
         else:
             fileslist = dirs + files
@@ -315,7 +331,7 @@ class panbaiducom_HOME(object):
         t = urllib.unquote_plus(t)
         return t
 
-    def _get_file_list(self, order, desc, dir_):
+    def _get_file_list(self, order, desc, dir_, num, all=True):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
         theaders = headers
         theaders.update(t)
@@ -324,14 +340,15 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
-            "num": 10000,   ## max amount of listed file at one page
+            "showempty": 1,
+            "num": num,   ## max amount is 10000
             "t": int(time.time()*1000),
             "dir": dir_,
             "page": 1,
             "desc": 1,   ## reversely
             "order": order, ## sort by name, or size, time
-            "_": int(time.time()*1000)
-            #"bdstoken": token
+            "_": int(time.time()*1000),
+            #"bdstoken": self._get_bdstoken(),
         }
         if not desc: del p['desc']
         url = 'http://pan.baidu.com/api/list'
@@ -346,7 +363,9 @@ class panbaiducom_HOME(object):
             else:
                 infos += j['list']
 
-            if len(infos) == 10000:
+            if not all: return j
+
+            if len(infos) == num:
                 p['page'] += 1
             else:
                 j['list'] = infos
@@ -471,7 +490,7 @@ class panbaiducom_HOME(object):
                 if meta['info'][0]['isdir']:
                     dir_loop = [path]
                     for d in dir_loop:
-                        j = self._get_file_list('name', None, d)
+                        j = self._get_file_list('name', None, d, 10000)
                         if j['list']:
                             if args.recursive:
                                 for i in j['list']:
@@ -869,7 +888,7 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         #self.save_upload_datas()
-                        print s % (1, 92, '  |-- success.\n')
+                        print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
                         print s % (1, 91, '  !! Error: _upload_one_file is fall, retry.')
@@ -1216,6 +1235,33 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _search'), j
             sys.exit(1)
 
+    def _highlight_filename_zones(self, info):
+        filename = info['server_filename']
+        target = ['.' for i in xrange(len(filename))]
+        for hl in self.highlights.values():
+            re_tp = hl['text'] if hl['is_regex'] else re.escape(hl['text'])
+            for m in re.finditer(re_tp, filename, re.I):
+                for i in xrange(m.start(), m.end()):
+                    target[i] = ' '
+
+        highlight_zones = []
+        for m in re.finditer('\s+', ''.join(target)):
+            highlight_zones.append(m.start())
+            highlight_zones.append(m.end())
+
+        filename_zones = []
+        for i in xrange(len(highlight_zones)):
+            if i == 0:
+                filename_zones.append(filename[:highlight_zones[i]])
+                filename_zones.append(filename[highlight_zones[i]:highlight_zones[i+1]])
+            else:
+                try:
+                    filename_zones.append(filename[highlight_zones[i]:highlight_zones[i+1]])
+                except:
+                    filename_zones.append(filename[highlight_zones[i]:])
+
+        return filename_zones if filename_zones else [filename]
+
     def _find_display(self, info):
         if args.type_ == 'f':
             if info['isdir']:
@@ -1229,26 +1275,24 @@ class panbaiducom_HOME(object):
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
-            base_dir, filename = os.path.split(info['path'])
+            base_dir = os.path.split(info['path'])[0]
             base_dir = s % (2, 95, base_dir.encode('utf8')) if base_dir != '/' else '/'
 
-            highligh_text = info.get('highligh_text')
-            ii = filename.lower().find(highligh_text.lower()) if highligh_text else -1
-            if ii != -1: highligh_text = filename[ii:ii+len(highligh_text)]
-            t1 = filename[:ii] if ii != -1 else filename
-            t2 = filename[ii+len(highligh_text):] if ii != -1 else u''
-            if info['isdir']:
-                t1 = s % (2, 94, t1.encode('utf8'))
-                t2 = s % (2, 94, t2.encode('utf8')) if t2 else ''
-                highligh_text = s % (2, 93, highligh_text.encode('utf8')) \
-                    if ii != -1 else ''
-                filename = t1 + highligh_text + t2
-            else:
-                t1 = t1.encode('utf8')
-                t2 = t2.encode('utf8') if t2 else ''
-                highligh_text = s % (2, 93, highligh_text.encode('utf8')) \
-                    if ii != -1 else ''
-                filename = t1 + highligh_text + t2
+            filename_zones = self._highlight_filename_zones(info)
+            t = ''
+            for i in xrange(0, len(filename_zones), 2):
+                if info['isdir']:
+                    try:
+                        t += s % (2, 94, filename_zones[i].encode('utf8')) + s % (2, 93, filename_zones[i+1].encode('utf8'))
+                    except:
+                        t += s % (2, 94, filename_zones[i].encode('utf8'))
+                else:
+                    try:
+                        t += filename_zones[i].encode('utf8') + s % (2, 93, filename_zones[i+1].encode('utf8'))
+                    except:
+                        t += filename_zones[i].encode('utf8')
+            filename = t
+
             path = os.path.join(base_dir, filename)
 
         elif args.ls_color == 'off':
@@ -1267,9 +1311,9 @@ class panbaiducom_HOME(object):
     def find(self, keywords, **arguments):
         infos = []
         for keyword in keywords:
-            t = self._search(keyword, arguments.get('directory'))
-            for i in xrange(len(t)): t[i]['highligh_text'] = keyword.decode('utf8', 'ignore')
-            infos += t
+            infos += self._search(keyword, arguments.get('directory'))
+            kw = keyword.decode('utf8', 'ignore')
+            self.highlights['find'] = {'text': kw, 'is_regex': 0}
         infos = {i['fs_id']: i for i in infos}.values()
         infos = self._sift(infos, name=arguments.get('name'), \
             size=arguments.get('size'), time=arguments.get('time'), \
@@ -1342,9 +1386,9 @@ class panbaiducom_HOME(object):
         y = 1
         sum_size = 0
         for dir_ in directorys:
-            infos = self._get_file_list(order, desc, dir_.encode('utf8'))['list']
+            infos = self._get_file_list(order, desc, dir_.encode('utf8'), 10000)['list']
             tinfos = infos
-            if args.head or args.tail or args.include or args.exclude:
+            if args.head or args.tail or args.include or args.exclude or args.type_:
                 tinfos = self._sift(infos)
             if args.type_ != 'du':
                 self._ls_display(tinfos, dir_)
@@ -1531,7 +1575,7 @@ class panbaiducom_HOME(object):
                     directorys = [path.decode('utf8', 'ignore')]
                     y = 1
                     for dir_ in directorys:
-                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'), 10000)['list']
                         t = infos
                         if args.type_ == 'f' or args.type_ == 'd':
                             t = self._sift(infos)
@@ -1551,7 +1595,7 @@ class panbaiducom_HOME(object):
             self._rnre_do(foo, bar, tinfos)
 
     def _rmre_do(self, infos):
-        if args.recursive and args.type_ == 'f':
+        if args.recursive and 'f' in args.type_:
             paths = [i['path'].encode('utf8')  for i in infos if not i['isdir']]
         else:
             paths = [i['path'].encode('utf8')  for i in infos]
@@ -1576,7 +1620,7 @@ class panbaiducom_HOME(object):
                     directorys = [path.decode('utf8', 'ignore')]
                     y = 1
                     for dir_ in directorys:
-                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'), 10000)['list']
                         tinfos += infos
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
@@ -1622,7 +1666,7 @@ class panbaiducom_HOME(object):
                     directorys = [path.decode('utf8', 'ignore')]
                     y = 1
                     for dir_ in directorys:
-                        infos = self._get_file_list('name', None, dir_.encode('utf8'))['list']
+                        infos = self._get_file_list('name', None, dir_.encode('utf8'), 10000)['list']
                         tinfos += infos
                         if args.recursive:
                             subdirs = [i['path'] for i in infos if i['isdir']]
@@ -2205,6 +2249,10 @@ def main(argv):
  sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
  # 显示文件size, md5
  sl path1 path2 .. -v
+ # 空文件夹
+ l path1 path2 -t e,d
+ # 非空文件夹
+ l path1 path2 -t ne,d
 
  # 查看文件占用空间
  du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
@@ -2250,12 +2298,15 @@ def main(argv):
  -s SECRET, --secret SECRET          提取密码
  -f number, --from_ number           从第几个开始下载，eg: -f 42
  -t ext, --type_ ext                 类型参数.
-                                     eg: l -t f (文件); l -t d (文件夹)
+                                     eg:
+                                     l -t f   # 文件
+                                     l -t d   # 文件夹
+                                     l -t du  # 查看文件占用空间
+                                     l -t e,d # 空文件夹
                                      a -t m,d,p,a
                                      u -t r  # 只进行 rapidupload
                                      u -t e  # 如果云端已经存在则不上传(不比对md5)
                                      u -t r,e
-                                     l -t du  # 查看文件占用空间
  -l amount, --limit amount           下载速度限制，eg: -l 100k
  -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
  -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre

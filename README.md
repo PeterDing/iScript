@@ -183,7 +183,9 @@
 
     下载默认为非递归，递归下载加 -R
 
-    搜索时，默认在 /。
+    搜索时，默认在 /
+
+    搜索支持高亮
 
     上传模式默认是 c (续传)。
 
@@ -284,6 +286,10 @@
         l -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
         # 显示文件size, md5
         l path1 path2 .. -v
+        # 空文件夹
+        l path1 path2 -t e,d
+        # 非空文件夹
+        l path1 path2 -t ne,d
 
         # 查看文件占用空间
         du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
@@ -317,12 +323,15 @@
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数.
-                                            eg: l -t f (文件); l -t d (文件夹)
+                                            eg:
+                                            l -t f   # 文件
+                                            l -t d   # 文件夹
+                                            l -t du  # 查看文件占用空间
+                                            l -t e,d # 空文件夹
                                             a -t m,d,p,a
                                             u -t r  # 只进行 rapidupload
                                             u -t e  # 如果云端已经存在则不上传(不比对md5)
                                             u -t r,e
-                                            l -t du  # 查看文件占用空间
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o   # 重新上传. c   # 连续上传.
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
