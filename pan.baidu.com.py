@@ -105,10 +105,10 @@ class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
-        self.highlights = {}
-        if args.tail: self.highlights['tail'] = {'text': args.tail.decode('utf8', 'ignore'), 'is_regex': 0}
-        if args.head: self.highlights['head'] = {'text': args.head.decode('utf8', 'ignore'), 'is_regex': 0}
-        if args.include: self.highlights['include'] = {'text': args.include.decode('utf8', 'ignore'), 'is_regex': 1}
+        self.highlights = []
+        if args.tail: self.highlights.append({'text': args.tail.decode('utf8', 'ignore'), 'is_regex': 0})
+        if args.head: self.highlights.append({'text': args.head.decode('utf8', 'ignore'), 'is_regex': 0})
+        if args.include: self.highlights.append({'text': args.include.decode('utf8', 'ignore'), 'is_regex': 1})
 
     def init(self):
         if os.path.exists(cookie_file):
@@ -1238,7 +1238,7 @@ class panbaiducom_HOME(object):
     def _highlight_filename_zones(self, info):
         filename = info['server_filename']
         target = ['.' for i in xrange(len(filename))]
-        for hl in self.highlights.values():
+        for hl in self.highlights:
             re_tp = hl['text'] if hl['is_regex'] else re.escape(hl['text'])
             for m in re.finditer(re_tp, filename, re.I):
                 for i in xrange(m.start(), m.end()):
@@ -1313,7 +1313,7 @@ class panbaiducom_HOME(object):
         for keyword in keywords:
             infos += self._search(keyword, arguments.get('directory'))
             kw = keyword.decode('utf8', 'ignore')
-            self.highlights['find'] = {'text': kw, 'is_regex': 0}
+            self.highlights.append({'text': kw, 'is_regex': 0})
         infos = {i['fs_id']: i for i in infos}.values()
         infos = self._sift(infos, name=arguments.get('name'), \
             size=arguments.get('size'), time=arguments.get('time'), \
