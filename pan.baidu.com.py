@@ -95,9 +95,10 @@ def print_process_bar(point, total, slice_size, start_time=None, pre='', suf='',
     speed = sizeof_fmt(slice_size / (now - start_time)) + '/s'
     t = int(nowpoint*length)
 
-    msg = ' '.join([pre, '[%s%s]' % ('='*t, ' '*(length - t)), \
+    msg = '\r' + ' '.join([pre, '[%s%s]' % ('='*t, ' '*(length - t)), \
         str(percent) + '%', speed, msg, suf])
-    print msg
+    sys.stdout.write(msg)
+    sys.stdout.flush()
     return now
 
 class panbaiducom_HOME(object):
@@ -856,7 +857,7 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         del self.upload_datas[lpath]['slice_md5s']
                         #self.save_upload_datas()
-                        print s % (1, 92, '  |-- success.\n')
+                        print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
                         print s % (1, 91, '  !! Error at _combine_file')
@@ -1230,23 +1231,26 @@ class panbaiducom_HOME(object):
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
             base_dir, filename = os.path.split(info['path'])
             base_dir = s % (2, 95, base_dir.encode('utf8')) if base_dir != '/' else '/'
+
+            highligh_text = info.get('highligh_text')
+            ii = filename.lower().find(highligh_text.lower()) if highligh_text else -1
+            if ii != -1: highligh_text = filename[ii:ii+len(highligh_text)]
+            t1 = filename[:ii] if ii != -1 else filename
+            t2 = filename[ii+len(highligh_text):] if ii != -1 else u''
             if info['isdir']:
-                t1, t2 = filename.split(info['highligh_text']) \
-                    if info.get('highligh_text') else (filename, u'')
                 t1 = s % (2, 94, t1.encode('utf8'))
                 t2 = s % (2, 94, t2.encode('utf8')) if t2 else ''
-                highligh_text = s % (2, 93, info['highligh_text'].encode('utf8')) \
-                    if info.get('highligh_text') else ''
+                highligh_text = s % (2, 93, highligh_text.encode('utf8')) \
+                    if ii != -1 else ''
                 filename = t1 + highligh_text + t2
             else:
-                t1, t2 = filename.split(info['highligh_text']) \
-                    if info.get('highligh_text') else (filename, u'')
                 t1 = t1.encode('utf8')
                 t2 = t2.encode('utf8') if t2 else ''
-                highligh_text = s % (2, 93, info['highligh_text'].encode('utf8')) \
-                    if info.get('highligh_text') else ''
+                highligh_text = s % (2, 93, highligh_text.encode('utf8')) \
+                    if ii != -1 else ''
                 filename = t1 + highligh_text + t2
             path = os.path.join(base_dir, filename)
+
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
             size = sizeof_fmt(info['size']).rjust(8)
