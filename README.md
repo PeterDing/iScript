@@ -497,7 +497,7 @@
 
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
-        bp f mp3 -H "[" "01" -T ".tmp" -I ".*-.*" /path/to/search -R
+        bp f mp3 /path/to/search -H "[" "01" -T ".tmp" -I ".*-.*" -R
 
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
         f bioloy \| d -R                          递归搜索后递归下载
