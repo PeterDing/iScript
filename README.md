@@ -175,7 +175,7 @@
 
     初次使用需要登录 bp login
 
-    **支持多帐号登陆**
+    **支持多帐号登录**
 
     他人分享的网盘连接，只支持单个的下载。
 
@@ -241,12 +241,13 @@
         cp 或 copy path1 path2 .. /path/to/directory         复制
 
         # 使用正则表达式进行文件操作
-        rnr 或 rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
-        rmr 或 rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
-        mvr 或 mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
-        cpr 或 cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
+        rnr 或 rnre foo bar dir1 dir2 .. -I re1 re2 ..                                            重命名文件夹中的文件名
+        rmr 或 rmre dir1 dir2 .. -E re1 re2 ..                    删除文件夹下匹配到的文件
+        mvr 或 mvre dir1 dir2 .. /path/to/dir -H head1 head2 ..   移动文件夹下匹配到的文件
+        cpr 或 cpre dir1 dir2 .. /path/to/dir -T tail1 tail2 ..   复制文件夹下匹配到的文件
         # 递归加 -R
-        # rmr, mvr, cpr 中 -t, -I, -E, -H, -T 至少要有一个
+        # rmr, mvr, cpr 中 -t, -I, -E, -H, -T 至少要有一个，放在命令行末尾
+        # -I, -E, -H, -T 后可跟多个匹配式
         # 可以用 -t 指定操作的文件类型
             -t f # 文件
             -t d # 文件夹
@@ -267,8 +268,9 @@
         f 'ice and fire' /doc -R
         # directory 默认为 /
         # 关于-H, -T, -I, -E
-        f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
-        f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
+        # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
+        f keyword1 keyword2 ... [directory] -H head -T tail -I "re(gul.*) ex(p|g)ress$"
+        f keyword1 keyword2 ... [directory] -H head -T tail -E "re(gul.*) ex(p|g)ress$"
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
         f keyword1 keyword2 .. [directory] \| d -R              递归搜索后递归下载
         ftt keyword1 keyword2 .. [directory] \| p -R            递归搜索(by time 反序)后递归播放
@@ -287,11 +289,12 @@
         lss path1 path2 ..                             ls by size 反序
         l /doc/books /videos
         # 以下是只列出文件或文件夹
-        l -t f path1 path2 ..                         ls files
-        l -t d path1 path2 ..                         ls directorys
+        l path1 path2 .. -t f                         ls files
+        l path1 path2 .. -t d                         ls directorys
         # 关于-H, -T, -I, -E
-        l -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
-        l -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
+        # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
+        l path1 path2 .. -H head -T tail -I "^re(gul.*) ex(p|g)ress$"
+        l path1 path2 .. -H head -T tail -E "^re(gul.*) ex(p|g)ress$"
         # 显示文件size, md5
         l path1 path2 .. -v
         # 空文件夹
@@ -343,10 +346,10 @@
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o   # 重新上传. c   # 连续上传.
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
-        -H HEAD, --head HEAD                匹配开头的字符，eg: -H Headishere
-        -T TAIL, --tail TAIL                匹配结尾的字符，eg: -T Tailishere
-        -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
-        -E EXCLUDE, --exclude EXCLUDE       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
+        -H HEADS, --head HEADS                匹配开头的字符，eg: -H Headishere
+        -T TAILS, --tail TAILS                匹配结尾的字符，eg: -T Tailishere
+        -I INCLUDES, --include INCLUDES       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
+        -E EXCLUDES, --exclude EXCLUDES       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
         -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
         # -t, -H, -T, -I, -E 都能用于 download, play, ls, find
@@ -494,8 +497,7 @@
 
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
-        bp f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... /path/to/search -R
-        bp f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... -R
+        bp f mp3 -H "[" "01" -T ".tmp" -I ".*-.*" /path/to/search -R
 
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
         f bioloy \| d -R                          递归搜索后递归下载

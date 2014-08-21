@@ -106,9 +106,9 @@ class panbaiducom_HOME(object):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
         self.highlights = []
-        if args.tail: self.highlights.append({'text': args.tail.decode('utf8', 'ignore'), 'is_regex': 0})
-        if args.head: self.highlights.append({'text': args.head.decode('utf8', 'ignore'), 'is_regex': 0})
-        if args.include: self.highlights.append({'text': args.include.decode('utf8', 'ignore'), 'is_regex': 1})
+        for tail in args.tails: self.highlights.append({'text': tail.decode('utf8', 'ignore'), 'is_regex': 0})
+        for head in args.heads: self.highlights.append({'text': head.decode('utf8', 'ignore'), 'is_regex': 0})
+        for include in args.includes: self.highlights.append({'text': include.decode('utf8', 'ignore'), 'is_regex': 1})
 
     def init(self):
         if os.path.exists(cookie_file):
@@ -286,20 +286,21 @@ class panbaiducom_HOME(object):
             fileslist = sort(reverse, 'server_mtime')
 
         # for head, tail, include, exclude
-        head = args.head
-        tail = args.tail
-        include = args.include
-        exclude = args.exclude
-        if head or tail or include or exclude:
-            tdict = {fileslist[i]['path'] : i for i in xrange(len(fileslist))}
-            keys1 = [i for i in tdict.keys() if i.lower().startswith(head.decode('utf8', 'ignore').lower())] \
-                if head else []
-            keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())] \
-                if tail else []
-            keys3 = [i for i in tdict.keys() if re.search(include.decode('utf8', 'ignore'), i, flags=re.I)] \
-                if include else []
-            keys4 = [i for i in tdict.keys() if not re.search(exclude.decode('utf8', 'ignore'), i, flags=re.I)] \
-                if exclude else []
+        heads = args.heads
+        tails = args.tails
+        includes = args.includes
+        excludes = args.excludes
+        keys1, keys2, keys3, keys4 = [], [], [], []
+        if heads or tails or includes or excludes:
+            tdict = {fileslist[i]['server_filename'] : i for i in xrange(len(fileslist))}
+            for head in heads:
+                keys1 += [i for i in tdict.keys() if i.lower().startswith(head.decode('utf8', 'ignore').lower())]
+            for tail in tails:
+                keys2 += [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())]
+            for include in includes:
+                keys3 += [i for i in tdict.keys() if re.search(include.decode('utf8', 'ignore'), i, flags=re.I)]
+            for exclude in excludes:
+                keys4 += [i for i in tdict.keys() if not re.search(exclude.decode('utf8', 'ignore'), i, flags=re.I)]
 
             # intersection
             keys = [set(i) for i in [keys1, keys2, keys3, keys4] if i]
@@ -535,7 +536,7 @@ class panbaiducom_HOME(object):
                                 j['list'] = [i for i in j['list'] \
                                     if not i['isdir'] and os.path.splitext(i['server_filename'])[-1].lower() in mediatype]
 
-                            if args.head or args.tail or args.include or args.exclude:
+                            if args.heads or args.tails or args.includes or args.excludes:
                                 j['list'] = self._sift(j['list'])
 
                             total_file = len([i for i in j['list'] if not i['isdir']])
@@ -1427,7 +1428,7 @@ class panbaiducom_HOME(object):
         for dir_ in directorys:
             infos = self._get_file_list(order, desc, dir_.encode('utf8'), 10000)['list']
             tinfos = infos
-            if args.head or args.tail or args.include or args.exclude or args.type_:
+            if args.heads or args.tails or args.includes or args.excludes or args.type_:
                 tinfos = self._sift(infos)
             if args.type_ != 'du':
                 self._ls_display(tinfos, dir_)
@@ -2307,10 +2308,10 @@ def main(argv):
  -l amount, --limit amount           下载速度限制，eg: -l 100k
  -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
  -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
- -H HEAD, --head HEAD                匹配开头的字符(不是regex)，eg: -H Headishere
- -T TAIL, --tail TAIL                匹配结尾的字符(不是regex)，eg: -T Tailishere
- -I INCLUDE, --include INCLUDE       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
- -E EXCLUDE, --exclude EXCLUDE       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
+ -H [HEAD [HEAD ...]], --heads [HEAD [HEAD ...]]                      匹配开头集, (不是regex)，eg: -H Head1 Head2 ..
+ -T [TAIL [TAIL ...]], --tails [TAIL [TAIL ...]]                      匹配结尾集, (不是regex)，eg: -T Tail1 Tail2 ..
+ -I [INCLUDE [INCLUDE ...]], --includes [INCLUDE [INCLUDE ...]]       不排除匹配集, 可以是正则表达式，eg: -I ".*\.mp3" ".*\.mp4" ..
+ -E [EXCLUDE [EXCLUDE ...]], --excludes [EXCLUDE [EXCLUDE ...]]       排除匹配集, 可以是正则表达式，eg: -E ".*\.html" ".*\.temp" ..
  -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
  # -t, -H, -T, -I, -E 都能用于 download, play, ls, find
@@ -2323,20 +2324,14 @@ def main(argv):
     # for argparse
     p = argparse.ArgumentParser(description='about pan.baidu.com.' \
         ' 用法见 https://github.com/PeterDing/iScript')
-    p.add_argument('xxx', type=str, nargs='*', \
-        help='命令对象.')
+    p.add_argument('xxx', type=str, nargs='*', help='命令对象.')
     p.add_argument('-a', '--aria2c', action='store', default=None, \
         type=int, help='aria2c分段下载数量')
-    p.add_argument('-p', '--play', action='store_true', \
-        help='play with mpv')
-    p.add_argument('-v', '--view', action='store_true', \
-        help='view details')
-    p.add_argument('-y', '--yes', action='store_true', \
-        help='yes')
-    p.add_argument('-q', '--quiet', action='store_true', \
-        help='quiet for download and play')
-    p.add_argument('-s', '--secret', action='store', \
-        default=None, help='提取密码')
+    p.add_argument('-p', '--play', action='store_true', help='play with mpv')
+    p.add_argument('-v', '--view', action='store_true', help='view details')
+    p.add_argument('-y', '--yes', action='store_true', help='yes')
+    p.add_argument('-q', '--quiet', action='store_true', help='quiet for download and play')
+    p.add_argument('-s', '--secret', action='store', default=None, help='提取密码')
     p.add_argument('-f', '--from_', action='store', \
         default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')
@@ -2350,16 +2345,15 @@ def main(argv):
         default='c', type=str, choices=['o', 'c'], \
         help='上传模式: o --> 重传. c --> 续传 .')
     # for recurse, head, tail, include, exclude
-    p.add_argument('-R', '--recursive', action='store_true', \
-        help='递归 ls')
-    p.add_argument('-H', '--head', action='store', \
-        default=None, type=str, help='匹配开头的字符，eg: -H Headishere')
-    p.add_argument('-T', '--tail', action='store', \
-        default=None, type=str, help='匹配结尾的字符，eg: -T Tailishere')
-    p.add_argument('-I', '--include', action='store', \
-        default=None, type=str, help='不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"')
-    p.add_argument('-E', '--exclude', action='store', \
-        default=None, type=str, help='排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"')
+    p.add_argument('-R', '--recursive', action='store_true', help='递归 ls')
+    p.add_argument('-H', '--heads', nargs='*', default=[], \
+        help='匹配开头list，不能是正则表达式, eg: -H Head1 Head2 ..')
+    p.add_argument('-T', '--tails', nargs='*', default=[], \
+        help='匹配结尾list，不能是正则表达式, eg: -T Tail1 Tail2 ..')
+    p.add_argument('-I', '--includes', nargs='*', default=[], \
+        help='不排除匹配list, 可以是正则表达式，eg: -I "*.mp3" "^[\d]+" ..')
+    p.add_argument('-E', '--excludes', nargs='*', default=[], \
+        help='排除匹配list, 可以是正则表达式，eg: -E "*.html" "*.temp" ..')
     p.add_argument('-c', '--ls_color', action='store', default='on', \
         choices=['on', 'off'], type=str, help='ls 颜色，默认是on')
     global args
@@ -2399,14 +2393,19 @@ def main(argv):
             print s % (1, 91, '  login failes')
 
     elif comd == 'userdelete' or comd == 'ud' or \
-        comd == 'userchange' or comd == 'uc':
+        comd == 'userchange' or comd == 'uc' or \
+        comd == 'user':
         if os.path.exists(cookie_file):
             try:
                 j = json.loads(open(cookie_file).read())
                 cu = zip(range(len(j)), [u for u in j])
                 for i, u in cu:
-                    print s % (1, 92, i+1) if j[u]['on'] else s % (1, 91, i+1), j[u]['capacity'], s % (2, 97, u)
+                    print s % (1, 92, i+1) if j[u]['on'] else s % (1, 91, i+1), \
+                        j[u]['capacity'], \
+                        s % (2, 92, u) if j[u]['on'] else s % (2, 97, u)
                 if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
+                elif comd == 'user': sys.exit()
+
                 ipt = raw_input('pick a number: ')
                 if not ipt.isdigit(): sys.exit()
                 u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
@@ -2439,16 +2438,6 @@ def main(argv):
         else:
             print s % (1, 97, '  please login')
             sys.exit(1)
-
-    elif comd == 'user':
-        x = panbaiducom_HOME()
-        x.init()
-
-        username = x.username
-        quota = x._get_quota()
-        capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
-        print 'username:', s % (1, 97, username)
-        print 'capacity:',s % (1, 97, capacity)
 
     elif comd == 'u' or comd == 'upload':
         if len(xxx) < 2:
@@ -2620,7 +2609,7 @@ def main(argv):
 
         if comd == 'cpr' or comd == 'cpre' or \
             comd == 'rmr' or comd == 'rmre':
-            if not (args.include or args.exclude or args.head or args.tail or args.type_):
+            if not (args.includes or args.excludes or args.heads or args.tails or args.type_):
                 print s % (1, 91, '  !! missing -I or -E or -H or -T')
                 sys.exit(1)
 
