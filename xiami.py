@@ -440,7 +440,7 @@ class xiami(object):
         album_pic_url = t.decode('utf8', 'ignore')
 
         songs = []
-        for c in html2.split('trackname')[1:]:
+        for c in html2.split('class="trackname"')[1:]:
             disc = re.search(r'>disc (\d+)', c).group(1).decode('utf8', 'ignore')
 
             t = re.search(r'>disc .+?\[(.+?)\]', c)
@@ -472,7 +472,9 @@ class xiami(object):
                 song_info['artist_name'] = artist_name
                 song_info['z'] = z
                 song_info['disc_description'] = disc_description
-                t = '%s\n\n%s%s' % (song_info['song_url'], disc_description + u'\n\n' if disc_description else '', album_description)
+                t = '%s\n\n%s%s' % (song_info['song_url'],
+                                    disc_description + u'\n\n' if disc_description else '',
+                                    album_description)
                 song_info['comment'] = t
 
                 songs.append(song_info)
@@ -483,7 +485,12 @@ class xiami(object):
             file_name = songs[i]['track'].zfill(z) + '.' + songs[i]['song_name'] + \
                 ' - ' + songs[i]['artist_name'] + '.mp3'
             if cd_serial_auth:
-                songs[i]['file_name'] = ''.join(['[Disc-', songs[i]['cd_serial'], ' # ' + songs[i]['disc_description'] if songs[i]['disc_description'] else '', '] ', file_name])
+                songs[i]['file_name'] = ''.join([
+                    '[Disc-',
+                    songs[i]['cd_serial'],
+                    ' # ' + songs[i]['disc_description'] \
+                        if songs[i]['disc_description'] else '', '] ',
+                    file_name])
             else:
                 songs[i]['file_name'] = file_name
 
