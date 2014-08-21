@@ -2413,6 +2413,9 @@ def main(argv):
 
                 if comd == 'userdelete' or comd == 'ud':
                     if u != 'ALL':
+                        if j[u]['on'] and len(j) > 1:
+                            print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
+                            sys.exit()
                         del j[u]
                     else:
                         g = open(cookie_file, 'w')
@@ -2431,10 +2434,10 @@ def main(argv):
             except Exception:
                 g = open(cookie_file, 'w')
                 g.close()
-                print s % (1, 91, '  cookie_file is wrong, please login again')
+                print s % (1, 97, '  please login')
                 sys.exit(1)
         else:
-            print s % (1, 91, '  cookie_file is missing, please login again')
+            print s % (1, 97, '  please login')
             sys.exit(1)
 
     elif comd == 'user':
