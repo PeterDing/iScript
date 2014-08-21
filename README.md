@@ -175,6 +175,8 @@
 
     初次使用需要登录 bp login
 
+    **支持多帐号登陆**
+
     他人分享的网盘连接，只支持单个的下载。
 
     下载工具默认为wget, 可用参数-a num选用aria2
@@ -210,8 +212,14 @@
         login username
         login username password
 
-        signout                                              退出登录
-        user                                                 用户信息
+        # 删除帐号
+        userdelete 或 ud
+
+        # 切换帐号
+        userchange 或 uc
+
+        # 帐号信息
+        user
 
         p  或 play url1 url2 .. path1 path2 ..               播放
         u  或 upload localpath remotepath                    上传
@@ -354,9 +362,20 @@
         bp login username
         bp login username password
 
-    退出登录:
+        # 多帐号登录
+        # 一直用 bp login 即可
 
-        bp signout
+    删除帐号:
+
+        bp ud
+
+    切换帐号:
+
+        bp uc
+
+    帐号信息:
+
+        bp user
 
     下载:
 

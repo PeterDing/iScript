@@ -113,18 +113,20 @@ class panbaiducom_HOME(object):
     def init(self):
         if os.path.exists(cookie_file):
             try:
-                t = json.loads(open(cookie_file).read())
-                ss.cookies.update(t.get('cookies', t))
+                j = json.loads(open(cookie_file).read())
+                u = [u for u in j if j[u]['on']][0]
+                ss.cookies.update(j[u]['cookies'])
                 if not self.check_login():
                     print s % (1, 91, '  !! cookie is invalid, please login\n')
                     sys.exit(1)
+                self.save_cookies(u)
             except:
                 g = open(cookie_file, 'w')
                 g.close()
                 print s % (1, 97, '  please login')
                 sys.exit(1)
         else:
-            print s % (1, 91, '  !! cookie_file is missing, please login')
+            print s % (1, 97, '  please login')
             sys.exit(1)
 
     @staticmethod
@@ -144,7 +146,7 @@ class panbaiducom_HOME(object):
         if 'errNo":"0' in r.content:
             #print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
-            self.save_cookies()
+            #self.save_cookies()
             return True
         else:
             print s % (1, 91, '  -- check_login fail\n')
@@ -206,12 +208,34 @@ class panbaiducom_HOME(object):
         # XXX : do not handle errors
         url = 'https://passport.baidu.com/v2/api/?login'
         ss.post(url, data=data)
-        self.save_cookies()
+        #self.save_cookies()
 
-    def save_cookies(self):
-        with open(cookie_file, 'w') as g:
-            c = {'cookies': ss.cookies.get_dict()}
-            g.write(json.dumps(c, indent=4, sort_keys=True))
+    def save_cookies(self, username):
+        self.username = username
+        if os.path.exists(cookie_file):
+            try:
+                f = open(cookie_file).read()
+                j = json.loads(f) if f else {}
+                j[username] = {}
+                j[username]['cookies'] = ss.cookies.get_dict()
+                j[username]['on'] = 1
+                quota = self._get_quota()
+                capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
+                j[username]['capacity'] = capacity
+                for u in j:
+                    if u != username:
+                        j[u]['on'] = 0
+                with open(cookie_file, 'w') as g:
+                    g.write(json.dumps(j, indent=4, sort_keys=True))
+
+            except:
+                g = open(cookie_file, 'w')
+                g.close()
+                print s % (1, 97, '  please login')
+                sys.exit(1)
+        else:
+            print s % (1, 97, '  please login')
+            sys.exit(1)
 
     def _get_bdstoken(self):
         if hasattr(self, 'bdstoken'):
@@ -259,7 +283,7 @@ class panbaiducom_HOME(object):
                 reverse = True
             elif arguments['time'] == 'no_reverse':
                 reverse = False
-            fileslist = sort(reverse, 'local_mtime')
+            fileslist = sort(reverse, 'server_mtime')
 
         # for head, tail, include, exclude
         head = args.head
@@ -267,7 +291,7 @@ class panbaiducom_HOME(object):
         include = args.include
         exclude = args.exclude
         if head or tail or include or exclude:
-            tdict = {fileslist[i]['server_filename'] : i for i in xrange(len(fileslist))}
+            tdict = {fileslist[i]['path'] : i for i in xrange(len(fileslist))}
             keys1 = [i for i in tdict.keys() if i.lower().startswith(head.decode('utf8', 'ignore').lower())] \
                 if head else []
             keys2 = [i for i in tdict.keys() if i.lower().endswith(tail.decode('utf8', 'ignore').lower())] \
@@ -330,6 +354,16 @@ class panbaiducom_HOME(object):
         t = urllib.unquote_plus(t)
         t = urllib.unquote_plus(t)
         return t
+
+    def _get_quota(self):
+        url = 'https://pan.baidu.com/api/quota'
+        r = ss.get(url)
+        j = r.json()
+        if j['errno'] != 0:
+            print s % (1, 92, '  !! Error at _get_quota')
+            sys.exit(1)
+        else:
+            return j
 
     def _get_file_list(self, order, desc, dir_, num, all=True):
         t = {'Referer':'http://pan.baidu.com/disk/home'}
@@ -1235,12 +1269,12 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at _search'), j
             sys.exit(1)
 
-    def _highlight_filename_zones(self, info):
-        filename = info['server_filename']
-        target = ['.' for i in xrange(len(filename))]
-        for hl in self.highlights:
+    def _highlight_string_zones(self, string, highlights, highlight_color, background_color=None):
+        # string is unicoded
+        target = ['.' for i in xrange(len(string))]
+        for hl in highlights:
             re_tp = hl['text'] if hl['is_regex'] else re.escape(hl['text'])
-            for m in re.finditer(re_tp, filename, re.I):
+            for m in re.finditer(re_tp, string, re.I):
                 for i in xrange(m.start(), m.end()):
                     target[i] = ' '
 
@@ -1249,18 +1283,33 @@ class panbaiducom_HOME(object):
             highlight_zones.append(m.start())
             highlight_zones.append(m.end())
 
-        filename_zones = []
+        string_zones = []
         for i in xrange(len(highlight_zones)):
             if i == 0:
-                filename_zones.append(filename[:highlight_zones[i]])
-                filename_zones.append(filename[highlight_zones[i]:highlight_zones[i+1]])
+                string_zones.append(string[:highlight_zones[i]])
+                string_zones.append(string[highlight_zones[i]:highlight_zones[i+1]])
             else:
                 try:
-                    filename_zones.append(filename[highlight_zones[i]:highlight_zones[i+1]])
+                    string_zones.append(string[highlight_zones[i]:highlight_zones[i+1]])
                 except:
-                    filename_zones.append(filename[highlight_zones[i]:])
+                    string_zones.append(string[highlight_zones[i]:])
 
-        return filename_zones if filename_zones else [filename]
+        if not string_zones: string_zones = [string]
+
+        t = ''
+        for i in xrange(0, len(string_zones), 2):
+            if background_color:
+                try:
+                    t += s % (2, background_color, string_zones[i].encode('utf8')) + s % (2, highlight_color, string_zones[i+1].encode('utf8'))
+                except:
+                    t += s % (2, background_color, string_zones[i].encode('utf8'))
+            else:
+                try:
+                    t += string_zones[i].encode('utf8') + s % (2, highlight_color, string_zones[i+1].encode('utf8'))
+                except:
+                    t += string_zones[i].encode('utf8')
+
+        return t
 
     def _find_display(self, info):
         if args.type_ == 'f':
@@ -1275,23 +1324,13 @@ class panbaiducom_HOME(object):
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
-            base_dir = os.path.split(info['path'])[0]
+            base_dir, filename = os.path.split(info['path'])
             base_dir = s % (2, 95, base_dir.encode('utf8')) if base_dir != '/' else '/'
 
-            filename_zones = self._highlight_filename_zones(info)
-            t = ''
-            for i in xrange(0, len(filename_zones), 2):
-                if info['isdir']:
-                    try:
-                        t += s % (2, 94, filename_zones[i].encode('utf8')) + s % (2, 93, filename_zones[i+1].encode('utf8'))
-                    except:
-                        t += s % (2, 94, filename_zones[i].encode('utf8'))
-                else:
-                    try:
-                        t += filename_zones[i].encode('utf8') + s % (2, 93, filename_zones[i+1].encode('utf8'))
-                    except:
-                        t += filename_zones[i].encode('utf8')
-            filename = t
+            if info['isdir']:
+                filename = self._highlight_string_zones(filename, self.highlights, 93, background_color=94)
+            else:
+                filename = self._highlight_string_zones(filename, self.highlights, 93)
 
             path = os.path.join(base_dir, filename)
 
@@ -1538,27 +1577,35 @@ class panbaiducom_HOME(object):
     # for file operate with regex
 
     def _rnre_do(self, foo, bar, infos):
-        ls = []
+        self.highlights.append({'text': foo.decode('utf8', 'ignore'), 'is_regex': 1})
+        ls, lshl = [], []
         for info in infos:
             # no change directory if recursion
             if args.recursive and info['isdir']: continue
 
-            old_filename = info['server_filename']
+            base_dir, old_filename = os.path.split(info['path'])
             new_filename = re.sub(foo.decode('utf8', 'ignore'), bar.decode('utf8', 'ignore'), old_filename)
             if old_filename == new_filename: continue
 
-            old_path = info['path'].encode('utf8')
-            dir_ = os.path.split(old_path)[0]
-            new_path = os.path.join(dir_, new_filename).encode('utf8')
+            old_path = info['path']
+            new_path = os.path.join(base_dir, new_filename).encode('utf8')
 
-            ls.append((old_path, new_path))
+            ls.append((old_path.encode('utf8'), new_path))
+
+            # hightlight
+            if info['isdir']:
+                old_filename_highlight = self._highlight_string_zones(old_filename, self.highlights, 93, background_color=94)
+            else:
+                old_filename_highlight = self._highlight_string_zones(old_filename, self.highlights, 93)
+            old_path_highlight = os.path.join(base_dir.encode('utf8'), old_filename_highlight)
+            lshl.append((old_path_highlight, new_path))
 
         if not ls: return
 
-        print '\n'.join([' '.join([o, s % (1, 92, '==>'), n]) for o, n in ls])
+        print '\n'.join([' '.join([o, s % (1, 92, '==>'), n]) for o, n in lshl])
         print s % (1, 93, '  matched above ↑')
 
-        ipt = raw_input(s % (1, 91, '  sure you want to rename all the files [y/n]: ')).lower() if not args.yes else 'y'
+        ipt = raw_input(s % (1, 91, '  sure you want to rename all the files [y/N]: ')).lower() if not args.yes else 'y'
         if ipt == 'y':
             for o, n in ls:
                 print s % (1, 97, '  ++ rename:'), ' '.join([o, s % (1, 92, ' ==> '), n])
@@ -1566,90 +1613,31 @@ class panbaiducom_HOME(object):
         else:
             print s % (1, 92, '  ++ aborted.')
 
-    def rnre(self, foo, bar, dirs):
-        tinfos = []
-        for path in dirs:
-            meta = self._meta([path])
-            if meta:
-                if meta['info'][0]['isdir']:
-                    directorys = [path.decode('utf8', 'ignore')]
-                    y = 1
-                    for dir_ in directorys:
-                        infos = self._get_file_list('name', None, dir_.encode('utf8'), 10000)['list']
-                        t = infos
-                        if args.type_ == 'f' or args.type_ == 'd':
-                            t = self._sift(infos)
-                        tinfos += t
-                        if args.recursive:
-                            subdirs = [i['path'] for i in infos if i['isdir']]
-                            directorys[y:y] = subdirs
-                            y += 1
-                else:
-                    print s % (1, 91, '  !! path is a file.\n'), \
-                        ' --------------\n ', path
+    def _rmcre_do(self, type, infos, todir=None):
+        if 'd' in args.type_:
+            infos = [i for i in infos if i['isdir']]
+        if 'f' in args.type_:
+            infos = [i for i in infos if not i['isdir']]
+
+        if not infos: return
+
+        pathshl = []
+        for i in infos:
+            base_dir, filename = os.path.split(i['path'])
+            if i['isdir']:
+                filename_highlight = self._highlight_string_zones(filename, self.highlights, 93, background_color=94)
             else:
-                print s % (1, 91, '  !! path is not existed.\n'), \
-                    ' --------------\n ', path
-
-        if tinfos:
-            self._rnre_do(foo, bar, tinfos)
-
-    def _rmre_do(self, infos):
-        if args.recursive and 'f' in args.type_:
-            paths = [i['path'].encode('utf8')  for i in infos if not i['isdir']]
-        else:
-            paths = [i['path'].encode('utf8')  for i in infos]
-
-        if not paths: return
-
-        print '\n'.join(paths)
+                filename_highlight = self._highlight_string_zones(filename, self.highlights, 93)
+            path = os.path.join(base_dir.encode('utf8'), filename_highlight)
+            pathshl.append(path)
+        print '\n'.join(pathshl)
         print s % (1, 93, '  matched above ↑')
 
-        ipt = raw_input(s % (1, 91, '  sure you want to delete all the files [y/n]: ')).lower() if not args.yes else 'y'
+        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/N]: ' % type)).lower() if not args.yes else 'y'
         if ipt == 'y':
-            self.remove(paths)
-        else:
-            print s % (1, 92, '  ++ aborted.')
-
-    def rmre(self, dirs):
-        tinfos = []
-        for path in dirs:
-            meta = self._meta([path])
-            if meta:
-                if meta['info'][0]['isdir']:
-                    directorys = [path.decode('utf8', 'ignore')]
-                    y = 1
-                    for dir_ in directorys:
-                        infos = self._get_file_list('name', None, dir_.encode('utf8'), 10000)['list']
-                        tinfos += infos
-                        if args.recursive:
-                            subdirs = [i['path'] for i in infos if i['isdir']]
-                            directorys[y:y] = subdirs
-                            y += 1
-                else:
-                    print s % (1, 91, '  !! path is a file.\n'), \
-                        ' --------------\n ', path
-            else:
-                print s % (1, 91, '  !! path is not existed.\n'), \
-                    ' --------------\n ', path
-
-        tinfos = self._sift(tinfos)
-        if tinfos:
-            self._rmre_do(tinfos)
-
-    def _cmre_do(self, type, infos, todir):
-        if args.recursive and args.type_ == 'f':
-            paths = [i['path'].encode('utf8')  for i in infos if not i['isdir']]
-        else:
-            paths = [i['path'].encode('utf8')  for i in infos]
-
-        if not paths: return
-
-        print '\n'.join(paths)
-        print s % (1, 93, '  matched above ↑')
-
-        ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % type)).lower() if not args.yes else 'y'
-        if ipt == 'y':
+            paths = [i['path'].encode('utf8') for i in infos]
+            if type == 'remove':
+                self.remove(paths)
             if type == 'move':
                 self.move(paths, todir)
             elif type == 'copy':
@@ -1657,7 +1645,7 @@ class panbaiducom_HOME(object):
         else:
             print s % (1, 92, '  ++ aborted.')
 
-    def cmre(self, type, dirs, todir):
+    def filemanager_re(self, type, dirs, todir=None, foo=None, bar=None):
         tinfos = []
         for path in dirs:
             meta = self._meta([path])
@@ -1681,7 +1669,10 @@ class panbaiducom_HOME(object):
 
         tinfos = self._sift(tinfos)
         if tinfos:
-            self._cmre_do(type, tinfos, todir)
+            if type == 'rename':
+                self._rnre_do(foo, bar, tinfos)
+            else:
+                self._rmcre_do(type, tinfos, todir=todir)
 
     ##############################################################
     # for add_task
@@ -2179,8 +2170,14 @@ def main(argv):
  login username
  login username password
 
- signout                                              退出登录
- user                                                 用户信息
+ # 删除帐号
+ userdelete 或 ud
+
+ # 切换帐号
+ userchange 或 uc
+
+ # 帐号信息
+ user
 
  p  或 play url1 url2 .. path1 path2 ..               播放
  u  或 upload localpath remotepath                    上传
@@ -2344,7 +2341,7 @@ def main(argv):
         default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')
     p.add_argument('-t', '--type_', action='store', \
-        default=None, type=str, \
+        default='', type=str, \
         help='类型参数，eg: ls -t f (文件(f)、文件夹(d))')
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
@@ -2394,24 +2391,60 @@ def main(argv):
 
         x = panbaiducom_HOME()
         x.login(username, password)
-        is_signin = x.check_login()
-        if is_signin:
+        result = x.check_login()
+        if result:
+            x.save_cookies(username)
             print s % (1, 92, '  ++ login succeeds.')
         else:
             print s % (1, 91, '  login failes')
 
-    elif comd == 'signout':
-        g = open(cookie_file, 'w')
-        g.close()
+    elif comd == 'userdelete' or comd == 'ud' or \
+        comd == 'userchange' or comd == 'uc':
+        if os.path.exists(cookie_file):
+            try:
+                j = json.loads(open(cookie_file).read())
+                cu = zip(range(len(j)), [u for u in j])
+                for i, u in cu:
+                    print s % (1, 92, i+1) if j[u]['on'] else s % (1, 91, i+1), j[u]['capacity'], s % (2, 97, u)
+                if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
+                ipt = raw_input('pick a number: ')
+                if not ipt.isdigit(): sys.exit()
+                u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
+
+                if comd == 'userdelete' or comd == 'ud':
+                    if u != 'ALL':
+                        del j[u]
+                    else:
+                        g = open(cookie_file, 'w')
+                        g.close()
+                        sys.exit()
+
+                elif comd == 'userchange' or comd == 'uc':
+                    for i in j:
+                        if i != u:
+                            j[i]['on'] = 0
+                        else:
+                            j[i]['on'] = 1
+
+                with open(cookie_file, 'w') as g:
+                    g.write(json.dumps(j, indent=4, sort_keys=True))
+            except Exception:
+                g = open(cookie_file, 'w')
+                g.close()
+                print s % (1, 91, '  cookie_file is wrong, please login again')
+                sys.exit(1)
+        else:
+            print s % (1, 91, '  cookie_file is missing, please login again')
+            sys.exit(1)
 
     elif comd == 'user':
         x = panbaiducom_HOME()
         x.init()
-        r = ss.get('http://pan.baidu.com/wap/share/home')
-        html = r.content
-        user = re.search(r'"name">(.+?)<', html).group(1)
-        capacity = re.search(r'^(\d.+\d.+)<', html, re.M).group(1)
-        print '    user:', s % (1, 97, user)
+
+        username = x.username
+        quota = x._get_quota()
+        capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
+        print 'username:', s % (1, 97, username)
         print 'capacity:',s % (1, 97, capacity)
 
     elif comd == 'u' or comd == 'upload':
@@ -2577,75 +2610,81 @@ def main(argv):
         elif comd == 'lss':
             x.ls('size', 1, xxx)
 
-    elif comd == 'rnr' or comd == 'rnre':
-        foo = argv[2]
-        bar = argv[3]
-        dirs = xxx
-        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! path is incorrect.')
-            sys.exit(1)
+    elif comd == 'rnr' or comd == 'rnre' or \
+        comd == 'cpr' or comd == 'cpre' or \
+        comd == 'rmr' or comd == 'rmre' or \
+        comd == 'mvr' or comd == 'mvre':
 
-        x = panbaiducom_HOME()
-        x.init()
-        x.rnre(foo, bar, dirs)
+        if comd == 'cpr' or comd == 'cpre' or \
+            comd == 'rmr' or comd == 'rmre':
+            if not (args.include or args.exclude or args.head or args.tail or args.type_):
+                print s % (1, 91, '  !! missing -I or -E or -H or -T')
+                sys.exit(1)
 
-    elif comd == 'rmr' or comd == 'rmre':
-        if len(xxx) < 1:
-            print s % (1, 91, '  !! 参数错误\n rmr dir1 dir2 .. -I regex1 -E regex2 -H head -T tail')
-            sys.exit(1)
+        if args.recursive and (not 'f' in args.type_ and not 'd' in args.type_):
+            print s % (1, 91, '  !! you don\'t choose "-t f" or "-t d", it will delete all files and directorys matched.')
+            ipt = raw_input(s % (1, 93, '  are your sure? [y/N] '))
+            if ipt != 'y':
+                print s % (1, 92, '  ++ aborted.')
+                sys.exit()
 
-        if not (args.include or args.exclude or args.head or args.tail or args.type_):
-            print s % (1, 91, '  !! missing -I or -E or -H or -T')
-            sys.exit(1)
+        if comd == 'rnr' or comd == 'rnre':
+            foo = argv[2]
+            bar = argv[3]
+            dirs = xxx
+            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            if e:
+                print s % (1, 91, '  !! path is incorrect.')
+                sys.exit(1)
 
-        dirs = xxx
-        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! path is incorrect.')
-            sys.exit(1)
+            x = panbaiducom_HOME()
+            x.init()
+            x.filemanager_re('rename', dirs, foo=foo, bar=bar)
 
-        x = panbaiducom_HOME()
-        x.init()
-        x.rmre(dirs)
+        elif comd == 'rmr' or comd == 'rmre':
+            if len(xxx) < 1:
+                print s % (1, 91, '  !! 参数错误\n rmr dir1 dir2 .. -I regex1 -E regex2 -H head -T tail')
+                sys.exit(1)
 
-    elif comd == 'mvr' or comd == 'mvre':
-        if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n mvr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
-            sys.exit(1)
+            dirs = xxx
+            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            if e:
+                print s % (1, 91, '  !! path is incorrect.')
+                sys.exit(1)
 
-        if not (args.include or args.exclude or args.head or args.tail or args.type_):
-            print s % (1, 91, '  !! missing -I or -E or -H or -T')
-            sys.exit(1)
+            x = panbaiducom_HOME()
+            x.init()
+            x.filemanager_re('remove', dirs)
 
-        dirs = xxx
-        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! path is incorrect.')
-            sys.exit(1)
+        elif comd == 'mvr' or comd == 'mvre':
+            if len(xxx) < 2:
+                print s % (1, 91, '  !! 参数错误\n mvr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
+                sys.exit(1)
 
-        x = panbaiducom_HOME()
-        x.init()
-        x.cmre('move', dirs[:-1], dirs[-1])
+            dirs = xxx
+            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            if e:
+                print s % (1, 91, '  !! path is incorrect.')
+                sys.exit(1)
 
-    elif comd == 'cpr' or comd == 'cpre':
-        if len(xxx) < 2:
-            print s % (1, 91, '  !! 参数错误\n cpr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
-            sys.exit(1)
+            x = panbaiducom_HOME()
+            x.init()
+            x.filemanager_re('move', dirs[:-1], todir=dirs[-1])
 
-        if not (args.include or args.exclude or args.head or args.tail or args.type_):
-            print s % (1, 91, '  !! missing -I or -E or -H or -T')
-            sys.exit(1)
+        elif comd == 'cpr' or comd == 'cpre':
+            if len(xxx) < 2:
+                print s % (1, 91, '  !! 参数错误\n cpr dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail')
+                sys.exit(1)
 
-        dirs = xxx
-        e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! path is incorrect.')
-            sys.exit(1)
+            dirs = xxx
+            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            if e:
+                print s % (1, 91, '  !! path is incorrect.')
+                sys.exit(1)
 
-        x = panbaiducom_HOME()
-        x.init()
-        x.cmre('copy', dirs[:-1], dirs[-1])
+            x = panbaiducom_HOME()
+            x.init()
+            x.filemanager_re('copy', dirs[:-1], todir=dirs[-1])
 
     elif comd == 'a' or comd == 'add':
         if len(xxx) < 1:
