@@ -266,6 +266,9 @@
         fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
         # 递归搜索加 -R
         f 'ice and fire' /doc -R
+        # 搜索所有的账户加 -t all
+        f keyword1 keyword2 .. [directory] -t all -R
+        f keyword1 keyword2 .. [directory] -t f,all -R
         # directory 默认为 /
         # 关于-H, -T, -I, -E
         # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
@@ -333,12 +336,13 @@
                                             l path1 path2 .. -v  # 显示文件的size, md5
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
-        -t ext, --type_ ext                 类型参数.
+        -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                             eg:
-                                            l -t f   # 文件
-                                            l -t d   # 文件夹
-                                            l -t du  # 查看文件占用空间
-                                            l -t e,d # 空文件夹
+                                            l -t f      # 文件
+                                            l -t d      # 文件夹
+                                            l -t du     # 查看文件占用空间
+                                            l -t e,d    # 空文件夹
+                                            f -t all    # 搜索所有账户
                                             a -t m,d,p,a
                                             u -t r  # 只进行 rapidupload
                                             u -t e  # 如果云端已经存在则不上传(不比对md5)
@@ -498,6 +502,10 @@
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
         bp f mp3 /path/to/search -H "[" "01" -T ".tmp" -I ".*-.*" -R
+
+        # 搜索所有的账户
+        f iDoNotKnow .. [directory] -t all -R
+        f archlinux ubuntu .. [directory] -t f,all -T .iso -R
 
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
         f bioloy \| d -R                          递归搜索后递归下载

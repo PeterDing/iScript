@@ -106,27 +106,57 @@ class panbaiducom_HOME(object):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
         self.highlights = []
+        self.accounts = self._check_cookie_file()
+
         for tail in args.tails: self.highlights.append({'text': tail.decode('utf8', 'ignore'), 'is_regex': 0})
         for head in args.heads: self.highlights.append({'text': head.decode('utf8', 'ignore'), 'is_regex': 0})
         for include in args.includes: self.highlights.append({'text': include.decode('utf8', 'ignore'), 'is_regex': 1})
 
-    def init(self):
-        if os.path.exists(cookie_file):
-            try:
-                j = json.loads(open(cookie_file).read())
-                u = [u for u in j if j[u]['on']][0]
-                ss.cookies.update(j[u]['cookies'])
-                if not self.check_login():
-                    print s % (1, 91, '  !! cookie is invalid, please login\n')
-                    sys.exit(1)
-                self.save_cookies(u)
-            except:
-                g = open(cookie_file, 'w')
-                g.close()
-                print s % (1, 97, '  please login')
-                sys.exit(1)
-        else:
+    @staticmethod
+    def _check_cookie_file():
+        def correct_do():
+            g = open(cookie_file, 'wb')
+            pk.dump({}, g)
+            g.close()
             print s % (1, 97, '  please login')
+            sys.exit(1)
+
+        if not os.path.exists(cookie_file):
+            correct_do()
+
+        try:
+            j = pk.load(open(cookie_file))
+        except:
+            correct_do()
+
+        if type(j) != type({}):
+            correct_do()
+
+        for i in j:
+            if type(j[i]) != type({}):
+                del j[i]
+            else:
+                if not j[i].get('cookies') and not j[i].get('on'):
+                    del j[i]
+
+        return j
+
+    def init(self):
+        if self.accounts:
+            j = self.accounts
+            u = [u for u in j if j[u]['on']]
+            if u:
+                ss.cookies.update(j[u[0]]['cookies'])
+            else:
+                print s % (1, 91, '  !! no account is online, please login or userchange')
+                sys.exit(1)
+
+            if not self.check_login():
+                print s % (1, 91, '  !! cookie is invalid, please login\n'), u[0]
+                sys.exit(1)
+            self.save_cookies(u[0])
+        else:
+            print s % (1, 97, '  no account, please login')
             sys.exit(1)
 
     @staticmethod
@@ -212,30 +242,18 @@ class panbaiducom_HOME(object):
 
     def save_cookies(self, username):
         self.username = username
-        if os.path.exists(cookie_file):
-            try:
-                f = open(cookie_file).read()
-                j = json.loads(f) if f else {}
-                j[username] = {}
-                j[username]['cookies'] = ss.cookies.get_dict()
-                j[username]['on'] = 1
-                quota = self._get_quota()
-                capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
-                j[username]['capacity'] = capacity
-                for u in j:
-                    if u != username:
-                        j[u]['on'] = 0
-                with open(cookie_file, 'w') as g:
-                    g.write(json.dumps(j, indent=4, sort_keys=True))
-
-            except:
-                g = open(cookie_file, 'w')
-                g.close()
-                print s % (1, 97, '  please login')
-                sys.exit(1)
-        else:
-            print s % (1, 97, '  please login')
-            sys.exit(1)
+        accounts = self.accounts
+        accounts[username] = {}
+        accounts[username]['cookies'] = ss.cookies.get_dict()
+        accounts[username]['on'] = 1
+        quota = self._get_quota()
+        capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
+        accounts[username]['capacity'] = capacity
+        for u in accounts:
+            if u != username:
+                accounts[u]['on'] = 0
+        with open(cookie_file, 'w') as g:
+            pk.dump(accounts, g)
 
     def _get_bdstoken(self):
         if hasattr(self, 'bdstoken'):
@@ -1009,8 +1027,9 @@ class panbaiducom_HOME(object):
         self.save_upload_datas()
 
     def save_upload_datas(self):
-        f = open(self.upload_datas_path, 'wb')
-        pk.dump(self.upload_datas, f)
+        g = open(self.upload_datas_path, 'wb')
+        pk.dump(self.upload_datas, g)
+        g.close()
 
     ##################################################################
     # for saving shares
@@ -1349,65 +1368,81 @@ class panbaiducom_HOME(object):
         print template
 
     def find(self, keywords, **arguments):
-        infos = []
-        for keyword in keywords:
-            infos += self._search(keyword, arguments.get('directory'))
-            kw = keyword.decode('utf8', 'ignore')
-            self.highlights.append({'text': kw, 'is_regex': 0})
-        infos = {i['fs_id']: i for i in infos}.values()
-        infos = self._sift(infos, name=arguments.get('name'), \
-            size=arguments.get('size'), time=arguments.get('time'), \
-            desc=arguments.get('desc'))
-        if not arguments.get('pipe'):
-            for info in infos:
-                self._find_display(info)
-
-        # pipe to download, play, rnre, remove, move
-        def warn(comd, display=True):
-            if display:
+        def do():
+            infos = []
+            for keyword in keywords:
+                infos += self._search(keyword, arguments.get('directory'))
+                kw = keyword.decode('utf8', 'ignore')
+                self.highlights.append({'text': kw, 'is_regex': 0})
+            infos = {i['fs_id']: i for i in infos}.values()
+            infos = self._sift(infos, name=arguments.get('name'), \
+                size=arguments.get('size'), time=arguments.get('time'), \
+                desc=arguments.get('desc'))
+            if not arguments.get('pipe'):
                 for info in infos:
                     self._find_display(info)
-            print s % (1, 93, '  find above ↑')
-            ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % comd)).lower() if not args.yes else 'y'
-            if ipt != 'y':
-                print s % (1, 92, '  ++ aborted.')
-                sys.exit()
 
-        pipe = arguments.get('pipe')
-        if pipe:
-            comd = pipe[0]
-            if comd == 'd' or comd == 'download':
-                warn('download', display=True)
-                paths = [i['path'].encode('utf8') for i in infos]
-                self.download(paths)
-            elif comd == 'p' or comd == 'play':
-                warn('move', display=True)
-                paths = [i['path'].encode('utf8') for i in infos]
-                self._download_do = self._play_do
-                self.download(paths)
-            elif comd == 'rnr' or comd == 'rnre':
-                if len(pipe) < 3:
-                    print s % (1, 91, '  !! rnre foo bar')
-                    sys.exit(1)
+            # pipe to download, play, rnre, remove, move
+            def warn(comd, display=True):
+                if display:
+                    for info in infos:
+                        self._find_display(info)
+                print s % (1, 93, '  find above ↑')
+                ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % comd)).lower() if not args.yes else 'y'
+                if ipt != 'y':
+                    print s % (1, 92, '  ++ aborted.')
+                    sys.exit()
 
-                foo = pipe[1]
-                bar = pipe[2]
-                self._rnre_do(foo, bar, infos)
-            elif comd == 'rm':
-                warn('remove', display=True)
-                paths = [i['path'].encode('utf8') for i in infos]
-                self.remove(paths)
-            elif comd == 'mv':
-                if len(pipe) < 2:
-                    print s % (1, 91, '  !! mv /path/to')
-                    sys.exit(1)
+            pipe = arguments.get('pipe')
+            if pipe:
+                comd = pipe[0]
+                if comd == 'd' or comd == 'download':
+                    warn('download', display=True)
+                    paths = [i['path'].encode('utf8') for i in infos]
+                    self.download(paths)
+                elif comd == 'p' or comd == 'play':
+                    warn('move', display=True)
+                    paths = [i['path'].encode('utf8') for i in infos]
+                    self._download_do = self._play_do
+                    self.download(paths)
+                elif comd == 'rnr' or comd == 'rnre':
+                    if len(pipe) < 3:
+                        print s % (1, 91, '  !! rnre foo bar')
+                        sys.exit(1)
 
-                warn('move', display=True)
-                paths = [i['path'].encode('utf8') for i in infos]
-                remotepath = pipe[1]
-                self.move(paths, remotepath)
-            else:
-                print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
+                    foo = pipe[1]
+                    bar = pipe[2]
+                    self._rnre_do(foo, bar, infos)
+                elif comd == 'rm':
+                    warn('remove', display=True)
+                    paths = [i['path'].encode('utf8') for i in infos]
+                    self.remove(paths)
+                elif comd == 'mv':
+                    if len(pipe) < 2:
+                        print s % (1, 91, '  !! mv /path/to')
+                        sys.exit(1)
+
+                    warn('move', display=True)
+                    paths = [i['path'].encode('utf8') for i in infos]
+                    remotepath = pipe[1]
+                    self.move(paths, remotepath)
+                else:
+                    print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
+
+        if 'all' in args.type_.split(','):
+            for user in self.accounts:
+                cookie = self.accounts[user]['cookies']
+                ss.cookies.clear()
+                ss.cookies.update(cookie)
+
+                if args.ls_color:
+                    print '\n' + s % (1, 92, user) + ':' if self.accounts[user]['on'] else '\n' + s % (1, 97, user) + ':'
+                else:
+                    print '\n' + user + ':'
+
+                do()
+        else:
+            do()
 
     ##############################################################
     # for ls
@@ -2160,162 +2195,7 @@ def main(argv):
     signal.signal(signal.SIGSEGV, sighandler)
     signal.signal(signal.SIGTERM, sighandler)
 
-    usage = """
- usage: https://github.com/PeterDing/iScript#pan.baidu.com.py
-
- 命令:
-
- # 登录
- g
- login
- login username
- login username password
-
- # 删除帐号
- userdelete 或 ud
-
- # 切换帐号
- userchange 或 uc
-
- # 帐号信息
- user
-
- p  或 play url1 url2 .. path1 path2 ..               播放
- u  或 upload localpath remotepath                    上传
- s  或 save url remotepath [-s secret]                转存
-
- # 下载
- d  或 download url1 url2 .. path1 path2 ..           非递归下载
- d  或 download url1 url2 .. path1 path2 .. -R        递归下载
-
- # 文件操作
- md 或 mkdir path1 path2 ..                           创建文件夹
- rn 或 rename path new_path                           重命名
- rm 或 remove path1 path2 ..                          删除
- mv 或 move path1 path2 .. /path/to/directory         移动
- cp 或 copy path /path/to/directory_or_file           复制
- cp 或 copy path1 path2 .. /path/to/directory         复制
-
- # 使用正则表达式进行文件操作
- rnr 或 rnre foo bar dir1 dir2 ..                                            重命名文件夹中的文件名
- rmr 或 rmre dir1 dir2 .. -I regex1 -E regex2 -H head -T tail                删除文件夹下匹配到的文件
- mvr 或 mvre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   移动文件夹下匹配到的文件
- cpr 或 cpre dir1 dir2 .. /path/to/dir -I regex1 -E regex2 -H head -T tail   复制文件夹下匹配到的文件
- # 递归加 -R
- # rmr, mvr, cpr 中 -I, -E, -H, -T 必须要有一个
- # 可以用 -t 指定操作的文件类型, eg: -t f # 文件
-                                     -t d # 文件夹
- # rnr 中 foo bar 都是 regex
- # -y, --yes  # 不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不要使用。
- rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
-
- # 搜索
- f   或 find keyword1 keyword2 .. [directory]             非递归搜索
- ff  keyword1 keyword2 .. [directory]                     非递归搜索 反序
- ft  keyword1 keyword2 .. [directory]                     非递归搜索 by time
- ftt keyword1 keyword2 .. [directory]                     非递归搜索 by time 反序
- fs  keyword1 keyword2 .. [directory]                     非递归搜索 by size
- fss keyword1 keyword2 .. [directory]                     非递归搜索 by size 反序
- fn  keyword1 keyword2 .. [directory]                     非递归搜索 by name
- fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
-                                                # 递归搜索加 -R
- # 关于-H, -T, -I, -E
- f -H head -T tail -I "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
- f -H head -T tail -E "re(gul.*) ex(p|g)ress$" keyword1 keyword2 ... [directory]
- # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
- f keyword1 keyword2 .. [directory] \\| d -R              递归搜索后递归下载
- ftt keyword1 keyword2 .. [directory] \\| p -R            递归搜索(by time 反序)后递归播放
- f keyword1 keyword2 .. [directory] \\| rnr foo bar -R    递归搜索后rename by regex
- f keyword1 keyword2 .. [directory] \\| rm -R -T tail     递归搜索后删除
- f keyword1 keyword2 .. [directory] \\| mv /path/to -R    递归搜索后移动
-
- # 列出文件
- l path1 path2 ..                               ls by name
- ll path1 path2 ..                              ls by name 反序
- ln path1 path2 ..                              ls by name
- lnn path1 path2 ..                             ls by name 反序
- lt path1 path2 ..                              ls by time
- ltt path1 path2 ..                             ls by time 反序
- ls path1 path2 ..                              ls by size
- lss path1 path2 ..                             ls by size 反序
- # sl 是以上ls命令中的一个.
- # 以下是只ls文件或文件夹
- sl -t f path1 path2 ..                            ls files
- sl -t d path1 path2 ..                            ls directorys
- # 关于-H, -T, -I, -E
- sl -H head -T tail -I "^re(gul.*) ex(p|g)ress$" path1 path2 ..
- sl -H head -T tail -E "^re(gul.*) ex(p|g)ress$" path1 path2 ..
- # 显示文件size, md5
- sl path1 path2 .. -v
- # 空文件夹
- l path1 path2 -t e,d
- # 非空文件夹
- l path1 path2 -t ne,d
-
- # 查看文件占用空间
- du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
- du path1 path2 .. -R            文件夹下所有*文件(包含下层文件夹)*总大小
-                                 如果下层文件多，会花一些时间
- # 相当于 l path1 path2 .. -t du [-R]
- # eg:
- du /doc /videos -R
-
- # 离线下载
- a 或 add http https ftp ed2k .. remotepath
- a 或 add magnet .. remotepath [-t {m,i,d,p}]
- a 或 add remote_torrent .. remotepath [-t {m,i,d,p}]   # 使用网盘中torrent
-
- # magnet, 网盘中torrent的离线下载 -- 文件选择
- # -t m    # 媒体文件, 如: mkv, avi ..etc
- # -t i    # 图像文件, 如: jpg, png ..etc
- # -t d    # 文档文件, 如: pdf, doc, docx, epub, mobi ..etc
- # -t p    # 压缩文件, 如: rar, zip ..etc
- # -t a    # 所有文件 (默认)
- # m, i, d, p, a 可以任意组合(用,分隔), 如: -t m,i,d   -t m,p   -t m,d,p
- # remotepath 默认为 /
- a magnet1 magnet2 .. [remotepath] -t m,i,d,p,a
- a remote_torrent1  remote_torrent2 .. [remotepath] -t m,i,d,p,a
-
- # 离线任务操作
- j 或 job [taskid ..]                    # 列出离线下载任务
- jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
- jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
- jca 或 jobclearall                      # 清除 *全部任务*
-
-######################################################
-
- 参数:
-
- -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
- -p, --play                          play with mpv
- -y, --yes                           yes # 用于 rmre, mvre, cpre, ！！慎用
- -v, --view                          view detail
-                                     eg: bp a magnet /path -v  # 离线下载并显示下载的文件
-                                     bp d -p url1 url2 .. -v  # 显示播放文件的完整路径
-                                     bp l path1 path2 .. -v  # 显示文件的size, md5
- -s SECRET, --secret SECRET          提取密码
- -f number, --from_ number           从第几个开始下载，eg: -f 42
- -t ext, --type_ ext                 类型参数.
-                                     eg:
-                                     l -t f   # 文件
-                                     l -t d   # 文件夹
-                                     l -t du  # 查看文件占用空间
-                                     l -t e,d # 空文件夹
-                                     a -t m,d,p,a
-                                     u -t r  # 只进行 rapidupload
-                                     u -t e  # 如果云端已经存在则不上传(不比对md5)
-                                     u -t r,e
- -l amount, --limit amount           下载速度限制，eg: -l 100k
- -m {o,c}, --uploadmode {o,c}        上传模式:  o --> 重新上传. c --> 连续上传.
- -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
- -H [HEAD [HEAD ...]], --heads [HEAD [HEAD ...]]                      匹配开头集, (不是regex)，eg: -H Head1 Head2 ..
- -T [TAIL [TAIL ...]], --tails [TAIL [TAIL ...]]                      匹配结尾集, (不是regex)，eg: -T Tail1 Tail2 ..
- -I [INCLUDE [INCLUDE ...]], --includes [INCLUDE [INCLUDE ...]]       不排除匹配集, 可以是正则表达式，eg: -I ".*\.mp3" ".*\.mp4" ..
- -E [EXCLUDE [EXCLUDE ...]], --excludes [EXCLUDE [EXCLUDE ...]]       排除匹配集, 可以是正则表达式，eg: -E ".*\.html" ".*\.temp" ..
- -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
-
- # -t, -H, -T, -I, -E 都能用于 download, play, ls, find
-        """
+    usage = "usage: https://github.com/PeterDing/iScript#pan.baidu.com.py"
     if len(argv) <= 1:
         print usage
         sys.exit()
@@ -2395,46 +2275,41 @@ def main(argv):
     elif comd == 'userdelete' or comd == 'ud' or \
         comd == 'userchange' or comd == 'uc' or \
         comd == 'user':
-        if os.path.exists(cookie_file):
-            try:
-                j = json.loads(open(cookie_file).read())
-                cu = zip(range(len(j)), [u for u in j])
-                for i, u in cu:
-                    print s % (1, 92, i+1) if j[u]['on'] else s % (1, 91, i+1), \
-                        j[u]['capacity'], \
-                        s % (2, 92, u) if j[u]['on'] else s % (2, 97, u)
-                if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
-                elif comd == 'user': sys.exit()
+        accounts = panbaiducom_HOME._check_cookie_file()
+        if accounts:
+            cu = zip(range(len(accounts)), [u for u in accounts])
+            for i, u in cu:
+                print s % (1, 92, i+1) if accounts[u]['on'] else s % (1, 91, i+1), \
+                    accounts[u]['capacity'], \
+                    s % (2, 92, u) if accounts[u]['on'] else s % (2, 97, u)
+            if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
+            elif comd == 'user': sys.exit()
 
-                ipt = raw_input('pick a number: ')
-                if not ipt.isdigit(): sys.exit()
-                u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
+            ipt = raw_input('pick a number: ')
+            if not ipt.isdigit(): sys.exit()
+            u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
 
-                if comd == 'userdelete' or comd == 'ud':
-                    if u != 'ALL':
-                        if j[u]['on'] and len(j) > 1:
-                            print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
-                            sys.exit()
-                        del j[u]
-                    else:
-                        g = open(cookie_file, 'w')
-                        g.close()
+            if comd == 'userdelete' or comd == 'ud':
+                if u != 'ALL':
+                    if accounts[u]['on'] and len(accounts) > 1:
+                        print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
                         sys.exit()
+                    del accounts[u]
+                else:
+                    with open(cookie_file, 'w') as g:
+                        pk.dump({}, g)
+                    sys.exit()
 
-                elif comd == 'userchange' or comd == 'uc':
-                    for i in j:
-                        if i != u:
-                            j[i]['on'] = 0
-                        else:
-                            j[i]['on'] = 1
+            elif comd == 'userchange' or comd == 'uc':
+                for i in accounts:
+                    if i != u:
+                        accounts[i]['on'] = 0
+                    else:
+                        accounts[i]['on'] = 1
 
-                with open(cookie_file, 'w') as g:
-                    g.write(json.dumps(j, indent=4, sort_keys=True))
-            except Exception:
-                g = open(cookie_file, 'w')
-                g.close()
-                print s % (1, 97, '  please login')
-                sys.exit(1)
+            with open(cookie_file, 'w') as g:
+                pk.dump(accounts, g)
+
         else:
             print s % (1, 97, '  please login')
             sys.exit(1)
