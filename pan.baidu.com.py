@@ -1985,7 +1985,10 @@ class panbaiducom_HOME(object):
                 file_size = int(j['task_info'][i]['file_size'])
                 finished_size = int(j['task_info'][i]['finished_size'])
                 done = finished_size - file_size
-                done = '100.0%' if done == 0 else '%.2f' % ((finished_size / (file_size + 0.0)) * 100) + '%'
+                done = '100.0%   ' + '%s/%s' % (sizeof_fmt(finished_size), sizeof_fmt(file_size)) \
+                    if done == 0 and finished_size \
+                    else '%.2f' % (finished_size / (file_size + 0.001) * 100) + '%   ' + \
+                        '%s/%s' % (sizeof_fmt(finished_size), sizeof_fmt(file_size))
                 info['done'] = done
 
                 infos.append(info)
@@ -2285,27 +2288,28 @@ def main(argv):
             if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
             elif comd == 'user': sys.exit()
 
-            ipt = raw_input('pick a number: ')
-            if not ipt.isdigit(): sys.exit()
-            u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
+            ipts = raw_input('pick numbers: ' if comd == 'userdelete' or comd == 'ud' else 'pick a number: ')
+            for ipt in ipts.split():
+                if not ipt.isdigit(): sys.exit()
+                u = cu[int(ipt) - 1][1] if int(ipt) else 'ALL'
 
-            if comd == 'userdelete' or comd == 'ud':
-                if u != 'ALL':
-                    if accounts[u]['on'] and len(accounts) > 1:
-                        print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
-                        sys.exit()
-                    del accounts[u]
-                else:
-                    with open(cookie_file, 'w') as g:
-                        pk.dump({}, g)
-                    sys.exit()
-
-            elif comd == 'userchange' or comd == 'uc':
-                for i in accounts:
-                    if i != u:
-                        accounts[i]['on'] = 0
+                if comd == 'userdelete' or comd == 'ud':
+                    if u != 'ALL':
+                        if accounts[u]['on'] and len(accounts) > 1:
+                            print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
+                            sys.exit()
+                        del accounts[u]
                     else:
-                        accounts[i]['on'] = 1
+                        with open(cookie_file, 'w') as g:
+                            pk.dump({}, g)
+                        sys.exit()
+
+                elif comd == 'userchange' or comd == 'uc':
+                    for i in accounts:
+                        if i != u:
+                            accounts[i]['on'] = 0
+                        else:
+                            accounts[i]['on'] = 1
 
             with open(cookie_file, 'w') as g:
                 pk.dump(accounts, g)
