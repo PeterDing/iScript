@@ -154,7 +154,7 @@ class panbaiducom_HOME(object):
             if not self.check_login():
                 print s % (1, 91, '  !! cookie is invalid, please login\n'), u[0]
                 sys.exit(1)
-            self.save_cookies(u[0])
+            self.save_cookies(u[0], on=1)
         else:
             print s % (1, 97, '  no account, please login')
             sys.exit(1)
@@ -240,17 +240,17 @@ class panbaiducom_HOME(object):
         ss.post(url, data=data)
         #self.save_cookies()
 
-    def save_cookies(self, username):
+    def save_cookies(self, username, on=0):
         self.username = username
         accounts = self.accounts
         accounts[username] = {}
         accounts[username]['cookies'] = ss.cookies.get_dict()
-        accounts[username]['on'] = 1
+        accounts[username]['on'] = on
         quota = self._get_quota()
         capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
         accounts[username]['capacity'] = capacity
         for u in accounts:
-            if u != username:
+            if u != username and on:
                 accounts[u]['on'] = 0
         with open(cookie_file, 'w') as g:
             pk.dump(accounts, g)
@@ -1378,6 +1378,8 @@ class panbaiducom_HOME(object):
             infos = self._sift(infos, name=arguments.get('name'), \
                 size=arguments.get('size'), time=arguments.get('time'), \
                 desc=arguments.get('desc'))
+
+            if not infos: return
             if not arguments.get('pipe'):
                 for info in infos:
                     self._find_display(info)
@@ -1391,17 +1393,19 @@ class panbaiducom_HOME(object):
                 ipt = raw_input(s % (1, 91, '  sure you want to %s all the files [y/n]: ' % comd)).lower() if not args.yes else 'y'
                 if ipt != 'y':
                     print s % (1, 92, '  ++ aborted.')
-                    sys.exit()
+                    return False
+                else:
+                    return True
 
             pipe = arguments.get('pipe')
             if pipe:
                 comd = pipe[0]
                 if comd == 'd' or comd == 'download':
-                    warn('download', display=True)
+                    if not warn('download', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     self.download(paths)
                 elif comd == 'p' or comd == 'play':
-                    warn('move', display=True)
+                    if not warn('move', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     self._download_do = self._play_do
                     self.download(paths)
@@ -1414,7 +1418,7 @@ class panbaiducom_HOME(object):
                     bar = pipe[2]
                     self._rnre_do(foo, bar, infos)
                 elif comd == 'rm':
-                    warn('remove', display=True)
+                    if not warn('remove', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     self.remove(paths)
                 elif comd == 'mv':
@@ -1422,7 +1426,7 @@ class panbaiducom_HOME(object):
                         print s % (1, 91, '  !! mv /path/to')
                         sys.exit(1)
 
-                    warn('move', display=True)
+                    if not warn('move', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     remotepath = pipe[1]
                     self.move(paths, remotepath)
@@ -1441,6 +1445,7 @@ class panbaiducom_HOME(object):
                     print '\n' + user + ':'
 
                 do()
+                self.save_cookies(user, on=self.accounts[user]['on'])
         else:
             do()
 
@@ -1762,7 +1767,7 @@ class panbaiducom_HOME(object):
     def _get_selected_idx(self, infos):
         types = args.type_.split(',')
         if not args.type_: return []
-        if 'a' in types: return []
+        if 'a' in types: return [str(i+1) for i in xrange(len(infos))]
 
         idx = []
         if 'm' in types:
@@ -2270,7 +2275,7 @@ def main(argv):
         x.login(username, password)
         result = x.check_login()
         if result:
-            x.save_cookies(username)
+            x.save_cookies(username, on=1)
             print s % (1, 92, '  ++ login succeeds.')
         else:
             print s % (1, 91, '  login failes')
