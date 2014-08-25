@@ -534,7 +534,7 @@ class xiami(object):
         d = collect_name
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        song_ids = re.findall('/song/(\d+)"', html)
+        song_ids = re.findall('/song/(\d+)" title', html)
         amount_songs = unicode(len(song_ids))
         song_ids = song_ids[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
@@ -824,7 +824,7 @@ class xiami(object):
     def save(self, urls):
         tags = args.tags
         for url in urls:
-            if '/showcollect/' in url:
+            if '/collect/' in url:
                 collect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
                 print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/showcollect/' + collect_id
                 result = self._save_do(collect_id, 4, tags)
