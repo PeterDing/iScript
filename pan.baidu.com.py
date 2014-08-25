@@ -787,7 +787,7 @@ class panbaiducom_HOME(object):
             print_process_bar(t, t, t, start_time, pre='     ')
             return ENoError
         else:
-            sys.exit(1)
+            return r.json()
 
     def _combine_file(self, lpath, rpath):
         p = {
@@ -803,7 +803,7 @@ class panbaiducom_HOME(object):
         if r.ok:
             return ENoError
         else:
-            sys.exit(1)
+            return r.json()
 
     def _upload_slice(self):
         p = {
@@ -932,7 +932,8 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
-                        print s % (1, 91, '  !! Error at _combine_file')
+                        print s % (1, 91, '\n  !! Error at _combine_file:'), result['error_msg']
+                        sys.exit(1)
 
                 elif m == '_upload_one_file':
                     time.sleep(2)
@@ -944,7 +945,8 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
-                        print s % (1, 91, '  !! Error: _upload_one_file is fall, retry.')
+                        print s % (1, 91, '\n  !! Error at _upload_one_file:'), result['error_msg']
+                        sys.exit(1)
 
                 elif m == '_rapidupload_file':
                     time.sleep(2)
@@ -1232,8 +1234,7 @@ class panbaiducom_HOME(object):
         j = r.json()
         if j['errno'] == 0:
             for x in xrange(len(j['list'])):
-                rpath = '/'.join([remotepath, os.path.split(j['list'][x]['path'])[-1]])
-                j['list'][x]['remotepath'] = rpath
+                j['list'][x]['remotepath'] = remotepath
             return j['list']
         else:
             print s % (1, 91, '  !! Error at _get_share_inbox_infos')
@@ -1253,11 +1254,9 @@ class panbaiducom_HOME(object):
                 sys.exit()
             elif result == 1 or result == -33 or result == -10:
                 if result == -10:
-                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:'), -10, s , \
-                        s % (1, 91, 'category of pan is unsatisfied.')
+                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:') + ' -10, ' + 'category of pan is unsatisfied.'
                 elif result == -33:
-                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:'), -33, s , \
-                    s % (1, 93, '  |-- over transferring limit.')
+                    print s % (1, 91, '  |-- _share_inbox_transfer, errno:') + ' -33, ' + 'over transferring limit.'
                 if info['isdir']:
                     infos += self._get_share_inbox_list(info)
                 #else:
