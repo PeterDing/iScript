@@ -355,9 +355,9 @@ class panbaiducom_HOME(object):
             dirs.reverse()
             files.reverse()
 
-        if 'f' in args.type_:
+        if 'f' in args.type_.split(','):
             fileslist = files
-        elif 'd' in args.type_:
+        elif 'd' in args.type_.split(','):
             fileslist = dirs
         else:
             fileslist = dirs + files
@@ -1331,10 +1331,10 @@ class panbaiducom_HOME(object):
         return t
 
     def _find_display(self, info):
-        if args.type_ == 'f':
+        if 'f' in args.type_.split(','):
             if info['isdir']:
                 return
-        elif args.type_ == 'd':
+        elif 'd' in args.type_.split(','):
             if not info['isdir']:
                 return
         else:
@@ -1624,9 +1624,21 @@ class panbaiducom_HOME(object):
             if args.recursive and info['isdir']: continue
 
             base_dir, old_filename = os.path.split(info['path'])
-            new_filename = re.sub(foo.decode('utf8', 'ignore'), bar.decode('utf8', 'ignore'), old_filename)
-            if old_filename == new_filename: continue
+            if 'bd64' in args.type_.split(','):
+                told_filename, ext = os.path.splitext(old_filename)
+                if not told_filename.endswith('.base64'): continue
+                codestr = told_filename[:-7]
+                try:
+                    decode_old_filename = base64.urlsafe_b64decode(codestr.encode('utf8')).decode('utf8', 'ignore') + ext
+                except Exception:
+                    decode_old_filename = old_filename
 
+                new_filename = decode_old_filename
+
+            else:
+                new_filename = re.sub(foo.decode('utf8', 'ignore'), bar.decode('utf8', 'ignore'), old_filename)
+
+            if old_filename == new_filename: continue
             old_path = info['path']
             new_path = os.path.join(base_dir, new_filename).encode('utf8')
 
@@ -1654,9 +1666,9 @@ class panbaiducom_HOME(object):
             print s % (1, 92, '  ++ aborted.')
 
     def _rmcre_do(self, type, infos, todir=None):
-        if 'd' in args.type_:
+        if 'd' in args.type_.split(','):
             infos = [i for i in infos if i['isdir']]
-        if 'f' in args.type_:
+        if 'f' in args.type_.split(','):
             infos = [i for i in infos if not i['isdir']]
 
         if not infos: return
@@ -2245,14 +2257,13 @@ def main(argv):
         choices=['on', 'off'], type=str, help='ls 颜色，默认是on')
     global args
     comd = argv[1]
-    if comd == 'rnr' or comd == 'rnre':
+    args = p.parse_args(argv[2:])
+    if (comd == 'rnr' or comd == 'rnre') and 'bd64' not in args.type_.split(','):
         if len(argv[2:]) < 3:
             print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")
             sys.exit(1)
 
         args = p.parse_args(argv[4:])
-    else:
-        args = p.parse_args(argv[2:])
     xxx = args.xxx
     args.comd = comd
     #######################################################
@@ -2496,7 +2507,7 @@ def main(argv):
                 print s % (1, 91, '  !! missing -I or -E or -H or -T')
                 sys.exit(1)
 
-        if args.recursive and (not 'f' in args.type_ and not 'd' in args.type_):
+        if args.recursive and (not 'f' in args.type_.split(',') and not 'd' in args.type_.split(',')):
             print s % (1, 91, '  !! you don\'t choose "-t f" or "-t d", it will delete all files and directorys matched.')
             ipt = raw_input(s % (1, 93, '  are your sure? [y/N] '))
             if ipt != 'y':
@@ -2504,9 +2515,14 @@ def main(argv):
                 sys.exit()
 
         if comd == 'rnr' or comd == 'rnre':
-            foo = argv[2]
-            bar = argv[3]
-            dirs = xxx
+            if 'bd64' in args.type_.split(','):
+                foo, bar = '', ''
+                dirs = xxx
+            else:
+                foo = argv[2]
+                bar = argv[3]
+                dirs = xxx
+
             e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
             if e:
                 print s % (1, 91, '  !! path is incorrect.')

@@ -255,6 +255,9 @@
         # -y, --yes   # 不显示警示，直接进行。  ！！注意，除非你知道你做什么，否则请不要使用。
         rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
+        # 回复用bt.py做base64加密的文件
+        rnr /path/to/decode1 /path/to/decode2 .. -t f,bd64
+
         # 搜索
         f   或 find keyword1 keyword2 .. [directory]             非递归搜索
         ff  keyword1 keyword2 .. [directory]                     非递归搜索 反序
@@ -514,6 +517,12 @@
         f ccav \| rm -R -T avi                    递归搜索后删除
         f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
 
+    回复用bt.py做base64加密的文件:
+
+        rnr /ooxx -t f,bd64
+        !! 注意： /ooxx 中的所有文件都必须是被base64加密的，且加密段要有.base64后缀
+        # 可以参考 by.py 的用法
+
     ls、重命名、移动、删除、复制、使用正则表达式进行文件操作:
 
     见[命令](#cmd)
@@ -541,6 +550,8 @@
     magnet 和 torrent 的相互转换
 
     过滤敏.感.词功能用于净网时期的 baidu, xunlei
+
+    **!! 注意：过滤后生成的torrent在百度网盘只能用一次，如果需要再次使用，则需用 -n 改顶层目录名**
 
     磁力连接转种子，用的是
 
@@ -574,10 +585,16 @@
         t 或 tm path1 path2 ..
 
         # 过滤敏.感.词
+        # 有2种模式
+        # -t n (默认)     用数字替换文件名
+        # -t be64         用base64加密文件名，torrent用百度下载后，可用 pan.baidu.com.py rnr /path -t f,bd64 改回原名字
         c 或 ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]
         c -i /there/are/files and_other_dir -d new    # 从文件或文件夹中寻找 magnet，再过滤
         # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
         # /path/to/save 默认为 .
+
+        # 用base64加密的文件名:
+        c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save] -t be64
 
         # 使用正则表达式过滤敏.感.词
         cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
@@ -586,6 +603,9 @@
     参数:
 
         -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087 (默认)
+        -t TYPE_, --type_ TYPE_                 类型参数：
+                                                -t n (默认)     用数字替换文件名
+                                                -t be64         用base64加密文件名，torrent用百度下载后，可用 pan.baidu.com.py rnr /path -t f,bd64 改回原名字
         -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
         -n NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
         -i localpath1 localpath2 .., --import_from localpath1 localpath2 ..      从本地文本文件导入magnet (用正则表达式匹配)
@@ -612,6 +632,9 @@
         # 使用正则表达式过滤敏.感.词
         bt cr '.*(old).*' '\1'  magnet_link
         bt cr 'old.iso' 'new.iso' /path/to/torrent
+
+        # 用base64加密的文件名:
+        bt c magnet_link -t be64
 
 4. 参考:
 

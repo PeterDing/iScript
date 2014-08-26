@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # vim: set fileencoding=utf8
 
 import bencode
@@ -41,18 +40,26 @@ class bt(object):
         if dstring['info'].get('files'):
             for fl in dstring['info']['files']:
                 filename = fl['path'][-1]
-                newfilename = re.sub(foo, bar, filename, re.I) if foo and bar else filename
-                if filename != newfilename:
-                    print filename, s % (1, 92, '==>'), newfilename
-                    path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                        + [newfilename]
-                else:
-                    ext = os.path.splitext(filename)[-1]
+                if args.type_ == 'n':
+                    newfilename = re.sub(foo, bar, filename, re.I) if foo and bar else filename
+                    if filename != newfilename:
+                        print filename, s % (1, 92, '==>'), newfilename
+                        path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
+                            + [newfilename]
+                    else:
+                        ext = os.path.splitext(filename)[-1]
+                        ext = self._check_ext(ext)
+                        path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
+                            + ['%s%s' % (file_index, ext)]
+                    file_index += 1
+                    fl['path'] = path
+
+                elif args.type_ == 'be64':
+                    fn, ext = os.path.splitext(filename)
                     ext = self._check_ext(ext)
-                    path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                        + ['%s%s' % (file_index, ext)]
-                file_index += 1
-                fl['path'] = path
+                    tfn = '/'.join(fl['path'][:-1] + [fn])
+                    e_fn = base64.urlsafe_b64encode(tfn)
+                    fl['path'] = [e_fn + '.base64' + ext]
 
                 for item in fl.keys():
                     #if item not in ['path', 'length', 'filehash', 'ed2k']:
@@ -317,6 +324,9 @@ def main(argv):
         type=str, help='torrents保存的路径, eg: -d /path/to/save')
     p.add_argument('-n', '--name', action='store', default=None, \
         type=str, help='顶级文件夹名称, eg: -n thistopdirectory')
+    p.add_argument('-t', '--type_', action='store', \
+        default='n', type=str, \
+        help='类型参数，eg: ')
     global args
     args = p.parse_args(argv[2:])
     comd = argv[1]
