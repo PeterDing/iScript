@@ -291,12 +291,41 @@ class xiami(object):
                     print s % (1, 91, '   \\\n   \\-- Error, get_cover --'), e
                     time.sleep(5)
 
-    def get_lyric(self, lyric_url):
-        if lyric_url:
-            data = ss.get(lyric_url).content
-            return data.decode('utf8')
+    def get_lyric(self, info):
+        def lyric_parser(data):
+            if len(data) < 10:   # get ' ' from http://img.xiami.net/lyric/1_13772259457649.lrc
+                return None
+
+            if re.search(r'\[\d\d:\d\d', data):
+                title = ' title: %s\n' % info['song_name'].encode('utf8')
+                album = ' album: %s\n' % info['album_name'].encode('utf8')
+                artist = 'artist: %s\n' % info['artist_name'].encode('utf8')
+
+                tdict = {}
+                for line in data.split('\n'):
+                    if re.search(r'^\[\d\d:', line):
+                        cn = re.sub(r'\[\d{2}:\d{2}\.\d{2}\]', '', line)
+                        time_tags = re.findall(r'\[\d{2}:\d{2}\.\d{2}\]', line)
+                        for tag in time_tags: tdict[tag] = cn + '\n'
+                time_tags = tdict.keys()
+                time_tags.sort()
+                data = ''.join([title, album, artist, '\n------------------\n\n'] + \
+                               [tdict[tag] for tag in time_tags])
+                return data
+            else:        # for http://img.xiami.net/lyric/upload/19/1770983119_1356864643.lrc
+                return data
+
+        url = 'http://www.xiami.com/song/playlist/id/%s' % info['song_id']
+        xml = ss.get(url).content
+        t = re.search('<lyric>(http.+?)</lyric>', xml)
+        if not t: return None
+        lyric_url = t.group(1)
+        data = ss.get(lyric_url).content.replace('\r\n', '\n')
+        data = lyric_parser(data)
+        if data:
+            return data.decode('utf8', 'ignore')
         else:
-            return u''
+            return None
 
     def get_disc_description(self, album_url, info):
         if not self.html:
@@ -318,7 +347,8 @@ class xiami(object):
         id3.add(TALB(encoding=3, text=info['album_name']))
         id3.add(TPE1(encoding=3, text=info['artist_name']))
         id3.add(TPOS(encoding=3, text=info['cd_serial']))
-        #id3.add(USLT(encoding=3, text=self.get_lyric(info['lyric_url'])))
+        lyric_data = self.get_lyric(info)
+        id3.add(USLT(encoding=3, text=lyric_data)) if lyric_data else None
         #id3.add(TCOM(encoding=3, text=info['composer']))
         #id3.add(WXXX(encoding=3, desc=u'xiami_song_url', text=info['song_url']))
         #id3.add(TCON(encoding=3, text=u'genre'))
