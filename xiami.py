@@ -98,6 +98,7 @@ def modificate_file_name_for_wget(file_name):
     file_name = re.sub(r'\s*:\s*', u' - ', file_name)    # for FAT file system
     file_name = file_name.replace('?', '')      # for FAT file system
     file_name = file_name.replace('"', '\'')    # for FAT file system
+    file_name = file_name.replace('$', '\\$')    # for command, see issue #7
     return file_name
 
 def z_index(song_infos):
