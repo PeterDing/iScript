@@ -588,7 +588,7 @@ class xiami(object):
             album_ids = t
             if album_ids:
                 for i in album_ids:
-                    print i
+                    print '  ++ http://www.xiami.com/album/%s' % i
                     self.album_id = i
                     self.download_album()
                     self.html = ''
@@ -600,7 +600,7 @@ class xiami(object):
     def download_artist_top_20_songs(self):
         html = ss.get(url_artist_top_song % self.artist_id).content
         song_ids = re.findall(r'/song/(.+?)" title', html)
-        artist_name = re.search(r'/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
+        artist_name = re.search(r'<p><a href="/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
         d = modificate_text(artist_name + u' - top 20')
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
@@ -617,7 +617,7 @@ class xiami(object):
 
     def download_artist_radio(self):
         html = ss.get(url_artist_top_song % self.artist_id).content
-        artist_name = re.search(r'/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
+        artist_name = re.search(r'<p><a href="/artist/\d+">(.+?)<', html).group(1).decode('utf8', 'ignore')
 
         d = modificate_text(artist_name + u' - radio')
         dir_ = os.path.join(os.getcwd().decode('utf8'), d)
@@ -762,6 +762,7 @@ class xiami(object):
             self.display_infos(i, nn, n)
             n = int(n) + 1
             cmd = 'mpv --really-quiet ' \
+                '--cache 8146 ' \
                 '--user-agent "%s" ' \
                 '--http-header-fields="Referer:http://img.xiami.com/static/swf/seiya/1.4/player.swf?v=%s" ' \
                 '"%s"' \
@@ -791,9 +792,11 @@ class xiami(object):
                 if args.undownload:
                     self.modified_id3(file_name, i)
                     ii += 1
+                    n += 1
                     continue
                 else:
                     ii += 1
+                    n += 1
                     continue
 
             if not args.undownload:

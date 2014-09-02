@@ -322,7 +322,6 @@ class pan115(object):
 
     def do(self, pc):
         dlink = self.get_dlink(pc)
-        print dlink
         name = re.search(r'/([^/]+?)\?', dlink).group(1)
         name = urllib.unquote_plus(name)
         t = os.path.join(os.getcwd(), name)

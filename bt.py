@@ -108,14 +108,18 @@ class bt(object):
         print s % (1, 93, '\n  ++ get torrent from web')
 
         def do(url, proxies=None, data=None, timeout=None):
-            r = ss.get(url, proxies=proxies, timeout=timeout)
-            cnt = r.content
-            if r.ok and cnt and '<head>' not in cnt \
-                and '4:name' in cnt:
-                print s % (1, 92, u'  √ get torrent.')
-                return cnt
-            else:
-                print s % (1, 91, u'  × not get.')
+            try:
+                r = ss.get(url, proxies=proxies, timeout=timeout)
+                cnt = r.content
+                if r.ok and cnt and '<head>' not in cnt \
+                    and '4:name' in cnt:
+                    print s % (1, 92, u'  √ get torrent.')
+                    return cnt
+                else:
+                    print s % (1, 91, u'  × not get.')
+                    return None
+            except Exception as e:
+                print s % (1, 91, u'  !! Error:'), e
                 return None
 
         ## with xunlei
