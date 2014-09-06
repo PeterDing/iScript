@@ -717,7 +717,7 @@ class panbaiducom_HOME(object):
         }
         data = {'target': json.dumps(file_list)}
         url = 'http://pan.baidu.com/api/filemetas'
-        r = ss.post(url, params=p, data=data, verify=False)
+        r = ss.post(url, params=p, data=data)
         j = r.json()
         if j['errno'] == 0:
             return j
@@ -759,7 +759,7 @@ class panbaiducom_HOME(object):
             "ondup" : self.ondup
         }
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=False)
+        r = ss.post(url, params=p, data=data, verify=True)
         if r.ok:
             return ENoError
         else:
@@ -781,7 +781,7 @@ class panbaiducom_HOME(object):
         theaders = headers
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=False, headers=theaders)
+        r = ss.post(url, params=p, data=data, verify=True, headers=theaders)
         if r.ok:
             t = self.__current_file_size
             print_process_bar(t, t, t, start_time, pre='     ')
@@ -799,7 +799,7 @@ class panbaiducom_HOME(object):
         }
         data = {'param': json.dumps({'block_list': self.upload_datas[lpath]['slice_md5s']})}
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=False)
+        r = ss.post(url, params=p, data=data, verify=True)
         if r.ok:
             return ENoError
         else:
@@ -819,7 +819,7 @@ class panbaiducom_HOME(object):
         theaders = headers
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=False, headers=theaders)
+        r = ss.post(url, params=p, data=data, verify=True, headers=theaders)
         j = r.json()
         if self.__slice_md5 == j['md5']:
             return ENoError
@@ -1059,7 +1059,7 @@ class panbaiducom_HOME(object):
             '&' + "filelist=" + urllib.quote_plus('["%s"]' % info['path'].encode('utf8'))
 
         url = 'http://pan.baidu.com/share/transfer'
-        r = ss.post(url, params=p, data=data, headers=theaders, verify=False)
+        r = ss.post(url, params=p, data=data, headers=theaders)
         j = r.json()
         if j['errno'] == 0:
             return ENoError
