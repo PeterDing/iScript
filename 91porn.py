@@ -93,6 +93,9 @@ class nrop19(object):
                 '--header "Cookie: %s" "%s"' \
                 % (infos['name'], infos['dir_'], \
                 headers['User-Agent'], cookies, infos['dlink'])
+	elif args.axel:
+	    cmd = 'axel -a -o "%s.tmp" %s' \
+	        % (infos['file'], infos['dlink'])
         else:
             cmd = 'wget -c -O "%s.tmp" --header "User-Agent: %s" ' \
                 '--header "Cookie: %s" "%s"' \
@@ -138,6 +141,8 @@ if __name__ == '__main__':
     p.add_argument('url', help='url of 91porn.com')
     p.add_argument('-a', '--aria2c', action='store_true', \
                 help='download with aria2c')
+    p.add_argument('-b', '--axel', action='store_true', \
+                help='download with axel')
     p.add_argument('-p', '--play', action='store_true', \
                 help='play with mpv')
     args = p.parse_args()
