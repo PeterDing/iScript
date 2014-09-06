@@ -304,7 +304,7 @@ class pan115(object):
         if j['info_hash']:
             print s % (1, 92, '  ++ add task success.')
         else:
-            print s % (1, 91, '  !! Error: %s' % j['error_msg'])
+            print s % (2, 91, '  !! Error: %s' % j['error_msg'])
             sys.exit()
 
         data = {
@@ -364,8 +364,8 @@ def main(argv):
 
     if xxx[0] == 'login' or xxx[0] == 'g':
         if len(xxx[1:]) < 1:
-            account = raw_input(s % (1, 97, '  account: '))
-            password = getpass(s % (1, 97, '  password: '))
+            account = raw_input(s % (1, 97, ' account: '))
+            password = getpass(s % (1, 97, 'password: '))
         elif len(xxx[1:]) == 1:
             account = xxx[0]
             password = getpass(s % (1, 97, '  password: '))

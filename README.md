@@ -331,10 +331,11 @@
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
-        -y, --yes                           yes # 用于 rmre, mvre, cpre, ！！慎用
-        -q, --quiet                         无输出模式
+        -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
+        -q, --quiet                         无输出模式, 用于 download, play
         -v, --view                          view detail
-                                            eg: a magnet /path -v  # 离线下载并显示下载的文件
+                                            eg:
+                                            a magnet /path -v  # 离线下载并显示下载的文件
                                             d -p url1 url2 .. -v  # 显示播放文件的完整路径
                                             l path1 path2 .. -v  # 显示文件的size, md5
         -s SECRET, --secret SECRET          提取密码
@@ -353,10 +354,10 @@
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o   # 重新上传. c   # 连续上传.
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
-        -H HEADS, --head HEADS                匹配开头的字符，eg: -H Headishere
-        -T TAILS, --tail TAILS                匹配结尾的字符，eg: -T Tailishere
-        -I INCLUDES, --include INCLUDES       不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3"
-        -E EXCLUDES, --exclude EXCLUDES       排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html"
+        -H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2 ..
+        -T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2 ..
+        -I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi"
+        -E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg"
         -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
         # -t, -H, -T, -I, -E 都能用于 download, play, ls, find, rnre, rmre, cpre, mvre
@@ -665,7 +666,7 @@
 
     **脚本是用于下载自己的115网盘文件，不支持他人分享文件。**
 
-    **非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*300kb/s。**
+    **非vip用户下载只能有4个通道，理论上，用aria2的下载速度最大为 4*100kb/s。**
 
     下载工具默认为wget, 可用参数-a选用aria2。
 
