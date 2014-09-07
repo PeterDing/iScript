@@ -1097,13 +1097,14 @@ class panbaiducom_HOME(object):
         r = ss.get(url)
         html = r.content
 
-        self.uk = re.search(r'FileUtils.share_uk="(.+?)"', html).group(1)
-        self.shareid = re.search(r'FileUtils.share_id="(.+?)"', html).group(1)
-        self.bdstoken = re.search(r'bdstoken="(.+?)"', html).group(1)
+        self.uk = re.search(r'yunData.MYUK = "(\d+)"', html).group(1)
+        self.shareid = re.search(r'yunData.SHARE_ID = "(\d+)"', html).group(1)
+        self.bdstoken = re.search(r'yunData.MYBDSTOKEN = "(.+?)"', html).group(1)
 
-        isdirs = [int(x) for x in re.findall(r'\\"isdir\\":(\d)', html)]
-        paths = [json.loads('"%s"' % x.replace('\\\\', '\\')) \
-            for x in re.findall(r'\\"path\\":\\"(.+?)\\",\\"', html)]
+        fileinfo = re.search(r'yunData.FILEINFO = (.+)', html).group(1)[:-2]
+        j = json.loads(fileinfo)
+        isdirs = [x['isdir'] for x in j]
+        paths = [x['path'] for x in j]
         z = zip(isdirs, paths)
         if not infos:
             infos = [{

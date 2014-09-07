@@ -356,8 +356,8 @@
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
         -H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2 ..
         -T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2 ..
-        -I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi"
-        -E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg"
+        -I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi" ..
+        -E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg" ..
         -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
         # -t, -H, -T, -I, -E 都能用于 download, play, ls, find, rnre, rmre, cpre, mvre
