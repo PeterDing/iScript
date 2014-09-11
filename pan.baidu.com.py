@@ -2114,18 +2114,19 @@ class panbaiducom_HOME(object):
 class panbaiducom(object):
     def get_params(self, path):
         r = ss.get(path)
-        pattern = re.compile('server_filename="(.+?)";disk.util.ViewShareUtils.bdstoken="(\w+)";'
-                             'disk.util.ViewShareUtils.fsId="(\d+)".+?FileUtils.share_uk="(\d+)";'
-                             'FileUtils.share_id="(\d+)";.+?FileUtils.share_timestamp="(\d+)";'
-                             'FileUtils.share_sign="(\w+)";')
-        p = re.search(pattern, r.text)
+        html = r.content
+
+        uk = re.search(r'yunData.MYUK = "(\d+)"', html).group(1)
+        shareid = re.search(r'yunData.SHARE_ID = "(\d+)"', html).group(1)
+        timestamp = re.search(r'yunData.TIMESTAMP = "(.+?)"', html).group(1)
+        sign = re.search(r'yunData.SIGN = "(.+?)"', html).group(1)
 
         self.params = {
-            "bdstoken": p.group(2),
-            "uk": p.group(4),
-            "shareid": p.group(5),
-            "timestamp": p.group(6),
-            "sign": p.group(7),
+            #"bdstoken": bdstoken,
+            "uk": uk,
+            "shareid": shareid,
+            "timestamp": timestamp,
+            "sign": sign,
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
@@ -2134,11 +2135,14 @@ class panbaiducom(object):
             "web": 1
         }
 
+        fileinfo = re.search(r'yunData.FILEINFO = (.+)', html).group(1)[:-2]
+        j = json.loads(fileinfo)
+
         self.infos.update({
-            'name': p.group(1).encode('utf8'),
-            'file': os.path.join(os.getcwd(), p.group(1)).encode('utf8'),
+            'name': j[0]['server_filename'].encode('utf8'),
+            'file': os.path.join(os.getcwd(), j[0]['server_filename'].encode('utf8')),
             'dir_': os.getcwd(),
-            'fs_id': p.group(3).encode('utf8')
+            'fs_id': j[0]['fs_id']
             })
 
     def get_infos(self):
