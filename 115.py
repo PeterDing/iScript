@@ -31,6 +31,9 @@ wget_es = {
 }
 ############################################################
 
+# file extensions
+mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov", ".mdf", ".iso", ".asf"}
+
 s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.115.cookies')
@@ -138,6 +141,14 @@ class pan115(object):
         dlink = j['file_url'].encode('utf8')
         return dlink
 
+    def _get_play_purl(self, pickcode):
+        url = 'http://115.com/api/video/m3u8/%s.m3u8' % pickcode
+        r = ss.get(url)
+        c = r.content.strip()
+
+        purl = c.split()[-1]
+        return purl
+
     def get_infos(self, cid):
         params = {
             "cid": cid,
@@ -165,10 +176,7 @@ class pan115(object):
                     if args.type_:
                         j['data'] = [x for x in j['data'] if x.get('ns') \
                             or x['ico'].lower() == unicode(args.type_.lower())]
-                    total_file = len([i for i in j['data'] if not i.get('ns')])
-                    if args.from_ - 1:
-                        j['data'] = j['data'][args.from_-1:] if args.from_ else j['data']
-                    nn = args.from_
+
                     for i in j['data']:
                         if i.get('ns'):
                             item = {
@@ -176,7 +184,17 @@ class pan115(object):
                                 'cid': i['cid']
                             }
                             dir_loop2.append(item)
-                        else:
+
+                    if args.play:
+                        j['data'] = [i for i in j['data'] \
+                            if i.get('sha') and os.path.splitext(i['n'])[-1].lower() in mediatype]
+
+                    total_file = len([i for i in j['data'] if not i.get('ns')])
+                    if args.from_ - 1:
+                        j['data'] = j['data'][args.from_-1:] if args.from_ else j['data']
+                    nn = args.from_
+                    for i in j['data']:
+                        if not i.get('ns'):
                             t = i['n']
                             t =  os.path.join(d['dir'], t).encode('utf8')
                             t =  os.path.join(os.getcwd(), t)
@@ -185,6 +203,7 @@ class pan115(object):
                                 'dir_': os.path.split(t)[0],
                                 'dlink': self.get_dlink(i['pc']),
                                 'name': i['n'].encode('utf8'),
+                                'purl': self._get_play_purl(i['pc'].encode('utf8')) if args.play else None,
                                 'nn': nn,
                                 'total_file': total_file
                             }
@@ -247,16 +266,10 @@ class pan115(object):
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
         print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
 
-        if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
-            cmd = 'mplayer -really-quiet -cache 8140 ' \
-                '-http-header-fields "user-agent:%s" ' \
-                '-http-header-fields "Referer:http://m.115.com/" "%s"' \
-                % (headers['User-Agent'], infos['dlink'])
-        else:
-            cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
-                '--http-header-fields "user-agent:%s" '\
-                '--http-header-fields "Referer:http://m.115.com" "%s"' \
-                % (headers['User-Agent'], infos['dlink'])
+        cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
+            '--http-header-fields "user-agent:%s" '\
+            '--http-header-fields "Referer:http://m.115.com" "%s"' \
+            % (headers['User-Agent'], infos['purl'])
 
         status = os.system(cmd)
         timeout = 1
@@ -329,6 +342,7 @@ class pan115(object):
             'file': t,
             'dir_': os.path.split(t)[0],
             'dlink': dlink,
+            'purl': self._get_play_purl(pc) if args.play else None,
             'name': name,
             'nn': 1,
             'total_file': 1
