@@ -373,8 +373,14 @@ class xiami(object):
                 #print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
                 self.download_album()
 
-            elif '/artist/' in url:
-                self.artist_id = re.search(r'/artist/(\d+)', url).group(1)
+            elif '/artist/' in url or 'i.xiami.com' in url:
+                def get_artist_id(url):
+                    html = ss.get(url).content
+                    artist_id = re.search(r'artist_id = \'(\d+)\'', html).group(1)
+                    return artist_id
+
+                self.artist_id = re.search(r'/artist/(\d+)', url).group(1) \
+                    if '/artist/' in url else get_artist_id(url)
                 code = raw_input('  >> a  # 艺术家所有专辑.\n' \
                     '  >> r  # 艺术家 radio\n' \
                     '  >> t  # 艺术家top 20歌曲.\n  >> ')
