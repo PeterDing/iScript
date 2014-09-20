@@ -147,7 +147,10 @@ class pan115(object):
         c = r.content.strip()
 
         purl = c.split()[-1]
-        return purl
+        if 'http' not in purl:
+            return None
+        else:
+            return purl
 
     def get_infos(self, cid):
         params = {
@@ -265,6 +268,10 @@ class pan115(object):
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
         print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
+
+        if not infos['purl']:
+            print s % (1, 91, '  |-- m3u8 is not ready, using dlink')
+            infos['purl'] = infos['dlink']
 
         cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
             '--http-header-fields "user-agent:%s" '\

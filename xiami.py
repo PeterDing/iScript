@@ -266,6 +266,7 @@ class xiami(object):
             try:
                 j = ss.get(self.template_song % id_).json()
                 t = j['location']
+                if not t: return None
                 row = t[0]
                 encryed_url = t[1:]
                 durl = decry(row, encryed_url)
@@ -763,6 +764,10 @@ class xiami(object):
         for i in songs:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
+            if not durl:
+                print s % (2, 91, '  !! Error: can\'t get durl'), i['song_name']
+                continue
+
             mp3_quality = self.get_mp3_quality(durl)
             i['durl_is_H'] = mp3_quality
             self.display_infos(i, nn, n)
@@ -815,6 +820,10 @@ class xiami(object):
                     n += 1
 
                 durl = self.get_durl(i['song_id'])
+                if not durl:
+                    print s % (2, 91, '  |-- Error: can\'t get durl')
+                    continue
+
                 mp3_quality = self.get_mp3_quality(durl)
                 if mp3_quality == 'h':
                     print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')

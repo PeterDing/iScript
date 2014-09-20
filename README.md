@@ -163,6 +163,10 @@
 
         wget, aria2
 
+        python2-rsa
+
+        python2-pyasn1
+
         python2-requests (https://github.com/kennethreitz/requests)
 
         requests-toolbelt (https://github.com/sigmavirus24/requests-toolbelt)

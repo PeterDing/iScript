@@ -16,6 +16,7 @@ import random
 import select
 import base64
 import md5
+import rsa
 from zlib import crc32
 import cStringIO
 import signal
@@ -115,22 +116,24 @@ class panbaiducom_HOME(object):
     @staticmethod
     def _check_cookie_file():
         def correct_do():
-            g = open(cookie_file, 'wb')
-            pk.dump({}, g)
-            g.close()
+            with open(cookie_file, 'wb') as g:
+                pk.dump({}, g)
             print s % (1, 97, '  please login')
-            sys.exit(1)
+            return
 
         if not os.path.exists(cookie_file):
             correct_do()
+            return {}
 
         try:
             j = pk.load(open(cookie_file))
         except:
             correct_do()
+            return {}
 
         if type(j) != type({}):
             correct_do()
+            return {}
 
         for i in j:
             if type(j[i]) != type({}):
@@ -185,60 +188,64 @@ class panbaiducom_HOME(object):
     def login(self, username, password):
         print s % (1, 97, '\n  -- login')
 
-        # Check if we have to deal with verify codes
-        params = {
-            'tpl': 'pp',
-            'callback': 'bdPass.api.login._needCodestringCheckCallback',
-            'index': 0,
-            'logincheck': '',
-            'time': 0,
-            'username': username
-        }
-
-        # Ask server
-        url = 'https://passport.baidu.com/v2/api/?logincheck'
-        r = ss.get(url, params=params)
-        # Callback for verify code if we need
-        #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
-        codestring = re.search(r'\((.+?)\)', r.content).group(1)
-        codestring = json.loads(codestring)['codestring']
-        codestring = codestring if codestring else ""
-        url = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-        verifycode = self.save_img(url, 'gif') if codestring != "" else ""
-
-        # Now we'll do login
         # Get token
-        ss.get('http://www.baidu.com')
-        t = ss.get('https://passport.baidu.com/v2/api/?getapi&class=login' \
-                   '&tpl=pp&tangram=false').text
-        token = re.search(r'login_token=\'(.+?)\'', t).group(1)
+        token = self._get_bdstoken()
+
+        # get publickey
+        url = 'https://passport.baidu.com/v2/getpublickey?token=%s' % token
+        r = ss.get(url)
+        j = json.loads(r.content.replace('\'', '"'))
+        pubkey = j['pubkey']
+        key = rsa.PublicKey.load_pkcs1_openssl_pem(pubkey)
+        password_encoded = base64.b64encode(rsa.encrypt(password, key))
+        rsakey = j['key']
 
         # Construct post body
         data = {
-            'token': token,
-            'ppui_logintime': '1600000',
-            'charset':'utf-8',
-            'codestring': codestring,
-            'isPhone': 'false',
-            'index': 0,
-            'u': '',
-            'safeflg': 0,
-            'staticpage': 'http://www.baidu.com/cache/user/html/jump.html',
-            'loginType': 1,
-            'tpl': 'pp',
-            'callback': 'parent.bd__pcbs__qvljue',
-            'username': username,
-            'password': password,
-            'verifycode': verifycode,
-            'mem_pass': 'on',
-            'apiver': 'v3'
+            "staticpage": "http://www.baidu.com/cache/user/html/v3Jump.html",
+            "charset": "UTF-8",
+            "token": token,
+            "tpl": "pp",
+            "subpro": "",
+            "apiver": "v3",
+            "tt": int(time.time()),
+            "codestring": "",
+            "safeflg": "0",
+            "isPhone": "",
+            "quick_user": "0",
+            "logintype": "dialogLogin",
+            "logLoginType": "pc_loginDialog",
+            "idc": "",
+            "loginmerge": "true",
+            "splogin": "rate",
+            "username": username,
+            "password": password_encoded,
+            "verifycode": "",
+            "mem_pass": "on",
+            "rsakey": str(rsakey),
+            "crypttype": "12",
+            "ppui_logintime": "40228",
+            "callback": "parent.bd__pcbs__uvwly2",
         }
 
-        # Post!
-        # XXX : do not handle errors
-        url = 'https://passport.baidu.com/v2/api/?login'
-        ss.post(url, data=data)
-        #self.save_cookies()
+        while True:
+            # Post!
+            # XXX : do not handle errors
+            url = 'https://passport.baidu.com/v2/api/?login'
+            r = ss.post(url, data=data)
+
+            # Callback for verify code if we need
+            #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
+            if 'err_no=0' in r.content:
+                break
+            else:
+                t = re.search('codeString=(.+?)&', r.content)
+                codestring = t.group(1) if t else ""
+                vcurl = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
+                verifycode = self.save_img(vcurl, 'gif') if codestring != "" else ""
+                data['codestring'] = codestring
+                data['verifycode'] = verifycode
+                #self.save_cookies()
 
     def save_cookies(self, username, on=0):
         self.username = username
@@ -525,7 +532,7 @@ class panbaiducom_HOME(object):
                 self._get_dsign()
 
     def _get_dlink2(self, i):
-        j = self._meta([i['path'].encode('utf8')])
+        j = self._meta([i['path'].encode('utf8')], dlink=1)
         if j:
             return j['info'][0]['dlink'].encode('utf8')
         else:
@@ -538,7 +545,7 @@ class panbaiducom_HOME(object):
             base_dir = '' if os.path.split(path)[0] == '/' \
                 else os.path.split(path)[0]
 
-            meta = self._meta([path])
+            meta = self._meta([path], dlink=1)
             if meta:
                 if meta['info'][0]['isdir']:
                     dir_loop = [path]
@@ -706,23 +713,27 @@ class panbaiducom_HOME(object):
         else:
             return ENoError
 
-    def _meta(self, file_list):
+    def _meta(self, file_list, dlink=0):
         p = {
             "channel": "chunlei",
             "app_id": "250528",
             "method": "filemetas",
-            "dlink": 1,
+            "dlink": dlink,
             "blocks": 0,  # 0 or 1
             #"bdstoken": self._get_bdstoken()
         }
         data = {'target': json.dumps(file_list)}
         url = 'http://pan.baidu.com/api/filemetas'
-        r = ss.post(url, params=p, data=data)
-        j = r.json()
-        if j['errno'] == 0:
-            return j
-        else:
-            return False
+        while True:
+            try:
+                r = ss.post(url, params=p, data=data)
+                j = r.json()
+                if j['errno'] == 0:
+                    return j
+                else:
+                    return False
+            except Exception:
+                time.sleep(1)
 
     ################################################################
     # for upload
@@ -868,6 +879,10 @@ class panbaiducom_HOME(object):
         print s % (1, 94, '  ++ uploading:'), lpath
 
         __current_file_size = os.path.getsize(lpath)
+        if __current_file_size == 0:
+            print s % (1, 91, '  |-- file is empty, missing.')
+            return
+
         self.__current_file_size = __current_file_size
         upload_function = self._get_upload_function()
 
@@ -920,7 +935,7 @@ class panbaiducom_HOME(object):
                                 else:
                                     print s % (1, 91, '  |-- slice_md5 does\'n match, retry.')
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
-                            #self.save_upload_datas()
+                            self.save_upload_datas()
                             start_time = print_process_bar(f.tell(), __current_file_size, slice, start_time, \
                                 pre='     ', msg='%s/%s' % (str(piece+1), str(pieces)))
                     result = self._combine_file(lpath, rpath)
@@ -928,12 +943,13 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         del self.upload_datas[lpath]['slice_md5s']
-                        #self.save_upload_datas()
+                        self.save_upload_datas()
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
-                        print s % (1, 91, '\n  !! Error at _combine_file:'), result['error_msg']
-                        sys.exit(1)
+                        print s % (1, 91, '\n  !! Error at _combine_file:'), result
+                        break
+                        #sys.exit(1)
 
                 elif m == '_upload_one_file':
                     time.sleep(2)
@@ -941,12 +957,13 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        #self.save_upload_datas()
+                        self.save_upload_datas()
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
-                        print s % (1, 91, '\n  !! Error at _upload_one_file:'), result['error_msg']
-                        sys.exit(1)
+                        print s % (1, 91, '\n  !! Error at _upload_one_file:'), result
+                        break
+                        #sys.exit(1)
 
                 elif m == '_rapidupload_file':
                     time.sleep(2)
@@ -954,7 +971,7 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        #self.save_upload_datas()
+                        self.save_upload_datas()
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
@@ -2201,6 +2218,7 @@ def sighandler(signum, frame):
     print s % (1, 91, "  !! Signal:"), signum
     if args.comd in ('u', 'upload'):
         px.save_upload_datas()
+
     #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
@@ -2274,6 +2292,8 @@ def main(argv):
     #######################################################
 
     if comd == 'login' or comd == 'g':
+        x = panbaiducom_HOME()
+
         if len(xxx) < 1:
             username = raw_input(s % (1, 97, '  username: '))
             password = getpass(s % (1, 97, '  password: '))
@@ -2286,7 +2306,6 @@ def main(argv):
         else:
             print s % (1, 91, '  login\n  login username\n  login username password')
 
-        x = panbaiducom_HOME()
         x.login(username, password)
         result = x.check_login()
         if result:
