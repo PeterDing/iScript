@@ -770,7 +770,7 @@ class panbaiducom_HOME(object):
             "ondup" : self.ondup
         }
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=True)
+        r = ss.post(url, params=p, data=data, verify=VERIFY)
         if r.ok:
             return ENoError
         else:
@@ -792,7 +792,7 @@ class panbaiducom_HOME(object):
         theaders = headers
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=True, headers=theaders)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         if r.ok:
             t = self.__current_file_size
             print_process_bar(t, t, t, start_time, pre='     ')
@@ -810,7 +810,7 @@ class panbaiducom_HOME(object):
         }
         data = {'param': json.dumps({'block_list': self.upload_datas[lpath]['slice_md5s']})}
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=True)
+        r = ss.post(url, params=p, data=data, verify=VERIFY)
         if r.ok:
             return ENoError
         else:
@@ -830,7 +830,7 @@ class panbaiducom_HOME(object):
         theaders = headers
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=True, headers=theaders)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         j = r.json()
         if self.__slice_md5 == j['md5']:
             return ENoError
@@ -1797,6 +1797,7 @@ class panbaiducom_HOME(object):
         types = args.type_.split(',')
         if not args.type_: return []
         if 'a' in types: return [str(i+1) for i in xrange(len(infos))]
+        #if 'a' in types: return []
 
         idx = []
         if 'm' in types:
@@ -2251,6 +2252,7 @@ def main(argv):
         type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', help='play with mpv')
     p.add_argument('-v', '--view', action='store_true', help='view details')
+    p.add_argument('-V', '--VERIFY', action='store_true', help='verify')
     p.add_argument('-y', '--yes', action='store_true', help='yes')
     p.add_argument('-q', '--quiet', action='store_true', help='quiet for download and play')
     p.add_argument('-s', '--secret', action='store', default=None, help='提取密码')
@@ -2279,8 +2281,10 @@ def main(argv):
     p.add_argument('-c', '--ls_color', action='store', default='on', \
         choices=['on', 'off'], type=str, help='ls 颜色，默认是on')
     global args
+    global VERIFY
     comd = argv[1]
     args = p.parse_args(argv[2:])
+    VERIFY = args.VERIFY
     if (comd == 'rnr' or comd == 'rnre') and 'bd64' not in args.type_.split(','):
         if len(argv[2:]) < 3:
             print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")

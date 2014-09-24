@@ -195,6 +195,8 @@
 
     上传模式默认是 c (续传)。
 
+    **开启证实(verification) 用参数 -V**
+
     理论上，上传的单个文件最大支持 2T
 
     cookies保存在 ~/.bp.cookies
@@ -337,6 +339,7 @@
         -p, --play                          play with mpv
         -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
         -q, --quiet                         无输出模式, 用于 download, play
+        -V, --VERIFY                        verification
         -v, --view                          view detail
                                             eg:
                                             a magnet /path -v  # 离线下载并显示下载的文件
