@@ -874,8 +874,8 @@ class xiami(object):
         tags = args.tags
         for url in urls:
             if '/collect/' in url:
-                collect_id = re.search(r'/showcollect/id/(\d+)', url).group(1)
-                print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/showcollect/' + collect_id
+                collect_id = re.search(r'/collect/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save collect:'), 'http://www.xiami.com/song/collect/' + collect_id
                 result = self._save_do(collect_id, 4, tags)
 
             elif '/album/' in url:
