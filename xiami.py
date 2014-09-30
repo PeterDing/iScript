@@ -195,7 +195,7 @@ class xiami(object):
             "rnd": str(random.random()),
         }
         url = 'https://passport.alipay.com/mini_login.htm'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, verify=True)
         cm = r.content
 
         data = {
@@ -215,7 +215,7 @@ class xiami(object):
         theaders['Referer'] = 'https://passport.alipay.com/mini_login.htm'
 
         while True:
-            r = ss.post(url, data=data, headers=theaders)
+            r = ss.post(url, data=data, headers=theaders, verify=True)
             j = r.json()
 
             if j['content']['status'] == -1:
