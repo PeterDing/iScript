@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# vim: set fileencoding=utf8
+# -*- coding: utf-8 -*-
 
 import re
 import sys
@@ -22,6 +22,7 @@ url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
 url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
 url_radio_my = "http://www.xiami.com/radio/xml/type/4/id/%s"  # 电台来源:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","我收藏的精选集"
+url_recent = "http://www.xiami.com/space/charts-recent/u/%s/page/%s"
 url_radio_c = "http://www.xiami.com/radio/xml/type/8/id/%s"  # 虾米猜, 基于你的虾米试听行为所建立的个性电台
 
 ############################################################
@@ -404,11 +405,14 @@ class xiami(object):
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
                 code = raw_input('  >> m   # 该用户歌曲库.\n' \
+                    '  >> c   # 最近在听\n' \
                     '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","收藏的精选集"\n'
                     '  >> rc  # 虾米猜:基于试听行为所建立的个性电台\n  >> ')
                 if code == 'm':
                     #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
-                    self.download_user_songs()
+                    self.download_user_songs(url_lib_songs, u'收藏的歌曲')
+                elif code == 'c':
+                    self.download_user_songs(url_recent, u'最近在听的歌曲')
                 elif code == 'rm':
                     #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
                     url_rndsongs = url_radio_my
@@ -488,7 +492,7 @@ class xiami(object):
             tracks = [i.lstrip('0').decode('utf8', 'ignore') for i in t]
             z = len(str(len(tracks)))
 
-            t = re.findall(r'"song_name"><a href="/song/(\d+)".+?>(.+?)</', c)
+            t = re.findall(r'<a href="/song/(\d+)" .+?>(.+?)</', c)
             song_ids = [i[0].decode('utf8', 'ignore') for i in t]
             song_names = [modificate_text(i[1].decode('utf8', 'ignore')) for i in t]
 
@@ -642,14 +646,14 @@ class xiami(object):
                 self.disc_description_archives = {}
                 n += 1
 
-    def download_user_songs(self):
+    def download_user_songs(self, url, desc):
         dir_ = os.path.join(os.getcwd().decode('utf8'), \
-            u'虾米用户 %s 收藏的歌曲' % self.user_id)
+            u'虾米用户 %s %s' % (self.user_id, desc))
         self.dir_ = modificate_file_name_for_wget(dir_)
         ii = 1
         n = 1
         while True:
-            html = ss.get(url_lib_songs % (self.user_id, str(ii))).content
+            html = ss.get(url % (self.user_id, str(ii))).content
             song_ids = re.findall(r'/song/(.+?)"', html)
             if song_ids:
                 for i in song_ids:
