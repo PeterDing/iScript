@@ -518,7 +518,7 @@
         f ccav \| rm -R -T avi                    递归搜索后删除
         f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
 
-    回复用bt.py做base64加密的文件:
+    恢复用bt.py做base64加密的文件:
 
         rnr /ooxx -t f,bd64
         !! 注意： /ooxx 中的所有文件都必须是被base64加密的，且加密段要有.base64后缀

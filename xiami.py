@@ -544,7 +544,11 @@ class xiami(object):
     def get_song(self, song_id):
         html = ss.get(url_song % song_id).content
         html = html.split('<div id="wall"')[0]
-        album_id = re.search(r'album/(\d+)', html).group(1)
+        t = re.search(r'album/(\d+)', html)
+        if t:
+            album_id = t.group(1)
+        else:
+            return []
         songs = self.get_songs(album_id, song_id=song_id)
         return songs
 

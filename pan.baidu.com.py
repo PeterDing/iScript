@@ -382,7 +382,7 @@ class panbaiducom_HOME(object):
         return t
 
     def _get_quota(self):
-        url = 'https://pan.baidu.com/api/quota'
+        url = 'http://pan.baidu.com/api/quota'
         r = ss.get(url)
         j = r.json()
         if j['errno'] != 0:
@@ -1114,9 +1114,9 @@ class panbaiducom_HOME(object):
         r = ss.get(url)
         html = r.content
 
-        self.uk = re.search(r'yunData.MYUK = "(\d+)"', html).group(1)
-        self.shareid = re.search(r'yunData.SHARE_ID = "(\d+)"', html).group(1)
-        self.bdstoken = re.search(r'yunData.MYBDSTOKEN = "(.+?)"', html).group(1)
+        self.uk = re.search(r'yunData\.MYUK = "(\d+)"', html).group(1)
+        self.shareid = re.search(r'yunData\.SHARE_ID = "(\d+)"', html).group(1)
+        self.bdstoken = re.search(r'yunData\.MYBDSTOKEN = "(.+?)"', html).group(1)
 
         fileinfo = re.search(r'yunData.FILEINFO = (.+)', html).group(1)[:-2]
         j = json.loads(fileinfo)
@@ -2431,6 +2431,7 @@ def main(argv):
             x.save_inbox_share(url, remotepath, infos=infos)
         else:
             url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
+            url = url.replace('wap/link', 'share/link')
             x._secret_or_not(url)
             x.save_share(url, remotepath, infos=infos)
 

@@ -151,8 +151,8 @@ class neteaseMusic(object):
         #id3.add(TSRC(encoding=3, text=info['disc_code']))
         id3.add(COMM(encoding=3, desc=u'Comment', \
             text=info['song_url']))
-        id3.add(APIC(encoding=3, mime=u'image/jpg', type=3, \
-            desc=u'Front Cover', data=self.get_cover(info)))
+        #id3.add(APIC(encoding=3, mime=u'image/jpg', type=3, \
+            #desc=u'Front Cover', data=self.get_cover(info)))
         id3.save(file_name)
 
     def url_parser(self):
