@@ -230,9 +230,13 @@ class xiami(object):
                         img = tr.content
                         g.write(img)
                     print "  ++ 验证码已经保存至", s % (2, 91, path)
-                    captcha = raw_input((s % (2, 92, u'  请输入验证码: ')).encode('utf8'))
+                    captcha = raw_input((s % (2, 92, '  ++ %s: ' % err_msg)).encode('utf8'))
                     data['checkCode'] = captcha
                     continue
+
+            if not j['content']['data'].get('st'):
+                print s % (2, 91, "  !! 输入的 username 或 password 有误.")
+                sys.exit(1)
 
             url = 'http://www.xiami.com/accounts/back?st=%s' % j['content']['data']['st']
             ss.get(url, headers=theaders)
@@ -406,6 +410,7 @@ class xiami(object):
                 self.user_id = re.search(r'/u/(\d+)', url).group(1)
                 code = raw_input('  >> m   # 该用户歌曲库.\n' \
                     '  >> c   # 最近在听\n' \
+                    '  >> s   # 分享的音乐\n'
                     '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑","喜欢的艺人","收藏的精选集"\n'
                     '  >> rc  # 虾米猜:基于试听行为所建立的个性电台\n  >> ')
                 if code == 'm':
@@ -413,6 +418,9 @@ class xiami(object):
                     self.download_user_songs(url_lib_songs, u'收藏的歌曲')
                 elif code == 'c':
                     self.download_user_songs(url_recent, u'最近在听的歌曲')
+                elif code == 's':
+                    url_shares = 'http://www.xiami.com/space/feed/u/%s/type/3/page/%s' % (self.user_id, '%s')
+                    self.download_user_shares(url_shares)
                 elif code == 'rm':
                     #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
                     url_rndsongs = url_radio_my
@@ -669,6 +677,24 @@ class xiami(object):
             else:
                 break
             ii += 1
+
+    def download_user_shares(self, url_shares):
+        d = modificate_text(u'%s 的分享' % self.user_id)
+        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+        page = 1
+        while True:
+            html = ss.get(url_shares % page).content
+            shares = re.findall(r'play.*\(\'\d+\'\)', html)
+            for share in shares:
+                if 'album' in share:
+                    self.album_id = re.search(r'\d+', share).group()
+                    self.download_album()
+                else:
+                    self.song_id = re.search(r'\d+', share).group()
+                    self.download_song()
+            if not shares: break
+            page += 1
 
     def download_user_radio(self, url_rndsongs):
         d = modificate_text(u'%s 的虾米推荐' % self.user_id)

@@ -832,10 +832,10 @@ class panbaiducom_HOME(object):
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
         r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         j = r.json()
-        if self.__slice_md5 == j['md5']:
+        if self.__slice_md5 == j.get('md5'):
             return ENoError
         else:
-            return 'MD5Mismatch'
+            return j
 
     def _get_pieces_slice(self):
         pieces = MaxSlicePieces
@@ -933,11 +933,21 @@ class panbaiducom_HOME(object):
                                 if result == ENoError:
                                     break
                                 else:
-                                    print s % (1, 91, '  |-- slice_md5 does\'n match, retry.')
+                                    print s % (1, 91, '\n  |-- slice_md5 does\'n match, retry.')
+                                    break
+
+                            if result != ENoError: break
+
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
                             self.save_upload_datas()
                             start_time = print_process_bar(f.tell(), __current_file_size, slice, start_time, \
                                 pre='     ', msg='%s/%s' % (str(piece+1), str(pieces)))
+
+                    if result != ENoError:
+                        self.upload_datas[lpath]['slice_md5s'] = []
+                        #continue
+                        break
+
                     result = self._combine_file(lpath, rpath)
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
@@ -948,7 +958,6 @@ class panbaiducom_HOME(object):
                         break
                     else:
                         print s % (1, 91, '\n  !! Error at _combine_file:'), result
-                        break
                         #sys.exit(1)
 
                 elif m == '_upload_one_file':

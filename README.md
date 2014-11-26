@@ -113,7 +113,7 @@
         # 下载该艺术家所有专辑, Top 20 歌曲, radio
         xm d http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
-        # 下载用户的收藏, 虾米推荐, radio
+        # 下载用户的收藏, 虾米推荐, radio, 推荐
         xm d http://www.xiami.com/u/141825?spm=a1z1s.3521917.0.0.zI0APP
 
         # 下载排行榜

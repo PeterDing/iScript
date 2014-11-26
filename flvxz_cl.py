@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # vim: set fileencoding=utf8
 
+import re
 import base64
 import requests
-import time
 import os
 import sys
 import argparse
@@ -31,15 +31,20 @@ wget_es = {
 ############################################################
 
 headers = {
-    "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Encoding":"text/html",
-    "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
-    "Content-Type":"application/x-www-form-urlencoded",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "Host": "www.flvxz.com",
+    "User-Agent": "Mozilla/5.0 (X11; Linux i686; rv:33.0) Gecko/20100101 Firefox/33.0",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate",
+    "Referer": "http://flvxz.com",
+    "Connection": "keep-alive"
 }
 
+ss = requests.session()
+ss.headers.update(headers)
+
 wget_template = 'wget -c -nv -O "%s" "%s"'
-api = 'http://api.flvxz.com/jsonp/purejson/url/%s'
+api = 'https://www.flvxz.com/getFlv.php?url=%s'
 
 def download(infos):
     if not os.path.exists(infos['dir_']):
@@ -80,16 +85,33 @@ def play(infos):
     else:
         pass
 
+def flvxz_parser(cn):
+    qualities = re.findall(r'\[(.+?)\]', cn)
+    if not qualities: return {}
+
+    j = {}
+    chucks = re.split(r'\[.+?\]', cn)[1:]
+
+    for i in xrange(len(qualities)):
+        parts = re.findall(r'data-clipboard-text="(.+?)"', chucks[i])
+        urls = re.findall(r'<a rel="noreferrer" href="(.+?)"', chucks[i])
+
+        j[qualities[i]] = zip(parts, urls)
+
+    return j
+
 def pickup(j):
     print s % (1, 97, '  ++ pick a quality:')
-    for i in xrange(len(j)):
-        print s % (1, 91, '  %s' % (i+1)), j[i]['quality']
+    qualities = j.keys()
+    for i in xrange(len(qualities)):
+        print s % (1, 91, '  %s' % (i+1)), qualities[i]
 
     p = raw_input(s % (1, 92, '  Enter: '))
     if p.isdigit():
         p = int(p)
         if p <= len(j):
-            return j[p-1]
+            print s % (2, 92, '  -- %s' % qualities[p-1])
+            return j[qualities[p-1]]
         else:
             print s % (1, 91, '  !! enter error')
             sys.exit()
@@ -98,28 +120,28 @@ def pickup(j):
         sys.exit()
 
 def main(url):
-    encode_url = base64.b64encode(url.replace('://', ':##'))
+    encode_url = base64.urlsafe_b64encode(url.replace('://', ':##'))
     url = api % encode_url
 
-    r = requests.get(url)
-    j = r.json()
+    cn = ss.get(url).content
+    j = flvxz_parser(cn)
     if j:
         j = pickup(j)
     else:
         print s % (1, 91, '  !! Can\'t get videos')
         sys.exit()
-    print s % (2, 92, '  -- %s' % j['quality'].encode('utf8'))
 
-    yes = True if len(j['files']) > 1 else False
-    dir_ = os.path.join(os.getcwd(), j['title'].encode('utf8')) if yes else os.getcwd()
+    title = re.search(r'media-heading">(.+?)</', cn).group(1)
+    yes = True if len(j) > 1 else False
+    dir_ = os.path.join(os.getcwd(), title) if yes else os.getcwd()
 
     n = args.from_
-    amount = len(j['files'])
-    j['files'] = j['files'][args.from_ - 1:]
-    for i in j['files']:
+    amount = len(j)
+    j = j[args.from_ - 1:]
+    for i in j:
         infos = {
-            'filename': os.path.join(dir_, '%s_%s.%s' % (j['title'].encode('utf8'), n, i['ftype'].encode('utf8'))),
-            'durl': i['furl'].encode('utf8'),
+            'filename': os.path.join(dir_, i[0]),
+            'durl': i[1],
             'dir_': dir_,
             'amount': amount,
             'n': n
