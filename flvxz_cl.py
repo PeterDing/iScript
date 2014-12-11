@@ -103,6 +103,7 @@ def flvxz_parser(cn):
 def pickup(j):
     print s % (1, 97, '  ++ pick a quality:')
     qualities = j.keys()
+    qualities.sort()
     for i in xrange(len(qualities)):
         print s % (1, 91, '  %s' % (i+1)), qualities[i]
 
@@ -131,7 +132,8 @@ def main(url):
         print s % (1, 91, '  !! Can\'t get videos')
         sys.exit()
 
-    title = re.search(r'media-heading">(.+?)</', cn).group(1)
+    title = re.search(r'media-heading">(.+?)</', cn)
+    title = title.group(1) if title else ''
     yes = True if len(j) > 1 else False
     dir_ = os.path.join(os.getcwd(), title) if yes else os.getcwd()
 

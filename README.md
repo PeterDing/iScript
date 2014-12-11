@@ -83,6 +83,7 @@
     参数:
 
         -p, --play                 play with mpv
+        -l, --low                  低品质mp3
         -d, --undescription        不加入disk的描述
         -f num, --from_ num        从第num个开始
         -t TAGS, --tags TAGS       收藏用的tags,用英文逗号分开, eg: -t piano,cello,guitar
@@ -508,15 +509,15 @@
         bp f mp3 /path/to/search -H "[" "01" -T ".tmp" -I ".*-.*" -R
 
         # 搜索所有的账户
-        f iDoNotKnow .. [directory] -t all -R
-        f archlinux ubuntu .. [directory] -t f,all -T .iso -R
+        bp f iDoNotKnow .. [directory] -t all -R
+        bp f archlinux ubuntu .. [directory] -t f,all -T .iso -R
 
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
-        f bioloy \| d -R                          递归搜索后递归下载
-        ftt ooxx \| p -R -t f                     递归搜索(by time 反序)后递归播放
-        f sound \| rnr mp3 mp4 -R                 递归搜索后rename by regex
-        f ccav \| rm -R -T avi                    递归搜索后删除
-        f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
+        bp f bioloy \| d -R                          递归搜索后递归下载
+        bp ftt ooxx \| p -R -t f                     递归搜索(by time 反序)后递归播放
+        bp f sound \| rnr mp3 mp4 -R                 递归搜索后rename by regex
+        bp f ccav \| rm -R -T avi                    递归搜索后删除
+        bp f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
 
     恢复用bt.py做base64加密的文件:
 

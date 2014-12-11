@@ -112,7 +112,6 @@ def z_index(song_infos):
 class xiami(object):
     def __init__(self):
         self.dir_ = os.getcwd().decode('utf8')
-        self.template_song = 'http://www.xiami.com/song/gethqsong/sid/%s'
         self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
 
         self.collect_id = ''
@@ -269,8 +268,14 @@ class xiami(object):
     def get_durl(self, id_):
         while True:
             try:
-                j = ss.get(self.template_song % id_).json()
-                t = j['location']
+                if not args.low:
+                    url = 'http://www.xiami.com/song/gethqsong/sid/%s'
+                    j = ss.get(url % id_).json()
+                    t = j['location']
+                else:
+                    url = 'http://www.xiami.com/song/playlist/id/%s'
+                    cn = ss.get(url % id_).content
+                    t = re.search(r'location>(.+?)</location', cn).group(1)
                 if not t: return None
                 row = t[0]
                 encryed_url = t[1:]
@@ -946,6 +951,8 @@ def main(argv):
         help='命令对象.')
     p.add_argument('-p', '--play', action='store_true', \
         help='play with mpv')
+    p.add_argument('-l', '--low', action='store_true', \
+        help='low mp3')
     p.add_argument('-f', '--from_', action='store', \
         default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')

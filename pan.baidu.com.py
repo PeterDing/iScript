@@ -909,7 +909,12 @@ class panbaiducom_HOME(object):
                 print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
                 return
             else:
+                self.upload_datas[lpath]['is_over'] = False
                 pass
+
+        if args.uploadmode == 'o':
+            self.upload_datas[lpath]['is_over'] = False
+            self.upload_datas[lpath]['slice_md5s'] = []
 
         while True:
             if not self.upload_datas[lpath]['is_over']:
