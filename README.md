@@ -408,7 +408,7 @@
 
         # 下载别人分享的*单个文件*
         bp d http://pan.baidu.com/s/1o6psfnxx ..
-        bp d http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284 ..
+        bp d 'http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284' ..
 
         # 下载别人加密分享的*单个文件*，密码参数-s
         bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej
@@ -480,7 +480,7 @@
 
         bp s url remotepath [-s secret]
         # url是他人分享的连接, 如: http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx, http://pan.baidu.com/s/xxxxxxxx
-        bp s http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx /path/to/save
+        bp s 'http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx' /path/to/save
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save
         bp s http://pan.baidu.com/s/xxxxxxxx /path/to/save -s xxxx
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /path/to/save -s xxxx

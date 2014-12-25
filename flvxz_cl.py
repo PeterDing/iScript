@@ -73,9 +73,9 @@ def play(infos):
     print '\n  ++ play:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
     cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
-        '"%s"' % parser.unescape(infos['durl'])
-        #'--http-header-fields "User-Agent:%s" ' \
-        #'"%s"' % (headers['User-Agent'], infos['durl'])
+        '--http-header-fields "User-Agent:%s" ' \
+        '"%s"' % (headers['User-Agent'], infos['durl'])
+        #'"%s"' % parser.unescape(infos['durl'])
 
     status = os.system(cmd)
     timeout = 1
@@ -86,11 +86,11 @@ def play(infos):
         pass
 
 def flvxz_parser(cn):
-    qualities = re.findall(r'\[(.+?)\]', cn)
+    qualities = re.findall(r'>\[(.+?)\]<', cn)
     if not qualities: return {}
 
     j = {}
-    chucks = re.split(r'\[.+?\]', cn)[1:]
+    chucks = re.split(r'>\[.+?\]<', cn)[1:]
 
     for i in xrange(len(qualities)):
         parts = re.findall(r'data-clipboard-text="(.+?)"', chucks[i])

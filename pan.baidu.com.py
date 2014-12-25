@@ -1128,11 +1128,12 @@ class panbaiducom_HOME(object):
         r = ss.get(url)
         html = r.content
 
-        self.uk = re.search(r'yunData\.MYUK = "(\d+)"', html).group(1)
-        self.shareid = re.search(r'yunData\.SHARE_ID = "(\d+)"', html).group(1)
-        self.bdstoken = re.search(r'yunData\.MYBDSTOKEN = "(.+?)"', html).group(1)
+        info = panbaiducom.get_web_fileinfo(html, url)
+        self.uk = info['uk']
+        self.shareid = info['shareid']
+        self.bdstoken = info['bdstoken']
 
-        fileinfo = re.search(r'yunData.FILEINFO = (.+)', html).group(1)[:-2]
+        fileinfo = info['fileinfo']
         j = json.loads(fileinfo)
         isdirs = [x['isdir'] for x in j]
         paths = [x['path'] for x in j]
@@ -2144,14 +2145,39 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! Error: file exists.'), path
 
 class panbaiducom(object):
+    @staticmethod
+    def get_web_fileinfo(cm, url):
+        info = {}
+        if 'shareview' in url:
+            info['uk']       = re.search(r'uk="(\d+)"', cm).group(1)
+            info['shareid']  = re.search(r'shareid="(\d+)"', cm).group(1)
+            info['bdstoken'] = re.search(r'bdstoken="(.+?)"', cm).group(1)
+            t = re.search(r'list=JSON.parse\("(\[.+?\])"\)', cm).group(1)
+            t = t.replace('\\\\', '!@#$%^'*10)
+            t = t.replace('\\', '')
+            t = t.replace('!@#$%^'*10, '\\')
+            info['fileinfo'] = t
+            info['timestamp'] = re.search(r'timestamp="(\d+)"', cm).group(1)
+            info['sign'] = re.search(r'downloadsign="(.+?)"', cm).group(1)
+        else:
+            info['uk']       = re.search(r'yunData\.MYUK = "(\d+)"', cm).group(1)
+            info['shareid']  = re.search(r'yunData\.SHARE_ID = "(\d+)"', cm).group(1)
+            info['bdstoken'] = re.search(r'yunData\.MYBDSTOKEN = "(.*?)"', cm).group(1)
+            info['fileinfo'] = re.search(r'yunData.FILEINFO = (.+)', cm).group(1)[:-2]
+            info['timestamp'] = re.search(r'yunData.TIMESTAMP = "(.+?)"', cm).group(1)
+            info['sign'] = re.search(r'yunData.SIGN = "(.+?)"', cm).group(1)
+
+        return info
+
     def get_params(self, path):
         r = ss.get(path)
         html = r.content
 
-        uk = re.search(r'yunData.MYUK = "(\d+)"', html).group(1)
-        shareid = re.search(r'yunData.SHARE_ID = "(\d+)"', html).group(1)
-        timestamp = re.search(r'yunData.TIMESTAMP = "(.+?)"', html).group(1)
-        sign = re.search(r'yunData.SIGN = "(.+?)"', html).group(1)
+        info = self.get_web_fileinfo(html, path)
+        uk = info['uk']
+        shareid = info['shareid']
+        timestamp = info['timestamp']
+        sign = info['sign']
 
         self.params = {
             #"bdstoken": bdstoken,
@@ -2167,7 +2193,7 @@ class panbaiducom(object):
             "web": 1
         }
 
-        fileinfo = re.search(r'yunData.FILEINFO = (.+)', html).group(1)[:-2]
+        fileinfo = info['fileinfo']
         j = json.loads(fileinfo)
 
         self.infos.update({
