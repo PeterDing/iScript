@@ -65,6 +65,7 @@ s = '\x1b[%s;%sm%s\x1b[0m'       # terminual color template
 
 cookie_file = os.path.join(os.path.expanduser('~'), '.bp.cookies')
 upload_datas_path = os.path.join(os.path.expanduser('~'), '.bp.pickle')
+save_share_path = os.path.join(os.path.expanduser('~'), '.bp.ss.pickle')
 
 headers = {
     "Accept":"text/html,application/xhtml+xml,application/xml; " \
@@ -619,7 +620,7 @@ class panbaiducom_HOME(object):
             os.makedirs(infos['dir_'])
         else:
             if os.path.exists(infos['file']):
-                return 0
+                return
 
         num = random.randint(0, 7) % 7
         col = sizeof_fmt(infos['size']) + ' # ' + s % (2, num + 90, infos['path']) \
@@ -676,7 +677,7 @@ class panbaiducom_HOME(object):
                 % (quiet, infos['dlink'])
         else:
             quiet = ' --really-quiet' if args.quiet else ''
-            cmd = 'mpv%s --cache 10000 --cache-default 10000 ' \
+            cmd = 'mpv%s --no-ytdl --cache 10000 --cache-default 10000 ' \
                 '--http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
                 % (quiet, infos['dlink'])
@@ -905,7 +906,7 @@ class panbaiducom_HOME(object):
             if meta:
                 self.upload_datas[lpath]['is_over'] = True
                 self.upload_datas[lpath]['remotepaths'].update([rpath])
-                #self.save_upload_datas()
+                #self.save_datas(upload_datas_path, self.upload_datas)
                 print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
                 return
             else:
@@ -944,7 +945,7 @@ class panbaiducom_HOME(object):
                             if result != ENoError: break
 
                             self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
-                            self.save_upload_datas()
+                            self.save_datas(upload_datas_path, self.upload_datas)
                             start_time = print_process_bar(f.tell(), __current_file_size, slice, start_time, \
                                 pre='     ', msg='%s/%s' % (str(piece+1), str(pieces)))
 
@@ -958,7 +959,7 @@ class panbaiducom_HOME(object):
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
                         del self.upload_datas[lpath]['slice_md5s']
-                        self.save_upload_datas()
+                        self.save_datas(upload_datas_path, self.upload_datas)
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
@@ -971,7 +972,7 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_upload_datas()
+                        self.save_datas(upload_datas_path, self.upload_datas)
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
@@ -985,7 +986,7 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_upload_datas()
+                        self.save_datas(upload_datas_path, self.upload_datas)
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
@@ -1026,10 +1027,9 @@ class panbaiducom_HOME(object):
                 self._upload_file(localpath, remotepath)
 
     def upload(self, localpaths, remotepath):
-        self.upload_datas_path = upload_datas_path
         self.upload_datas = {}
-        if os.path.exists(self.upload_datas_path):
-            f = open(self.upload_datas_path, 'rb')
+        if os.path.exists(upload_datas_path):
+            f = open(upload_datas_path, 'rb')
             upload_datas = pk.load(f)
             if upload_datas:
                 self.upload_datas = upload_datas
@@ -1057,11 +1057,11 @@ class panbaiducom_HOME(object):
                 print s % (1, 91, '  !! Error: localpath ?')
                 sys.exit(1)
 
-        self.save_upload_datas()
+        self.save_datas(upload_datas_path, self.upload_datas)
 
-    def save_upload_datas(self):
-        g = open(self.upload_datas_path, 'wb')
-        pk.dump(self.upload_datas, g)
+    def save_datas(self, path, infos):
+        g = open(path, 'wb')
+        pk.dump(infos, g)
         g.close()
 
     ##################################################################
@@ -1072,11 +1072,19 @@ class panbaiducom_HOME(object):
         if not meta:
             self._make_dir(info['remotepath'].encode('utf8'))
 
+        if not info['isdir']:
+            remote_file_path = '/'.join([info['remotepath'], os.path.split(info['path'])[-1]])
+            meta = self._meta([remote_file_path])
+            if meta:
+                j = {'errno': 'file has exist'}
+                return j
+
         theaders = headers
         theaders.update({'Referer': 'http://pan.baidu.com/share/link?shareid=%s&uk=%s' \
             % (self.shareid, self.uk)})
 
         p = {
+            "app_id": 250528,
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
@@ -1092,13 +1100,16 @@ class panbaiducom_HOME(object):
         url = 'http://pan.baidu.com/share/transfer'
         r = ss.post(url, params=p, data=data, headers=theaders)
         j = r.json()
-        if j['errno'] == 0:
-            return ENoError
-        else:
-            return j['errno']
+        #if j['errno'] == 0:
+            #return ENoError
+        #else:
+            #return j
+
+        return j
 
     def _get_share_list(self, info):
         p = {
+            "app_id": 250528,
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
@@ -1149,23 +1160,40 @@ class panbaiducom_HOME(object):
 
     def save_share(self, url, remotepath, infos=None):
         infos = self._get_share_infos(url, remotepath, infos)
-        for info in infos:
-            print s % (1, 97, '  ++ transfer:'), info['path']
-            result = self._share_transfer(info)
-            if result == ENoError:
-                pass
-            elif result == 12:
-                print s % (1, 91, '  |-- file had existed.')
-                sys.exit()
-            elif result == -33:
-                if info['isdir']:
-                    print s % (1, 93, '  |-- over transferring limit.')
-                    infos += self._get_share_list(info)
+        if args.type_ == 'c':
+            save_share_datas = {}
+            if os.path.exists(save_share_path):
+                f = open(save_share_path, 'rb')
+                save_share_datas = pk.load(f)
+                if save_share_datas:
+                    infos = save_share_datas[url]
+
+        while infos:
+            info = infos.pop(0)
+            while True:
+                print s % (1, 97, '  ++ transfer:'), info['path']
+
+                result = self._share_transfer(info)
+                if result['errno'] == 0:
+                    break
+                elif result['errno'] == 12 or result['errno'] == -33:
+                    if info['isdir']:
+                        print s % (1, 93, '  |-- over transferring limit.')
+                        infos += self._get_share_list(info)
+                        break
+                    else:
+                        print s % (1, 91, '  !! Error: can\'t transfer file')
+                        break
+                elif result['errno'] == 'file has exist':
+                        print s % (1, 93, '  |-- file has exist.')
+                        break
                 else:
-                    print s % (1, 91, '  !! Error: can\'t transfer file')
-            else:
-                print s % (1, 91, '  !! Error at save_share, errno:'), result
-                sys.exit(1)
+                    print s % (1, 91, '  !! Error at save_share, errno:'), result
+                    time.sleep(5)
+
+            if args.type_ == 'c':
+                save_share_datas[url] = infos
+                self.save_datas(save_share_path, save_share_datas)
 
     @staticmethod
     def _secret_or_not(url):
@@ -1811,8 +1839,8 @@ class panbaiducom_HOME(object):
     def _get_selected_idx(self, infos):
         types = args.type_.split(',')
         if not args.type_: return []
-        if 'a' in types: return [str(i+1) for i in xrange(len(infos))]
-        #if 'a' in types: return []
+        #if 'a' in types: return [str(i+1) for i in xrange(len(infos))]
+        if 'a' in types: return []
 
         idx = []
         if 'm' in types:
@@ -2250,15 +2278,33 @@ class panbaiducom(object):
             self.get_params(path)
             self.get_infos()
 
-    def do2(self,paths):
+    def do2(self, paths):
         for path in paths:
             self.infos = {}
             self.get_infos2(path)
 
+    def do4(self, paths):
+        for path in paths:
+            r = ss.get(path, allow_redirects=False)
+            t = re.search(r'fin=(.+?)(&|$)', r.headers['location']).group(1)
+            name = urllib.unquote_plus(t)
+            self.infos = {
+                'name': name,
+                'file': os.path.join(os.getcwd(), name),
+                'dir_': os.getcwd(),
+                'dlink': path
+            }
+
+            if args.play:
+                panbaiducom_HOME._play_do(self.infos)
+            else:
+                panbaiducom_HOME._download_do(self.infos)
+            break
+
 def sighandler(signum, frame):
     print s % (1, 91, "  !! Signal:"), signum
     if args.comd in ('u', 'upload'):
-        px.save_upload_datas()
+        px.save_datas(upload_datas_path, px.upload_datas)
 
     #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
@@ -2424,6 +2470,7 @@ def main(argv):
         paths1 = []
         paths2 = []
         paths3 = []
+        paths4 = []
 
         for path in paths:
             if path[0] == '/':
@@ -2435,6 +2482,8 @@ def main(argv):
             elif 'yun.baidu.com' in path or 'pan.baidu.com' in path:
                 path = path.replace('wap/link', 'share/link')
                 paths3.append(path)
+            elif 'pcs.baidu.com' in path:
+                paths4.append(path)
             else:
                 print s % (2, 91, '  !!! url 地址不正确.'), path
 
@@ -2450,6 +2499,10 @@ def main(argv):
         if paths3:
             x = panbaiducom()
             x.do(paths3)
+
+        if paths4:
+            x = panbaiducom()
+            x.do4(paths4)
 
     elif comd == 's' or comd == 'save':
         if len(xxx) != 2:

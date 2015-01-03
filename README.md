@@ -343,6 +343,8 @@
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                             eg:
+                                            s -t c      # 连续转存 (如果转存出错，再次运行命令
+                                                        # 可以从出错的地方开始，用于转存大量文件时)
                                             l -t f      # 文件
                                             l -t d      # 文件夹
                                             l -t du     # 查看文件占用空间
@@ -486,6 +488,10 @@
         bp s http://pan.baidu.com/s/xxxxxxxx#dir/path=/path/to/anything /path/to/save -s xxxx
 
         bp s http://pan.baidu.com/inbox/i/xxxxxxxx /path/to/save
+
+        # -t c 连续转存 (如果转存出错，再次运行命令可以从出错的地方开始，用于转存大量文件时)
+        bp s 'http://pan.baidu.com/share/link?shareid=2705944270&uk=708312363' /path/to/save -t c
+        # 注意：再次运行时，命令要一样。
 
     搜索:
 
