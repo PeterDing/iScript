@@ -86,15 +86,16 @@ def play(infos):
         pass
 
 def flvxz_parser(cn):
-    qualities = re.findall(r'>\[(.+?)\]<', cn)
+    qualities = re.findall(r'"quality">\[(.+?)\]<', cn)
     if not qualities: return {}
 
     j = {}
-    chucks = re.split(r'>\[.+?\]<', cn)[1:]
+    chucks = re.split(r'"quality">\[.+?\]<', cn)[1:]
 
     for i in xrange(len(qualities)):
         parts = re.findall(r'data-clipboard-text="(.+?)"', chucks[i])
-        urls = re.findall(r'<a rel="noreferrer" href="(.+?)"', chucks[i])
+        t = re.findall(r'rel="noreferrer" href="(.+?)"', chucks[i])
+        urls = [ii for ii in t if 'flvxz' not in ii]
 
         j[qualities[i]] = zip(parts, urls)
 
