@@ -64,6 +64,7 @@ class pan115(object):
                 if not self.check_login():
                     print s % (1, 91, '  !! cookie is invalid, please login\n')
                     sys.exit(1)
+                self.check_vip()
             except:
                 g = open(cookie_file, 'w')
                 g.close()
@@ -72,6 +73,15 @@ class pan115(object):
         else:
             print s % (1, 91, '  !! cookie_file is missing, please login')
             sys.exit(1)
+
+    def check_vip(self):
+        url = 'http://vip.115.com/?ac=mycouponcount'
+        r = ss.get(url).content
+
+        if '"vip":0' in r:
+            self.is_vip = False
+        else:
+            self.is_vip = True
 
     def check_login(self):
         #print s % (1, 97, '\n  -- check_login')
@@ -146,11 +156,14 @@ class pan115(object):
         r = ss.get(url)
         c = r.content.strip()
 
-        purl = c.split()[-1]
-        if 'http' not in purl:
-            return None
+        if c:
+            purl = c.split()[-1]
+            if 'http' not in purl:
+                return None
+            else:
+                return purl
         else:
-            return purl
+            return None
 
     def get_infos(self, cid):
         params = {
@@ -206,6 +219,7 @@ class pan115(object):
                                 'dir_': os.path.split(t)[0],
                                 'dlink': self.get_dlink(i['pc']),
                                 'name': i['n'].encode('utf8'),
+                                #'purl': self._get_play_purl(i['pc'].encode('utf8')) if args.play and self.is_vip else None,
                                 'purl': self._get_play_purl(i['pc'].encode('utf8')) if args.play else None,
                                 'nn': nn,
                                 'total_file': total_file
@@ -349,6 +363,7 @@ class pan115(object):
             'file': t,
             'dir_': os.path.split(t)[0],
             'dlink': dlink,
+            #'purl': self._get_play_purl(pc) if args.play and self.is_vip else None,
             'purl': self._get_play_purl(pc) if args.play else None,
             'name': name,
             'nn': 1,

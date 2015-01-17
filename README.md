@@ -351,9 +351,10 @@
                                             l -t e,d    # 空文件夹
                                             f -t all    # 搜索所有账户
                                             a -t m,d,p,a
-                                            u -t r  # 只进行 rapidupload
-                                            u -t e  # 如果云端已经存在则不上传(不比对md5)
+                                            u -t r      # 只进行 rapidupload
+                                            u -t e      # 如果云端已经存在则不上传(不比对md5)
                                             u -t r,e
+                                            -t s        # shuffle，乱序
         -l amount, --limit amount           下载速度限制，eg: -l 100k
         -m {o,c}, --uploadmode {o,c}        上传模式:  o   # 重新上传. c   # 连续上传.
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
@@ -367,7 +368,7 @@
 
 3. 用法
 
-    \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.badiu.com.py')
+    \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.baidu.com.py')
 
     登录:
 
@@ -1089,4 +1090,3 @@
 增加了mpv和mplayer的导出。
 
 用法见: https://github.com/binux/ThunderLixianExporter
-

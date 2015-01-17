@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 # vim: set fileencoding=utf8
 
 import bencode

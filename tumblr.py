@@ -148,14 +148,15 @@ class tumblr(object):
             #if not os.path.exists(i['filepath']):
             num = random.randint(0, 7) % 7
             col = s % (1, num + 90, i['filepath'])
-            print '\n  ++ 正在下载: %s' % col
+            print '\n  ++ download: %s' % col
 
-            #cmd = 'wget -c -T 4 -q -O "%s.tmp" ' \
-                #'--header "Referer: http://www.tumblr.com" ' \
-                #'--user-agent "%s" "%s"' \
-                #% (i['filepath'], headers['User-Agent'], i['durl'])
+            cmd = 'wget -c -T 4 -q -O "%s.tmp" ' \
+                '--header "Referer:http://www.tumblr.com" ' \
+                '--user-agent "%s" "%s"' \
+                % (i['filepath'], headers['User-Agent'], i['durl'])
 
-            cmd = 'wget -c -T 4 -q -O "%s.tmp" "%s"' % (i['filepath'], i['durl'])
+            #cmd = 'wget -c -T 4 -q --user-agent "%s" -O "%s.tmp" "%s"' \
+                #% (headers['User-Agent'], i['filepath'], i['durl'])
 
             status = os.system(cmd)
             if status != 0:     # other http-errors, such as 302.

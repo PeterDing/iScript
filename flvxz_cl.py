@@ -32,7 +32,8 @@ wget_es = {
 
 headers = {
     "Host": "www.flvxz.com",
-    "User-Agent": "Mozilla/5.0 (X11; Linux i686; rv:33.0) Gecko/20100101 Firefox/33.0",
+    "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 " \
+        + "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.5",
     "Accept-Encoding": "gzip, deflate",
@@ -43,7 +44,6 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
-wget_template = 'wget -c -nv -O "%s" "%s"'
 api = 'https://www.flvxz.com/getFlv.php?url=%s'
 
 def download(infos):
@@ -58,7 +58,8 @@ def download(infos):
     col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ 正在下载:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
 
-    cmd = wget_template % (infos['filename'], parser.unescape(infos['durl']))
+    cmd = 'wget -c -nv --user-agent "%s" -O "%s" "%s"' \
+        % (headers['User-Agent'], infos['filename'], parser.unescape(infos['durl']))
     status = os.system(cmd)
 
     if status != 0:     # other http-errors, such as 302.

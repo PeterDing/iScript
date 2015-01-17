@@ -188,8 +188,12 @@ class neteaseMusic(object):
             self.song_id = re.search(r'song.+?(\d+)', self.url).group(1)
             print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
             self.download_song()
-        elif 'dj' in self.url:
-            self.dj_id = re.search(r'dj.+?(\d+)', self.url).group(1)
+        elif 'djradio' in self.url:
+            self.djradio_id = re.search(r'id=(\d+)', self.url).group(1)
+            print(s % (2, 92, u'\n  -- 正在分析DJ节目信息 ...'))
+            self.download_djradio()
+        elif 'program' in self.url:
+            self.dj_id = re.search(r'id=(\d+)', self.url).group(1)
             print(s % (2, 92, u'\n  -- 正在分析DJ节目信息 ...'))
             self.download_dj()
         else:
@@ -264,9 +268,17 @@ class neteaseMusic(object):
         self.amount_songs = unicode(len(songs))
         print(s % (2, 97, u'\n  >> ' + self.amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
-        n = 1
         self.get_song_infos(songs)
         self.download(self.amount_songs)
+
+    def download_djradio(self):
+        html = ss.get('http://music.163.com/djradio?id=%s' % self.djradio_id).content
+        dj_ids = re.findall(r'/program\?id=(\d+)', html)
+
+        for dj_id in dj_ids:
+            self.dj_id = dj_id
+            self.download_dj()
+            self.song_infos = []
 
     def download_dj(self):
         j = ss.get(url_dj % (self.dj_id, urllib.quote('[%s]' % self.dj_id))).json()

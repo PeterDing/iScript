@@ -175,16 +175,16 @@ class panbaiducom_HOME(object):
 
     def check_login(self):
         #print s % (1, 97, '\n  -- check_login')
-        url = 'http://www.baidu.com/home/msg/data/personalcontent'
-        r = ss.get(url)
-        if 'errNo":"0' in r.content:
+        url = 'http://pan.baidu.com/api/quota'
+        j = ss.get(url).json()
+        if j['errno'] != 0:
+            print s % (1, 91, '  -- check_login fail\n')
+            return False
+        else:
             #print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
             #self.save_cookies()
             return True
-        else:
-            print s % (1, 91, '  -- check_login fail\n')
-            return False
 
     def login(self, username, password):
         print s % (1, 97, '\n  -- login')
@@ -273,9 +273,15 @@ class panbaiducom_HOME(object):
     #def _sift(self, fileslist, name=None, size=None, time=None, head=None, tail=None, include=None, exclude=None):
     def _sift(self, fileslist, **arguments):
         """
-        a filter for time, size, name, head, tail, include, exclude
+        a filter for time, size, name, head, tail, include, exclude, shuffle
         support regular expression
         """
+
+        # for shuffle
+        if 's' in args.type_.split(','):
+            random.shuffle(fileslist)
+            return fileslist
+
         def sort(reverse, arg, fileslist=fileslist):
             tdict = {fileslist[i][arg] : i for i in xrange(len(fileslist))}
             keys = tdict.keys()
@@ -561,6 +567,8 @@ class panbaiducom_HOME(object):
                             if args.play:
                                 j['list'] = [i for i in j['list'] \
                                     if not i['isdir'] and os.path.splitext(i['server_filename'])[-1].lower() in mediatype]
+                                if 's' in args.type_.split(','):
+                                    j['list'] = self._sift(j['list'])
 
                             if args.heads or args.tails or args.includes or args.excludes:
                                 j['list'] = self._sift(j['list'])
@@ -1465,7 +1473,7 @@ class panbaiducom_HOME(object):
                     paths = [i['path'].encode('utf8') for i in infos]
                     self.download(paths)
                 elif comd == 'p' or comd == 'play':
-                    if not warn('move', display=True): return
+                    if not warn('play', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     self._download_do = self._play_do
                     self.download(paths)
