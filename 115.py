@@ -32,7 +32,13 @@ wget_es = {
 ############################################################
 
 # file extensions
-mediatype = {".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif", ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb", ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm", ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv", ".mpeg", ".mov", ".mdf", ".iso", ".asf"}
+mediatype = {
+    ".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif",
+    ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb",
+    ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm",
+    ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv",
+    ".mpeg", ".mov", ".mdf", ".iso", ".asf"
+}
 
 s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
@@ -121,8 +127,9 @@ class pan115(object):
             "goto=http://m.115.com/?ac=home"
 
         theaders = headers
-        theaders["Referer"] = "http://passport.115.com/static/reg_login_130418/bridge.html?ajax_cb_key=bridge_%s" \
-        % int(time.time()*1000)
+        theaders["Referer"] = "http://passport.115.com\
+            /static/reg_login_130418/bridge.html?ajax_cb_key=bridge_%s" \
+            % int(time.time()*1000)
 
         # Post!
         # XXX : do not handle errors
@@ -190,8 +197,11 @@ class pan115(object):
                 j = ss.get(url, params=params).json()
                 if j['errNo'] == 0 and j['data']:
                     if args.type_:
-                        j['data'] = [x for x in j['data'] if x.get('ns') \
-                            or x['ico'].lower() == unicode(args.type_.lower())]
+                        j['data'] = [
+                            x for x in j['data'] \
+                            if x.get('ns') \
+                                or x['ico'].lower() == unicode(args.type_.lower())
+                        ]
 
                     for i in j['data']:
                         if i.get('ns'):
@@ -202,12 +212,17 @@ class pan115(object):
                             dir_loop2.append(item)
 
                     if args.play:
-                        j['data'] = [i for i in j['data'] \
-                            if i.get('sha') and os.path.splitext(i['n'])[-1].lower() in mediatype]
+                        j['data'] = [
+                            i for i in j['data'] \
+                            if i.get('sha') \
+                                and os.path.splitext(i['n'])[-1].lower() \
+                                in mediatype
+                        ]
 
                     total_file = len([i for i in j['data'] if not i.get('ns')])
                     if args.from_ - 1:
-                        j['data'] = j['data'][args.from_-1:] if args.from_ else j['data']
+                        j['data'] = j['data'][args.from_-1:] if args.from_ \
+                                                                else j['data']
                     nn = args.from_
                     for i in j['data']:
                         if not i.get('ns'):
@@ -219,8 +234,12 @@ class pan115(object):
                                 'dir_': os.path.split(t)[0],
                                 'dlink': self.get_dlink(i['pc']),
                                 'name': i['n'].encode('utf8'),
-                                #'purl': self._get_play_purl(i['pc'].encode('utf8')) if args.play and self.is_vip else None,
-                                'purl': self._get_play_purl(i['pc'].encode('utf8')) if args.play else None,
+                                #'purl': self._get_play_purl(
+                                #   i['pc'].encode('utf8')) \
+                                #       if args.play and self.is_vip else None,
+                                'purl': self._get_play_purl(
+                                    i['pc'].encode('utf8')) \
+                                        if args.play else None,
                                 'nn': nn,
                                 'total_file': total_file
                             }
@@ -245,12 +264,17 @@ class pan115(object):
         num = random.randint(0, 7) % 7
         col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
-        infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ 正在下载: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
+        infos['total_file'] = infos['total_file'] \
+            if infos.get('total_file') else 1
+        print '\n  ++ 正在下载: #', \
+            s % (1, 97, infos['nn']), \
+            '/', s % (1, 97, infos['total_file']), \
+            '#', col
 
         if args.aria2c:
             # 115 普通用户只能有4下载通道。
-            tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
+            tlimit = ' --max-download-limit %s' \
+                % args.limit if args.limit else ''
             cmd = 'aria2c -c -s4 -x4%s ' \
                 '-o "%s.tmp" -d "%s" ' \
                 '--user-agent "%s" ' \
@@ -262,7 +286,8 @@ class pan115(object):
             cmd = 'wget -c%s ' \
                 '-O "%s.tmp" --user-agent "%s" ' \
                 '--header "Referer:http://m.115.com/" "%s"' \
-                % (tlimit, infos['file'], headers['User-Agent'], infos['dlink'])
+                % (tlimit, infos['file'], headers['User-Agent'],
+                   infos['dlink'])
 
         status = os.system(cmd)
         if status != 0:     # other http-errors, such as 302.
@@ -280,8 +305,12 @@ class pan115(object):
         num = random.randint(0, 7) % 7
         col = s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
-        infos['total_file'] = infos['total_file'] if infos.get('total_file') else 1
-        print '\n  ++ play: #', s % (1, 97, infos['nn']), '/', s % (1, 97, infos['total_file']), '#', col
+        infos['total_file'] = infos['total_file'] \
+            if infos.get('total_file') else 1
+        print '\n  ++ play: #', \
+            s % (1, 97, infos['nn']), '/', \
+            s % (1, 97, infos['total_file']), \
+            '#', col
 
         if not infos['purl']:
             print s % (1, 91, '  |-- m3u8 is not ready, using dlink')
@@ -300,9 +329,11 @@ class pan115(object):
         else:
             pass
 
+    # TODO
     def exists(self, filepath):
         pass
 
+    # TODO
     def upload(self, path, dir_):
         pass
 
@@ -363,7 +394,8 @@ class pan115(object):
             'file': t,
             'dir_': os.path.split(t)[0],
             'dlink': dlink,
-            #'purl': self._get_play_purl(pc) if args.play and self.is_vip else None,
+            #'purl': self._get_play_purl(pc) \
+            #   if args.play and self.is_vip else None,
             'purl': self._get_play_purl(pc) if args.play else None,
             'name': name,
             'nn': 1,
@@ -377,7 +409,8 @@ def main(argv):
 
     ######################################################
     # for argparse
-    p = argparse.ArgumentParser(description='download from 115.com reversely')
+    p = argparse.ArgumentParser(
+        description='download from 115.com reversely')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
     p.add_argument('-a', '--aria2c', action='store_true', \
@@ -409,7 +442,8 @@ def main(argv):
             account = xxx[0]
             password = xxx[1]
         else:
-            print s % (1, 91, '  login\n  login account\n  login account password')
+            print s % (1, 91, '  login\n  login account\n  \
+                                 login account password')
 
         x = pan115()
         x.login(account, password)

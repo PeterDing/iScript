@@ -6,7 +6,6 @@ import os
 import sys
 import re
 from hashlib import sha1
-import binascii
 import base64
 import requests
 import urlparse
@@ -15,18 +14,22 @@ import argparse
 ############################################################
 headers = {
     "Connection": "keep-alive",
-    "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept":"text/html,application/xhtml+xml,\
+        application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Encoding":"gzip,deflate,sdch",
-    "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
-        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "Accept-Language":"en-US,en;q=0.8,zh-CN;\
+        q=0.6,zh;q=0.4,zh-TW;q=0.2",
+    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) \
+        AppleWebKit/537.36 (KHTML, like Gecko) \
+        Chrome/40.0.2214.91 Safari/537.36"
 }
 
 ss = requests.session()
 ss.headers.update(headers)
 
 s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
-letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789']
+letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+           + '0123456789']
 
 class bt(object):
     def transfer(self, string, tpath, foo=None, bar=None):
@@ -42,16 +45,18 @@ class bt(object):
             for fl in dstring['info']['files']:
                 filename = fl['path'][-1]
                 if args.type_ == 'n':
-                    newfilename = re.sub(foo, bar, filename, re.I) if foo and bar else filename
+                    newfilename = re.sub(foo, bar, filename, re.I) \
+                        if foo and bar else filename
                     if filename != newfilename:
                         print filename, s % (1, 92, '==>'), newfilename
-                        path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                            + [newfilename]
+                        path = [self._get_sub_dir_index(i) \
+                                for i in fl['path'][:-1]]  + [newfilename]
                     else:
                         ext = os.path.splitext(filename)[-1]
                         ext = self._check_ext(ext)
-                        path = [self._get_sub_dir_index(i) for i in fl['path'][:-1]] \
-                            + ['%s%s' % (file_index, ext)]
+                        path = [self._get_sub_dir_index(i) \
+                                for i in fl['path'][:-1]] \
+                                + ['%s%s' % (file_index, ext)]
                     file_index += 1
                     fl['path'] = path
 
@@ -125,7 +130,8 @@ class bt(object):
 
         ## with xunlei
         print s % (1, 94, '  >> try:'), 'bt.box.n0808.com'
-        url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' % (hh[:2], hh[-2:], hh)
+        url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' \
+            % (hh[:2], hh[-2:], hh)
         ss.headers['Referer'] = 'http://bt.box.n0808.com'
         result = do(url)
         if result: return result
@@ -207,7 +213,8 @@ class bt(object):
             string = self.get_torrent(hh)
             if string:
                 tpath = os.path.join(dir_, hh + '.torrent')
-                print s % (1, 97, '  ++ magnet to torrent:'), 'magnet:?xt=urn:btih:%s' % hh
+                print s % (1, 97, '  ++ magnet to torrent:'), \
+                    'magnet:?xt=urn:btih:%s' % hh
                 with open(tpath, 'w') as g:
                     g.write(string)
             else:
@@ -237,7 +244,8 @@ class bt(object):
                     tpath = path
                     trans(tpath)
             else:
-                print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
+                print s % (1, 91, '  !! file doesn\'t existed'), \
+                    s % (1, 93, '--'), path
 
     def change(self, ups, dir_, foo=None, bar=None):
         for up in ups:
@@ -251,7 +259,8 @@ class bt(object):
                 string = self.get_torrent(hh)
                 if string:
                     tpath = os.path.join(dir_, hh + '.torrent')
-                    print s % (1, 97, '  ++ transfer:'), 'magnet:?xt=urn:btih:%s' % hh
+                    print s % (1, 97, '  ++ transfer:'), \
+                        'magnet:?xt=urn:btih:%s' % hh
                     self.transfer(string, tpath, foo=foo, bar=bar)
                 else:
                     print s % (1, 91, '  !! Can\'t get torrent from web.'), path
@@ -266,7 +275,8 @@ class bt(object):
                                     print s % (1, 97, '  ++ transfer:'), ipath
                                     string = open(ipath).read()
                                     tpath = os.path.join(dir_, 'change_' + i)
-                                    self.transfer(string, tpath, foo=foo, bar=bar)
+                                    self.transfer(string, tpath, foo=foo,
+                                                  bar=bar)
                                     paths.update(ipath)
                                 if os.getcwd() == os.path.abspath(dir_):
                                     do()
@@ -277,10 +287,12 @@ class bt(object):
                     if path.lower().endswith('torrent'):
                         print s % (1, 97, '  ++ transfer:'), path
                         string = open(path).read()
-                        tpath = os.path.join(dir_, 'change_' + os.path.basename(path))
+                        tpath = os.path.join(dir_,
+                                             'change_' + os.path.basename(path))
                         self.transfer(string, tpath, foo=foo, bar=bar)
             else:
-                print s % (1, 91, '  !! file doesn\'t existed'), s % (1, 93, '--'), path
+                print s % (1, 91, '  !! file doesn\'t existed'), \
+                    s % (1, 93, '--'), path
 
 def import_magnet(froms):
     ml = []
@@ -317,7 +329,8 @@ def import_magnet(froms):
 def main(argv):
     ######################################################
     # for argparse
-    p = argparse.ArgumentParser(description='magnet torrent 互转，数字命名bt内容文件名' \
+    p = argparse.ArgumentParser(
+        description='magnet torrent 互转，数字命名bt内容文件名' \
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
@@ -337,11 +350,13 @@ def main(argv):
     comd = argv[1]
     xxx = args.xxx
 
-    dir_ = os.getcwd() if not args.directory else args.directory
+    dir_ = os.getcwd() if not args.directory \
+                        else args.directory
     if not os.path.exists(dir_):
         os.mkdir(dir_)
     if comd == 'm' or comd == 'mt':   # magnet to torrent
-        urls = xxx if not args.import_from else import_magnet(args.import_from)
+        urls = xxx if not args.import_from \
+                    else import_magnet(args.import_from)
         x = bt()
         x.magnet2torrent(urls, dir_)
 
@@ -351,14 +366,16 @@ def main(argv):
         x.torrent2magnet(paths)
 
     elif comd == 'c' or comd == 'ct':   # change
-        ups = xxx if not args.import_from else import_magnet(args.import_from)
+        ups = xxx if not args.import_from \
+                    else import_magnet(args.import_from)
         x = bt()
         x.change(ups, dir_, foo=None, bar=None)
 
     elif comd == 'cr' or comd == 'ctre':   # change
         foo = xxx[0]
         bar = xxx[1]
-        ups = xxx[2:] if not args.import_from else import_magnet(args.import_from)
+        ups = xxx[2:] if not args.import_from \
+                        else import_magnet(args.import_from)
         x = bt()
         x.change(ups, dir_, foo=foo, bar=bar)
 

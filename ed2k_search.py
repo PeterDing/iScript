@@ -12,14 +12,16 @@ opener = urllib.urlopen
 
 class ed2k_search(object):
     def __init__(self, keyword=''):
-        self.url = "http://donkey4u.com/search/%s?page=%s&mode=list" % (keyword, '%s')
+        self.url = "http://donkey4u.com/search/%s?page=%s&mode=list" \
+            % (keyword, '%s')
         print ''
 
     def get_infos(self, url):
         r = opener(url)
         assert r
         self.html = r.read()
-        html = re.search(r'<table class=\'search_table\'>.+?</table>', self.html, re.DOTALL).group()
+        html = re.search(r'<table class=\'search_table\'>.+?</table>',
+                         self.html, re.DOTALL).group()
 
         sizes = re.findall(r'<td width=\'70\' align=\'right\'>(.+)', html)
         seeds = re.findall(r'<td width=\'100\' align=\'right\'>(.+)', html)
@@ -63,7 +65,8 @@ def main(xxx):
     x.do()
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description='searching ed2k at donkey4u.com')
+    p = argparse.ArgumentParser(
+        description='searching ed2k at donkey4u.com')
     p.add_argument('xxx', type=str, nargs='*', help='keyword')
     args = p.parse_args()
     main(args.xxx)

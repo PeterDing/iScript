@@ -20,7 +20,8 @@ wget_es = {
     0: "No problems occurred.",
     2: "User interference.",
     1<<8: "Generic error code.",
-    2<<8: "Parse error - for instance, when parsing command-line optio.wgetrc or .netrc...",
+    2<<8: "Parse error - for instance, \
+        when parsing command-line optio.wgetrc or .netrc...",
     3<<8: "File I/O error.",
     4<<8: "Network failure.",
     5<<8: "SSL verification failure.",
@@ -32,8 +33,9 @@ wget_es = {
 
 headers = {
     "Host": "www.flvxz.com",
-    "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 " \
-        + "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) \
+        AppleWebKit/537.36 (KHTML, like Gecko) \
+        Chrome/40.0.2214.91 Safari/537.36",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.5",
     "Accept-Encoding": "gzip, deflate",
@@ -56,29 +58,38 @@ def download(infos):
 
     num = random.randint(0, 7) % 7
     col = s % (2, num + 90, os.path.basename(infos['filename']))
-    print '\n  ++ 正在下载:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
+    print '\n  ++ 正在下载:', '#', \
+        s % (1, 97, infos['n']), '/', \
+        s % (1, 97, infos['amount']), \
+        '#', col
 
     cmd = 'wget -c -nv --user-agent "%s" -O "%s" "%s"' \
-        % (headers['User-Agent'], infos['filename'], parser.unescape(infos['durl']))
+        % (headers['User-Agent'], infos['filename'],
+           parser.unescape(infos['durl']))
     status = os.system(cmd)
 
     if status != 0:     # other http-errors, such as 302.
         wget_exit_status_info = wget_es[status]
-        print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' % (status, wget_exit_status_info))
+        print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \
+              \x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
+              % (status, wget_exit_status_info))
         print s % (1, 91, '  ===> '), cmd
         sys.exit(1)
 
 def play(infos):
     num = random.randint(0, 7) % 7
     col = s % (2, num + 90, os.path.basename(infos['filename']))
-    print '\n  ++ play:', '#', s % (1, 97, infos['n']), '/', s % (1, 97, infos['amount']), '#', col
+    print '\n  ++ play:', '#', \
+        s % (1, 97, infos['n']), '/', \
+        s % (1, 97, infos['amount']), \
+        '#', col
 
     cmd = 'mpv --really-quiet --cache 8140 --cache-default 8140 ' \
         '--http-header-fields "User-Agent:%s" ' \
         '"%s"' % (headers['User-Agent'], infos['durl'])
         #'"%s"' % parser.unescape(infos['durl'])
 
-    status = os.system(cmd)
+    os.system(cmd)
     timeout = 1
     ii, _, _ = select.select([sys.stdin], [], [], timeout)
     if ii:

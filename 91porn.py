@@ -67,8 +67,10 @@ class nrop19(object):
 
                 r = ss.get(apiurl, params=params)
                 if r.ok:
-                    dlink = re.search(r'file=(http.+?\.mp4)', r.content).group(1)
-                    name = re.search(r'viewkey=([\d\w]+)', self.url).group(1)
+                    dlink = re.search(
+                        r'file=(http.+?\.mp4)', r.content).group(1)
+                    name = re.search(
+                        r'viewkey=([\d\w]+)', self.url).group(1)
                     infos = {
                         'name': '%s.mp4' % name,
                         'file': os.path.join(os.getcwd(), '%s.mp4' % name),
@@ -86,7 +88,8 @@ class nrop19(object):
         col = s % (2, num + 90, infos['file'])
         print '\n  ++ 正在下载: %s' % col
 
-        cookies = '; '.join(['%s=%s' % (i, ii) for i, ii in ss.cookies.items()])
+        cookies = '; '.join(
+            ['%s=%s' % (i, ii) for i, ii in ss.cookies.items()])
         if args.aria2c:
             cmd = 'aria2c -c -x10 -s10 ' \
                 '-o "%s.tmp" -d "%s" --header "User-Agent: %s" ' \
@@ -118,7 +121,7 @@ class nrop19(object):
             '--http-header-fields "user-agent:%s" "%s"' \
             % (headers['User-Agent'], infos['dlink'])
 
-        status = os.system(cmd)
+        os.system(cmd)
         timeout = 1
         ii, _, _ = select.select([sys.stdin], [], [], timeout)
         if ii:
@@ -134,7 +137,8 @@ def main(url):
     x.do()
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description='download from 91porn.com')
+    p = argparse.ArgumentParser(
+        description='download from 91porn.com')
     p.add_argument('url', help='url of 91porn.com')
     p.add_argument('-a', '--aria2c', action='store_true', \
                 help='download with aria2c')

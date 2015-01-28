@@ -49,11 +49,13 @@ ss.headers.update(headers)
 class tumblr(object):
     def save_json(self):
         with open(self.json_path, 'w') as g:
-            g.write(json.dumps({'key': self.key}, indent=4, sort_keys=True))
+            g.write(json.dumps(
+                {'key': self.key}, indent=4, sort_keys=True))
 
     def get_site_infos(self, postid=None):
         self.infos['photos'] = []
-        self.url = 'http://api.tumblr.com/v2/blog/%s/posts/photo' % self.infos['host']
+        self.url = 'http://api.tumblr.com/v2/blog/%s/posts/photo' \
+            % self.infos['host']
         params = {
             "offset": self.key if not postid else "",
             "limit": 20 if not postid else "",
@@ -124,7 +126,8 @@ class tumblr(object):
                     if i.get('photos'):
                         for ii in i['photos']:
                             durl = ii['original_size']['url'].encode('utf8')
-                            filepath = os.path.join(self.infos['dir_'], '%s_%s.%s' \
+                            filepath = os.path.join(
+                                self.infos['dir_'], '%s_%s.%s' \
                                 % (i['id'], index, durl.split('.')[-1]))
                             filename = os.path.split(filepath)[-1]
                             t = {
@@ -145,7 +148,8 @@ class tumblr(object):
 
     def download(self):
         def run(i):
-            #if not os.path.exists(i['filepath']):
+            if os.path.exists(i['filepath']):
+                return
             num = random.randint(0, 7) % 7
             col = s % (1, num + 90, i['filepath'])
             print '\n  ++ download: %s' % col
@@ -170,7 +174,8 @@ class tumblr(object):
                 os.rename('%s.tmp' % i['filepath'], i['filepath'])
 
         l = [self.infos['photos'][i:i+self.processes] \
-            for i in range(len(self.infos['photos']))[::self.processes]]
+            for i in range(
+                len(self.infos['photos']))[::self.processes]]
         for yy in l:
             ppool = []
             for ii in yy:
@@ -183,7 +188,8 @@ class tumblr(object):
             for p in ppool: p.join()
 
     def download_site(self, url):
-        self.infos = {'host': re.search(r'http(s|)://(.+?)($|/)', url).group(2)}
+        self.infos = {
+            'host': re.search(r'http(s|)://(.+?)($|/)', url).group(2)}
         self.infos['dir_'] = os.path.join(os.getcwd(), self.infos['host'])
         self.processes = int(args.processes)
 
@@ -216,7 +222,8 @@ class tumblr(object):
 
     def download_tag(self, tag):
         self.infos = {'tag': tag}
-        self.infos['dir_'] = os.path.join(os.getcwd(), 'tumblr-%s' % self.infos['tag'])
+        self.infos['dir_'] = os.path.join(
+            os.getcwd(), 'tumblr-%s' % self.infos['tag'])
         self.processes = int(args.processes)
 
         if not os.path.exists(self.infos['dir_']):
@@ -247,14 +254,16 @@ class tumblr(object):
                 self.download()
 
 def main(argv):
-    p = argparse.ArgumentParser(description='download from tumblr.com')
+    p = argparse.ArgumentParser(
+        description='download from tumblr.com')
     p.add_argument('xxx', help='xxx')
-    p.add_argument('-p', '--processes', action='store', default=5, \
+    p.add_argument('-p', '--processes', action='store', default=5,
         help='指定多进程数,默认为5个,最多为20个 eg: -p 20')
-    p.add_argument('-c', '--check', action='store_true', \
+    p.add_argument('-c', '--check', action='store_true',
         help='尝试修复未下载成功的图片')
-    p.add_argument('-t', '--tag', action='store', \
-                   default=None, type=str, help='下载特定tag的图片, eg: -t beautiful')
+    p.add_argument('-t', '--tag', action='store',
+                   default=None, type=str,
+                   help='下载特定tag的图片, eg: -t beautiful')
     global args
     args = p.parse_args(argv[1:])
     xxx = args.xxx

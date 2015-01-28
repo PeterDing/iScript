@@ -343,6 +343,7 @@
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                             eg:
+                                            p -t m3     # 播放流媒体(m3u8)
                                             s -t c      # 连续转存 (如果转存出错，再次运行命令
                                                         # 可以从出错的地方开始，用于转存大量文件时)
                                             l -t f      # 文件
@@ -426,6 +427,11 @@
         bp p /movie/her.mkv
         bp p http://pan.baidu.com/s/xxxxxxxxx -s [secret]
         bp p /movie -R     # 递归播放 /movie 中所有媒体文件
+
+        # 播放流媒体(m3u8)
+        上面的命令后加 -t m3
+        清晰度与在浏览器上播放的一样.
+        如果源文件是高清的(720P,1280P),那么流媒体会自动转为480P.
 
     离线下载:
 
