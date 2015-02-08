@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 import random
+import json
 from HTMLParser import HTMLParser
 import select
 
@@ -97,7 +98,26 @@ def play(infos):
     else:
         pass
 
+def decrypt(encrypted_cn):
+    c = encrypted_cn.split('}(')
+    x = re.search(r'(\[.+\])\)\);', c[1]).group(1)
+    y = re.search(r'(\[.+\])..\)\);if', c[2]).group(1)
+
+    a, b = json.loads('[' + x + ']')
+    for i in xrange(len(b)):
+        b[i] = a[b[i]]
+    t = ''.join(b[::-1])[8:-1]
+    b = json.loads(t)
+
+    a = json.loads(y)
+    for i in xrange(len(b)):
+        b[i] = a[b[i]]
+    decrypted_cn = ''.join(b[::-1])
+
+    return decrypted_cn
+
 def flvxz_parser(cn):
+    cn = decrypt(cn)
     qualities = re.findall(r'"quality">\[(.+?)\]<', cn)
     if not qualities: return {}
 
