@@ -124,8 +124,7 @@ class bt(object):
                 else:
                     print s % (1, 91, u'  × not get.')
                     return None
-            except Exception as e:
-                print s % (1, 91, u'  !! Error:'), e
+            except:
                 return None
 
         ## with xunlei
@@ -141,9 +140,7 @@ class bt(object):
         if args.proxy:
             print s % (1, 94, '  >> try:'), 'torrage.com'
             proxies = {
-                'http': args.proxy if args.proxy.startswith('http://') \
-                else 'http://' + args.proxy
-            }
+                'http': args.proxy} if args.proxy else None
             url = 'http://torrage.com/torrent/%s.torrent' % hh
             try:
                 result = do(url, proxies=proxies)
@@ -332,18 +329,20 @@ def main(argv):
     p = argparse.ArgumentParser(
         description='magnet torrent 互转，数字命名bt内容文件名' \
         ' 用法见 https://github.com/PeterDing/iScript')
-    p.add_argument('xxx', type=str, nargs='*', \
+    p.add_argument('xxx', type=str, nargs='*',
         help='命令对象.')
-    p.add_argument('-i', '--import_from', type=str, nargs='*', \
+    p.add_argument('-i', '--import_from', type=str, nargs='*',
         help='import magnet from local.')
-    p.add_argument('-p', '--proxy', action='store', default='127.0.0.1:8087', \
-        type=str, help='proxy for torrage.com, eg: -p 127.0.0.1:8087')
-    p.add_argument('-d', '--directory', action='store', default=None, \
+    p.add_argument('-p', '--proxy', action='store',
+                   default='socks5://127.0.0.1:8883',
+                   type=str, help='proxy for torrage.com, \
+                                eg: -p "sooks5://127.0.0.1:8883"')
+    p.add_argument('-d', '--directory', action='store', default=None,
         type=str, help='torrents保存的路径, eg: -d /path/to/save')
-    p.add_argument('-n', '--name', action='store', default=None, \
+    p.add_argument('-n', '--name', action='store', default=None,
         type=str, help='顶级文件夹名称, eg: -n thistopdirectory')
-    p.add_argument('-t', '--type_', action='store', \
-        default='n', type=str, \
+    p.add_argument('-t', '--type_', action='store',
+        default='n', type=str,
         help='类型参数，eg: ')
     global args
     args = p.parse_args(argv[2:])

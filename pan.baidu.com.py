@@ -117,7 +117,8 @@ def sizeof_fmt(num):
         num /= 1024.0
     return "%3.1f%s" % (num, 'TB')
 
-def print_process_bar(point, total, slice_size, start_time=None, pre='', suf='', msg=''):
+def print_process_bar(point, total, slice_size,
+                      start_time=None, pre='', suf='', msg=''):
     length = 20
     nowpoint = point / (total + 0.0)
     percent = round(100 * nowpoint, 1)
