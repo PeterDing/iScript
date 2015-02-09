@@ -8,7 +8,7 @@ import json
 import requests
 import argparse
 import random
-import multiprocessing
+import subprocess
 import time
 
 api_key = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
@@ -46,7 +46,35 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
+def check_queue(queue, cb):
+    for f in queue:
+        if f[0].poll() is not None:
+            cb(f[1])
+            queue.remove(f)
+    return queue
+
+def sleep(size, num):
+    t = float(size) / num
+    time.sleep(t)
+
+def async(tasks, queue, run=None, cb=None, num=10):
+    queue = check_queue(queue, cb)
+    sleep(len(queue), num)
+    nsize = num - len(queue)
+    for i in xrange(nsize):
+        try:
+            task = tasks.pop(0)
+        except IndexError:
+            break
+        f = run(task)
+        if f: queue.append(f)
+    return tasks, queue
+
 class tumblr(object):
+    def __init__(self):
+        self.queue = []
+        self.tasks = []
+
     def save_json(self):
         with open(self.json_path, 'w') as g:
             g.write(json.dumps(
@@ -152,40 +180,29 @@ class tumblr(object):
                 return
             num = random.randint(0, 7) % 7
             col = s % (1, num + 90, i['filepath'])
-            print '\n  ++ download: %s' % col
+            print '  ++ download: %s' % col
+            cmd = [
+                'wget', '-c', '-q', '-T', '4',
+                '-O', '%s.tmp' % i['filepath'],
+                '--header', '"Referer:http://www.tumblr.com"',
+                '--user-agent', '"%s"' % headers['User-Agent'],
+                '%s' % i['durl']
+            ]
+            f = subprocess.Popen(cmd)
+            return f, i['filepath']
 
-            cmd = 'wget -c -T 4 -q -O "%s.tmp" ' \
-                '--header "Referer:http://www.tumblr.com" ' \
-                '--user-agent "%s" "%s"' \
-                % (i['filepath'], headers['User-Agent'], i['durl'])
+        def callback(filepath):
+            os.rename('%s.tmp' % filepath, filepath)
 
-            #cmd = 'wget -c -T 4 -q --user-agent "%s" -O "%s.tmp" "%s"' \
-                #% (headers['User-Agent'], i['filepath'], i['durl'])
-
-            status = os.system(cmd)
-            if status != 0:     # other http-errors, such as 302.
-                wget_exit_status_info = wget_es[status]
-                print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> '\
-                    '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
-                    % (status, wget_exit_status_info))
-                print s % (1, 91, '  ===> '), cmd
-                sys.exit(1)
-            else:
-                os.rename('%s.tmp' % i['filepath'], i['filepath'])
-
-        l = [self.infos['photos'][i:i+self.processes] \
-            for i in range(
-                len(self.infos['photos']))[::self.processes]]
-        for yy in l:
-            ppool = []
-            for ii in yy:
-                if not os.path.exists(ii['filepath']):
-                    p = multiprocessing.Process(target=run, args=(ii,))
-                    p.start()
-                    print p
-                    ppool.append(p)
-
-            for p in ppool: p.join()
+        tasks = self.infos['photos'] + self.tasks
+        self.tasks = []
+        while True:
+            tasks, self.queue = async(
+                tasks, self.queue, run=run,
+                cb=callback, num=self.processes)
+            if len(tasks) <= self.processes:
+                self.tasks = tasks
+                break
 
     def download_site(self, url):
         self.infos = {
@@ -257,8 +274,8 @@ def main(argv):
     p = argparse.ArgumentParser(
         description='download from tumblr.com')
     p.add_argument('xxx', help='xxx')
-    p.add_argument('-p', '--processes', action='store', default=5,
-        help='指定多进程数,默认为5个,最多为20个 eg: -p 20')
+    p.add_argument('-p', '--processes', action='store', default=10,
+        help='指定多进程数,默认为10个,最多为20个 eg: -p 20')
     p.add_argument('-c', '--check', action='store_true',
         help='尝试修复未下载成功的图片')
     p.add_argument('-t', '--tag', action='store',

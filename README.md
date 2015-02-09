@@ -984,7 +984,7 @@
 
     * 或者用 http://www.tumblr.com/docs/en/api/v2 提供的api_key ( fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4 )
 
-    默认开5个进程，如需改变用参数-p [num]。
+    默认开10个进程，如需改变用参数-p [num]。
 
     下载的文件，保存在当前目录下。
 
@@ -994,7 +994,7 @@
 
     参数:
 
-        -p PROCESSES, --processes PROCESSES      指定多进程数,默认为5个,最多为20个 eg: -p 20
+        -p PROCESSES, --processes PROCESSES      指定多进程数,默认为10个,最多为20个 eg: -p 20
         -c, --check           尝试修复未下载成功的图片
         -t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
 
