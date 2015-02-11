@@ -39,8 +39,8 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"https://api.tumblr.com/console//calls/blog/posts",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
-        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 \
+        (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
 }
 
 ss = requests.session()
@@ -48,8 +48,9 @@ ss.headers.update(headers)
 
 def check_queue(queue, cb):
     for f in queue:
-        if f[0].poll() is not None:
-            cb(f[1])
+        st = f[0].poll()
+        if st is not None:
+            if st == 0: cb(f[1])
             queue.remove(f)
     return queue
 
@@ -182,9 +183,8 @@ class tumblr(object):
             col = s % (1, num + 90, i['filepath'])
             print '  ++ download: %s' % col
             cmd = [
-                'wget', '-c', '-q', '-T', '4',
+                'wget', '-c', '-q',
                 '-O', '%s.tmp' % i['filepath'],
-                '--header', '"Referer:http://www.tumblr.com"',
                 '--user-agent', '"%s"' % headers['User-Agent'],
                 '%s' % i['durl']
             ]
