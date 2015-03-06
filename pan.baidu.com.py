@@ -224,6 +224,26 @@ class panbaiducom_HOME(object):
     def login(self, username, password):
         print s % (1, 97, '\n  -- login')
 
+        # error_message: at _check_account_exception from
+        # https://github.com/ly0/baidupcsapi/blob/master/baidupcsapi/api.py
+        login_error_msg = {
+                '-1': '系统错误, 请稍后重试',
+                 '1': '输入的帐号格式不正确',
+                 '3': '验证码不存在或已过期,请重新输入',
+                 '4': '输入的帐号或密码有误',
+                 '5': '请重新登录',
+                 '6': '验证码输入错误',
+                '16': '帐号因安全问题已被限制登录',
+               '257': '需要验证码',
+            '100005': '系统错误, 请稍后重试',
+            '120016': '未知错误 120016',
+            '120019': '近期登录次数过多, 请先通过 passport.baidu.com 解除锁定',
+            '120021': '登录失败,重新登录',
+            '500010': '登录过于频繁,请24小时后再试',
+            '400031': '账号异常',
+            '401007': '手机号关联了其他帐号，请选择登录'
+        }
+
         # Get token
         token = self._get_bdstoken()
 
@@ -272,9 +292,12 @@ class panbaiducom_HOME(object):
 
             # Callback for verify code if we need
             #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
-            if 'err_no=0' in r.content:
+            errno = re.search(r'err_no=(\d+)', r.content).group(1)
+            if errno == '0':
                 break
-            else:
+            elif errno in ('257', '3', '6'):
+                print s % (1, 91, ' ! Error %s:' % errno), \
+                    login_error_msg[errno]
                 t = re.search('codeString=(.+?)&', r.content)
                 codestring = t.group(1) if t else ""
                 vcurl = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
@@ -282,6 +305,10 @@ class panbaiducom_HOME(object):
                 data['codestring'] = codestring
                 data['verifycode'] = verifycode
                 #self.save_cookies()
+            else:
+                print s % (1, 91, ' ! Error %s:' % errno), \
+                    login_error_msg[errno]
+                sys.exit(1)
 
     def save_cookies(self, username, on=0):
         self.username = username
@@ -640,15 +667,21 @@ class panbaiducom_HOME(object):
                                         if i['isdir'] else None
 
                             if args.play:
-                                j['list'] = [i for i in j['list'] \
-                                    if not i['isdir'] and os.path.splitext(i['server_filename'])[-1].lower() in mediatype]
+                                j['list'] = [
+                                    i for i in j['list'] \
+                                    if not i['isdir'] \
+                                        and os.path.splitext(
+                                            i['server_filename']
+                                        )[-1].lower() in mediatype]
                                 if 's' in args.type_.split(','):
                                     j['list'] = self._sift(j['list'])
 
-                            if args.heads or args.tails or args.includes or args.excludes:
+                            if args.heads or args.tails or args.includes \
+                                    or args.excludes:
                                 j['list'] = self._sift(j['list'])
 
-                            total_file = len([i for i in j['list'] if not i['isdir']])
+                            total_file = len([i for i in j['list'] \
+                                              if not i['isdir']])
 
                             if args.from_ - 1:
                                 j['list'] = j['list'][args.from_-1:] \
@@ -786,7 +819,7 @@ class panbaiducom_HOME(object):
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
                 % (quiet, '/tmp/tmp_pan.baidu.com.py.m3u8')
 
-        status = os.system(cmd)
+        os.system(cmd)
         timeout = 1
         ii, _, _ = select.select([sys.stdin], [], [], timeout)
         if ii:
@@ -2545,8 +2578,8 @@ def sighandler(signum, frame):
 def main(argv):
     signal.signal(signal.SIGBUS, sighandler)
     signal.signal(signal.SIGHUP, sighandler)
-    # https://stackoverflow.com/questions/108183/how-to-prevent-sigpipes-or-handle-them-properly
-    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+    # http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     signal.signal(signal.SIGQUIT, sighandler)
     signal.signal(signal.SIGSYS, sighandler)
 

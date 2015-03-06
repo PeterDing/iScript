@@ -273,13 +273,16 @@ class pan115(object):
 
         if args.aria2c:
             # 115 普通用户只能有4下载通道。
+            quiet = ' --quiet=true' if args.quiet else ''
+            taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
             tlimit = ' --max-download-limit %s' \
                 % args.limit if args.limit else ''
-            cmd = 'aria2c -c -s4 -x4%s ' \
+            cmd = 'aria2c -c%s%s%s ' \
+                '-m 0 ' \
                 '-o "%s.tmp" -d "%s" ' \
                 '--user-agent "%s" ' \
                 '--header "Referer:http://m.115.com/" "%s"' \
-                % (tlimit, infos['name'], infos['dir_'],\
+                % (quiet, taria2c, tlimit, infos['name'], infos['dir_'],\
                     headers['User-Agent'], infos['dlink'])
         else:
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
@@ -413,10 +416,12 @@ def main(argv):
         description='download from 115.com reversely')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
-    p.add_argument('-a', '--aria2c', action='store_true', \
-        help='download with aria2c')
+    p.add_argument('-a', '--aria2c', action='store', default=None, \
+        type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', \
         help='play with mpv')
+    p.add_argument('-q', '--quiet', action='store_true', \
+                   help='quiet for download and play')
     p.add_argument('-f', '--from_', action='store', \
         default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')

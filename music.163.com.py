@@ -55,9 +55,9 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://music.163.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) \
-        AppleWebKit/537.36 (KHTML, like Gecko) \
-        Chrome/40.0.2214.91 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) " \
+        "AppleWebKit/537.36 (KHTML, like Gecko) " \
+        "Chrome/40.0.2214.91 Safari/537.36"
 }
 
 ss = requests.session()

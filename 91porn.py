@@ -77,7 +77,10 @@ class nrop19(object):
                         'dir_': os.getcwd(),
                         'dlink': dlink
                     }
-                    self.download(infos)
+                    if not args.url:
+                        self.download(infos)
+                    else:
+                        print dlink
                 else:
                     print s % (1, 91, '  Error at get(apiurl)')
             else:
@@ -144,5 +147,7 @@ if __name__ == '__main__':
                 help='download with aria2c')
     p.add_argument('-p', '--play', action='store_true', \
                 help='play with mpv')
+    p.add_argument('-u', '--url', action='store_true', \
+                help='print download_url without download')
     args = p.parse_args()
     main(args.url)

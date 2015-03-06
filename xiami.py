@@ -114,7 +114,7 @@ def z_index(song_infos):
 
 class xiami(object):
     def __init__(self):
-        self.dir_ = os.getcwd().decode('utf8')
+        self.dir_ = os.getcwdu()
         self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
 
         self.collect_id = ''
@@ -190,8 +190,8 @@ class xiami(object):
             "notKeepLogin": "",
             "appName": "xiami",
             "appEntrance": "taobao",
-            "cssLink": "https://h.alipayobjects.com/static/applogin/\
-                        assets/login/mini-login-form-min.css",
+            "cssLink": "https://h.alipayobjects.com/static/applogin/" \
+                        "assets/login/mini-login-form-min.css",
             "styleType": "vertical",
             "bizParams": "",
             "notLoadSsoView": "true",
@@ -226,8 +226,8 @@ class xiami(object):
                 if 'titleMsg' not in j['content']['data']: continue
                 err_msg = j['content']['data']['titleMsg']
                 if err_msg == u'请输入验证码' or err_msg == u'验证码错误，请重新输入':
-                    captcha_url = 'http://pin.aliyun.com/get_img?\
-                        identity=passport.alipay.com&sessionID=%s' % data['cid']
+                    captcha_url = 'http://pin.aliyun.com/get_img?' \
+                        'identity=passport.alipay.com&sessionID=%s' % data['cid']
                     tr = ss.get(captcha_url, headers=theaders)
                     path = os.path.join(os.path.expanduser('~'), 'vcode.jpg')
                     with open(path, 'w') as g:
@@ -281,7 +281,7 @@ class xiami(object):
                     t = j['location']
                 else:
                     url = 'http://www.xiami.com/song/playlist/id/%s'
-                    cn = ss.get(url % id_).content
+                    cn = ss.get(url % id_).text
                     t = re.search(r'location>(.+?)</location', cn).group(1)
                 if not t: return None
                 row = t[0]
@@ -351,9 +351,9 @@ class xiami(object):
 
     def get_disc_description(self, album_url, info):
         if not self.html:
-            self.html = ss.get(album_url).content
+            self.html = ss.get(album_url).text
             t = re.findall(re_disc_description, self.html)
-            t = dict([(a, modificate_text(parser.unescape(b.decode('utf8')))) \
+            t = dict([(a, modificate_text(parser.unescape(b))) \
                       for a, b in t])
             self.disc_description_archives = dict(t)
         if self.disc_description_archives.has_key(info['cd_serial']):
@@ -397,7 +397,7 @@ class xiami(object):
 
             elif '/artist/' in url or 'i.xiami.com' in url:
                 def get_artist_id(url):
-                    html = ss.get(url).content
+                    html = ss.get(url).text
                     artist_id = re.search(r'artist_id = \'(\d+)\'', html).group(1)
                     return artist_id
 
@@ -436,8 +436,8 @@ class xiami(object):
                 elif code == 'c':
                     self.download_user_songs(url_recent, u'最近在听的歌曲')
                 elif code == 's':
-                    url_shares = 'http://www.xiami.com\
-                        /space/feed/u/%s/type/3/page/%s' % (self.user_id, '%s')
+                    url_shares = 'http://www.xiami.com' \
+                        '/space/feed/u/%s/type/3/page/%s' % (self.user_id, '%s')
                     self.download_user_shares(url_shares)
                 elif code == 'rm':
                     #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
@@ -459,12 +459,12 @@ class xiami(object):
             elif '/genre/' in url:
                 if '/gid/' in url:
                     self.genre_id = re.search(r'/gid/(\d+)', url).group(1)
-                    url_genre = 'http://www.xiami.com\
-                        /genre/songs/gid/%s/page/%s'
+                    url_genre = 'http://www.xiami.com' \
+                        '/genre/songs/gid/%s/page/%s'
                 elif '/sid/' in url:
                     self.genre_id = re.search(r'/sid/(\d+)', url).group(1)
-                    url_genre = 'http://www.xiami.com\
-                        /genre/songs/sid/%s/page/%s'
+                    url_genre = 'http://www.xiami.com' \
+                        '/genre/songs/sid/%s/page/%s'
                 else:
                     print s % (1, 91, '  !! Error: missing genre id at url')
                     sys.exit(1)
@@ -480,29 +480,25 @@ class xiami(object):
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
     def get_songs(self, album_id, song_id=None):
-        html = ss.get(url_album % album_id).content
+        html = ss.get(url_album % album_id).text
         html = html.split('<div id="wall"')[0]
         html1, html2 = html.split('<div id="album_acts')
 
-        t = re.search(
-            r'"v:itemreviewed">(.+?)<', html1
-        ).group(1).decode('utf8', 'ignore')
+        t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
         album_name = modificate_text(t)
 
-        t = re.search(
-            r'"/artist/\d+.+?>(.+?)<', html1
-        ).group(1).decode('utf8', 'ignore')
+        t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1)
         artist_name = modificate_text(t)
 
-        t = re.findall(r'(\d+)年(\d+)月(\d+)', html1)[0]
-        year = '-'.join(t).decode('utf8', 'ignore')
+        t = re.findall(u'(\d+)年(\d+)月(\d+)', html1)[0]
+        year = '-'.join(t)
 
         album_description = ''
-        t = re.search(
-            r'专辑介绍：(.+?)<div class="album_intro_toggle">', html2, re.DOTALL)
+        t = re.search(u'专辑介绍：(.+?)<div class="album_intro_toggle">',
+                      html2, re.DOTALL)
         if t:
             t = t.group(1)
-            t = re.sub(r'<.+?>', '', t).decode('utf8', 'ignore')
+            t = re.sub(r'<.+?>', '', t)
             t = parser.unescape(t)
             t = parser.unescape(t)
             t = re.sub(r'\s\s+', u'\n', t).strip()
@@ -514,24 +510,22 @@ class xiami(object):
         t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
         tt = t.rfind('.')
         t = '%s_4%s' % (t[:tt], t[tt:])
-        album_pic_url = t.decode('utf8', 'ignore')
+        album_pic_url = t
 
         songs = []
         for c in html2.split('class="trackname"')[1:]:
-            disc = re.search(
-                r'>disc (\d+)', c).group(1).decode('utf8', 'ignore')
+            disc = re.search(r'>disc (\d+)', c).group(1)
 
             t = re.search(r'>disc .+?\[(.+?)\]', c)
-            disc_description = modificate_text(
-                t.group(1).decode('utf8', 'ignore')) if t else ''
+            disc_description = modificate_text(t.group(1)) if t else ''
 
             t = re.findall(r'"trackid">(\d+)', c)
-            tracks = [i.lstrip('0').decode('utf8', 'ignore') for i in t]
+            tracks = [i.lstrip('0') for i in t]
             z = len(str(len(tracks)))
 
             t = re.findall(r'<a href="/song/(\d+)" .+?>(.+?)</', c)
-            song_ids = [i[0].decode('utf8', 'ignore') for i in t]
-            song_names = [modificate_text(i[1].decode('utf8', 'ignore')) \
+            song_ids = [i[0] for i in t]
+            song_names = [modificate_text(i[1]) \
                           for i in t]
 
             if len(tracks) != len(song_ids) != len(song_names):
@@ -542,7 +536,7 @@ class xiami(object):
             for i in xrange(len(tracks)):
                 song_info = {}
                 song_info['song_id'] = song_ids[i]
-                song_info['album_id'] = album_id.decode('utf8', 'ignore')
+                song_info['album_id'] = album_id
                 song_info['song_url'] = u'http://www.xiami.com/song/' \
                                         + song_ids[i]
                 song_info['track'] = tracks[i]
@@ -585,7 +579,7 @@ class xiami(object):
         return songs
 
     def get_song(self, song_id):
-        html = ss.get(url_song % song_id).content
+        html = ss.get(url_song % song_id).text
         html = html.split('<div id="wall"')[0]
         t = re.search(r'album/(\d+)', html)
         if t:
@@ -607,7 +601,7 @@ class xiami(object):
         song = songs[0]
 
         d = song['album_name'] + ' - ' + song['artist_name']
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
         amount_songs = unicode(len(songs))
@@ -617,12 +611,11 @@ class xiami(object):
         self.download(songs, amount_songs, args.from_)
 
     def download_collect(self):
-        html = ss.get(url_collect % self.collect_id).content
+        html = ss.get(url_collect % self.collect_id).text
         html = html.split('<div id="wall"')[0]
-        collect_name = re.search(
-            r'<h2>(.+?)<', html).group(1).decode('utf8')
+        collect_name = re.search(r'<h2>(.+?)<', html).group(1)
         d = collect_name
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         song_ids = re.findall('/song/(\d+)" title', html)
         amount_songs = unicode(len(song_ids))
@@ -642,7 +635,7 @@ class xiami(object):
         album_ids = []
         while True:
             html = ss.get(
-                url_artist_albums % (self.artist_id, str(ii))).content
+                url_artist_albums % (self.artist_id, str(ii))).text
             t = re.findall(r'/album/(\d+)"', html)
             if album_ids == t: break
             album_ids = t
@@ -658,13 +651,12 @@ class xiami(object):
             ii += 1
 
     def download_artist_top_20_songs(self):
-        html = ss.get(url_artist_top_song % self.artist_id).content
+        html = ss.get(url_artist_top_song % self.artist_id).text
         song_ids = re.findall(r'/song/(.+?)" title', html)
         artist_name = re.search(
-            r'<p><a href="/artist/\d+">(.+?)<', html
-        ).group(1).decode('utf8', 'ignore')
+            r'<p><a href="/artist/\d+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - top 20')
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         amount_songs = unicode(len(song_ids))
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
@@ -678,20 +670,18 @@ class xiami(object):
             n += 1
 
     def download_artist_radio(self):
-        html = ss.get(url_artist_top_song % self.artist_id).content
+        html = ss.get(url_artist_top_song % self.artist_id).text
         artist_name = re.search(
-            r'<p><a href="/artist/\d+">(.+?)<', html
-        ).group(1).decode('utf8', 'ignore')
-
+            r'<p><a href="/artist/\d+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - radio')
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
         url_artist_radio = "http://www.xiami.com/radio/xml/type/5/id/%s" \
             % self.artist_id
         n = 1
         while True:
-            xml = ss.get(url_artist_radio).content
+            xml = ss.get(url_artist_radio).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -701,13 +691,13 @@ class xiami(object):
                 n += 1
 
     def download_user_songs(self, url, desc):
-        dir_ = os.path.join(os.getcwd().decode('utf8'),
+        dir_ = os.path.join(os.getcwdu(),
             u'虾米用户 %s %s' % (self.user_id, desc))
         self.dir_ = modificate_file_name_for_wget(dir_)
         ii = 1
         n = 1
         while True:
-            html = ss.get(url % (self.user_id, str(ii))).content
+            html = ss.get(url % (self.user_id, str(ii))).text
             song_ids = re.findall(r'/song/(.+?)"', html)
             if song_ids:
                 for i in song_ids:
@@ -722,11 +712,11 @@ class xiami(object):
 
     def download_user_shares(self, url_shares):
         d = modificate_text(u'%s 的分享' % self.user_id)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         page = 1
         while True:
-            html = ss.get(url_shares % page).content
+            html = ss.get(url_shares % page).text
             shares = re.findall(r'play.*\(\'\d+\'\)', html)
             for share in shares:
                 if 'album' in share:
@@ -740,11 +730,11 @@ class xiami(object):
 
     def download_user_radio(self, url_rndsongs):
         d = modificate_text(u'%s 的虾米推荐' % self.user_id)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
         n = 1
         while True:
-            xml = ss.get(url_rndsongs % self.user_id).content
+            xml = ss.get(url_rndsongs % self.user_id).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -755,18 +745,15 @@ class xiami(object):
 
     def download_chart(self, type_):
         html = ss.get('http://www.xiami.com/chart/index/c/%s' \
-                      % self.chart_id).content
-        title = re.search(
-            r'<title>(.+?)</title>', html
-        ).group(1).decode('utf8', 'ignore')
+                      % self.chart_id).text
+        title = re.search(r'<title>(.+?)</title>', html).group(1)
         d = modificate_text(title)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
         html = ss.get(
             'http://www.xiami.com/chart/data?c=%s&limit=200&type=%s' \
-            % (self.chart_id, type_)
-        ).content
+            % (self.chart_id, type_)).text
         song_ids = re.findall(r'/song/(\d+)', html)
         n = 1
         for i in song_ids:
@@ -777,19 +764,17 @@ class xiami(object):
             n += 1
 
     def download_genre(self, url_genre):
-        html = ss.get(url_genre % (self.genre_id, 1)).content
+        html = ss.get(url_genre % (self.genre_id, 1)).text
         if '/gid/' in url_genre:
             t = re.search(
                 r'/genre/detail/gid/%s".+?title="(.+?)"' \
-                % self.genre_id, html
-            ).group(1).decode('utf8', 'ignore')
+                % self.genre_id, html).group(1)
         elif '/sid/' in url_genre:
             t = re.search(
                 r'/genre/detail/sid/%s" title="(.+?)"' \
-                % self.genre_id, html
-            ).group(1).decode('utf8', 'ignore')
+                % self.genre_id, html).group(1)
         d = modificate_text(u'%s - 代表曲目 - xiami' % t)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
         n = 1
@@ -803,32 +788,30 @@ class xiami(object):
                 self.html = ''
                 self.disc_description_archives = {}
                 n += 1
-            html = ss.get(url_genre % (self.chart_id, page)).content
+            html = ss.get(url_genre % (self.chart_id, page)).text
             page += 1
 
     def download_genre_radio(self, url_genre):
-        html = ss.get(url_genre % (self.genre_id, 1)).content
+        html = ss.get(url_genre % (self.genre_id, 1)).text
         if '/gid/' in url_genre:
             t = re.search(
                 r'/genre/detail/gid/%s".+?title="(.+?)"' \
-                % self.genre_id, html
-            ).group(1).decode('utf8', 'ignore')
+                % self.genre_id, html).group(1)
             url_genre_radio = "http://www.xiami.com/radio/xml/type/12/id/%s" \
                 % self.genre_id
         elif '/sid/' in url_genre:
             t = re.search(
                 r'/genre/detail/sid/%s" title="(.+?)"' \
-                % self.genre_id, html
-            ).group(1).decode('utf8', 'ignore')
+                % self.genre_id, html).group(1)
             url_genre_radio = "http://www.xiami.com/radio/xml/type/13/id/%s" \
                 % self.genre_id
         d = modificate_text(u'%s - radio - xiami' % t)
-        dir_ = os.path.join(os.getcwd().decode('utf8'), d)
+        dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
         n = 1
         while True:
-            xml = ss.get(url_genre_radio).content
+            xml = ss.get(url_genre_radio).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -871,8 +854,8 @@ class xiami(object):
             cmd = 'mpv --really-quiet ' \
                 '--cache 8146 ' \
                 '--user-agent "%s" ' \
-                '--http-header-fields="Referer:http://img.xiami.com\
-                /static/swf/seiya/1.4/player.swf?v=%s" ' \
+                '--http-header-fields="Referer:http://img.xiami.com' \
+                '/static/swf/seiya/1.4/player.swf?v=%s" ' \
                 '"%s"' \
                 % (headers['User-Agent'], int(time.time()*1000), durl)
             os.system(cmd)
@@ -883,9 +866,9 @@ class xiami(object):
             else:
                 pass
 
-    def download(self, songs, amount_songs=u'1', n=None):
+    def download(self, songs, amount_songs=u'1', n=1):
         dir_ = modificate_file_name_for_wget(self.dir_)
-        cwd = os.getcwd().decode('utf8')
+        cwd = os.getcwd()
         if dir_ != cwd:
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
@@ -930,8 +913,8 @@ class xiami(object):
                 file_name_for_wget = file_name.replace('`', '\`')
                 cmd = 'wget -c -T 5 -nv ' \
                     '-U "%s" ' \
-                    '--header "Referer:http://img.xiami.com\
-                    /static/swf/seiya/1.4/player.swf?v=%s" ' \
+                    '--header "Referer:http://img.xiami.com' \
+                    '/static/swf/seiya/1.4/player.swf?v=%s" ' \
                     '-O "%s.tmp" %s' \
                     % (headers['User-Agent'], int(time.time()*1000),
                        file_name_for_wget, durl)
