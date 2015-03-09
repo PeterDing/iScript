@@ -1082,6 +1082,8 @@
 
     \# pn 是91porn.py的马甲 (alias pn='python2 /path/to/91porn.py')
 
+    下载：
+
         pn url # 91porn.com(或其镜像) 视频的url
 
     播放:
