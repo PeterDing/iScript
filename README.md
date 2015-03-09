@@ -1,7 +1,5 @@
 ## iScript
 
-包含项目:
-
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
 > ***windows用户可在babun (https://github.com/babun/babun) 下运行。***

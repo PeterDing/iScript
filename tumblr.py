@@ -183,7 +183,7 @@ class tumblr(object):
             col = s % (1, num + 90, i['filepath'])
             print '  ++ download: %s' % col
             cmd = [
-                'wget', '-c', '-q',
+                'wget', '-c', '-q', '-o', '/dev/null',
                 '-O', '%s.tmp' % i['filepath'],
                 '--user-agent', '"%s"' % headers['User-Agent'],
                 '%s' % i['durl']
