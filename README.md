@@ -570,11 +570,13 @@
 
     magnet 和 torrent 的相互转换
 
-    ~~过滤敏.感.词功能用于净网时期的 baidu, xunlei~~
+    过滤敏.感.词功能用于净网时期的 baidu, xunlei
 
-    **8.30日后，无法使用。 见 http://tieba.baidu.com/p/3265467666**
+    ~~8.30日后，无法使用。 见 http://tieba.baidu.com/p/3265467666~~
 
-    ~~**!! 注意：过滤后生成的torrent在百度网盘只能用一次，如果需要再次使用，则需用 -n 改顶层目录名**~~
+    [**百度云疑似解封，百度网盘内八秒视频部分恢复**](http://fuli.ba/baiduyunhuifuguankan.html)
+
+    **!! 注意：过滤后生成的torrent在百度网盘只能用一次，如果需要再次使用，则需用 -n 改顶层目录名**
 
     磁力连接转种子，用的是
 
