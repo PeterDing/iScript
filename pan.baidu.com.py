@@ -1670,6 +1670,7 @@ class panbaiducom_HOME(object):
                     if not warn('play', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     self._download_do = self._play_do
+                    args.play = True
                     self.download(paths)
                 elif comd == 'rnr' or comd == 'rnre':
                     if len(pipe) < 3:
@@ -1718,7 +1719,7 @@ class panbaiducom_HOME(object):
 
     def _ls_display(self, infos, dir_=None):
         if dir_:
-            print dir_ + ':'
+            print (dir_ + ':').encode('utf8')
             for info in infos:
                 self._find_display(info)
             print ''
@@ -1746,9 +1747,9 @@ class panbaiducom_HOME(object):
                 directorys[y:y] = subdirs
                 y += 1
 
-        if args.type_ == 'du': print 'd', s % (
-            1, 91, sizeof_fmt(sum_size)
-        ), sum_size, directorys[0]
+        if args.type_ == 'du':
+            print 'd', s % ( 1, 91, sizeof_fmt(sum_size)), \
+                sum_size, directorys[0]
 
     def ls(self, order, desc, paths):
         for path in paths:

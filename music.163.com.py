@@ -102,8 +102,6 @@ class neteaseMusic(object):
         self.url = url
         self.song_infos = []
         self.dir_ = os.getcwd().decode('utf8')
-        self.template_wgets = 'wget -c -T 5 -nv -U "%s" -O' \
-            % headers['User-Agent'] + ' "%s.tmp" %s'
 
         self.playlist_id = ''
         self.dj_id = ''
@@ -371,9 +369,11 @@ class neteaseMusic(object):
 
     def play(self, amount_songs, n=None):
         for i in self.song_infos:
-            durl = i['durl']
+            r = ss.get(i['durl'], allow_redirects=False)
+            real_durl = r.headers['location']
             self.display_infos(i)
-            os.system('mpv --really-quiet --audio-display no %s' % durl)
+            cmd = 'mpv --really-quiet --audio-display no "%s"' % real_durl
+            os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
             if ii:
@@ -405,7 +405,6 @@ class neteaseMusic(object):
             if not args.undownload:
                 q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
                 mp3_quality = q[i['mp3_quality']]
-                durl = i['durl']
                 if n == None:
                     print(u'\n  ++ 正在下载: #%s/%s# %s\n' \
                           u'  ++ mp3_quality: %s' \
@@ -416,16 +415,18 @@ class neteaseMusic(object):
                           u'  ++ mp3_quality: %s' \
                         % (n, amount_songs, col,
                            s % (1, 91, mp3_quality)))
-                wget = self.template_wgets \
-                    % (file_name_for_wget, durl)
-                wget = wget.encode('utf8')
-                status = os.system(wget)
+
+                r = ss.get(i['durl'], allow_redirects=False)
+                real_durl = r.headers['location']
+                cmd = 'wget -c -nv -O "%s.tmp" %s' % (file_name_for_wget, real_durl)
+                cmd = cmd.encode('utf8')
+                status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
                     wget_exit_status_info = wget_es[status]
                     print('\n\n ----###   \x1b[1;91mERROR\x1b[0m ==> \x1b[1;91m%d ' \
                         '(%s)\x1b[0m   ###--- \n\n' \
                           % (status, wget_exit_status_info))
-                    print s % (1, 91, '  ===> '), wget
+                    print s % (1, 91, '  ===> '), cmd
                     sys.exit(1)
                 else:
                     os.rename('%s.tmp' % file_name, file_name)

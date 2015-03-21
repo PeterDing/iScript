@@ -39,8 +39,8 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"https://api.tumblr.com/console//calls/blog/posts",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 \
-        (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 " \
+        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
 }
 
 ss = requests.session()

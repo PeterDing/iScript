@@ -441,11 +441,11 @@ def main(argv):
             account = raw_input(s % (1, 97, ' account: '))
             password = getpass(s % (1, 97, 'password: '))
         elif len(xxx[1:]) == 1:
-            account = xxx[0]
+            account = xxx[1]
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx[1:]) == 2:
-            account = xxx[0]
-            password = xxx[1]
+            account = xxx[1]
+            password = xxx[2]
         else:
             print s % (1, 91, '  login\n  login account\n  \
                                  login account password')
