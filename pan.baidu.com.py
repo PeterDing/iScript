@@ -2500,11 +2500,7 @@ class panbaiducom_HOME(object):
             return ENoError
 
     def share(self, paths, pwd):
-        for path in paths:
-            path = [path]
-            self._share(path, pwd)
-
-
+        self._share(paths, pwd)
 
 class panbaiducom(object):
     @staticmethod
@@ -2795,6 +2791,10 @@ def main(argv):
                 '  u localpath1 localpath2 .. remotepath')
             sys.exit(1)
         global px
+
+        # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
+        requests.packages.urllib3.disable_warnings()
+
         px = panbaiducom_HOME()
         px.init()
         px.upload(xxx[:-1], xxx[-1])
