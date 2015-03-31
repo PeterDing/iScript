@@ -3,7 +3,6 @@
 
 import os
 import sys
-from getpass import getpass
 import requests
 from requests_toolbelt import MultipartEncoder
 import urllib
@@ -222,6 +221,7 @@ class panbaiducom_HOME(object):
             return True
 
     def login(self, username, password):
+        from getpass import getpass
         print s % (1, 97, '\n  -- login')
 
         # error_message: at _check_account_exception from
@@ -772,13 +772,20 @@ class panbaiducom_HOME(object):
                 % (quiet, tlimit, infos['file'], infos['dlink'])
 
         status = os.system(cmd)
+        exit = True
+        if 'ie' in args.type_.split(','):
+            if status == 2 and not args.aria2c:
+                pass
+            elif status == (7 << 8) and args.aria2c:
+                pass
+            else:
+                exit = False
         if status != 0:     # other http-errors, such as 302.
-            wget_exit_status_info = wget_es[status]
-            print('\n\n ---###   \x1b[1;91mERROR\x1b[0m ==> '\
-                '\x1b[1;91m%d (%s)\x1b[0m   ###--- \n\n' \
-                 % (status, wget_exit_status_info))
+            #wget_exit_status_info = wget_es[status]
+            print('\n\n ---###   \x1b[1;91mEXIT STATUS\x1b[0m ==> '\
+                '\x1b[1;91m%d\x1b[0m   ###--- \n\n' % status)
             print s % (1, 91, '  ===> '), cmd
-            sys.exit(1)
+            if exit: sys.exit(1)
         else:
             os.rename('%s.tmp' % infos['file'], infos['file'])
 

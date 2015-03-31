@@ -349,6 +349,7 @@
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                             eg:
+                                            d -t ie     # ignore error, 忽略除Ctrl-C以外的下载错误
                                             p -t m3     # 播放流媒体(m3u8)
                                             s -t c      # 连续转存 (如果转存出错，再次运行命令
                                                         # 可以从出错的地方开始，用于转存大量文件时)
