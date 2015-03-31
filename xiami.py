@@ -519,23 +519,30 @@ class xiami(object):
             t = re.search(r'>disc .+?\[(.+?)\]', c)
             disc_description = modificate_text(t.group(1)) if t else ''
 
+            # find track
             t = re.findall(r'"trackid">(\d+)', c)
             tracks = [i.lstrip('0') for i in t]
             z = len(str(len(tracks)))
 
+            # find all song_ids and song_names
             t = re.findall(r'<a href="/song/(\d+)" .+?>(.+?)</', c)
             song_ids = [i[0] for i in t]
             song_names = [modificate_text(i[1]) \
                           for i in t]
 
+            # find count of songs that be played.
+            t = re.findall(r'<td class="song_hot">(.*?)<', c)
+            song_played = [int(i) if i.isdigit() else 0 for i in t]
+
             if len(tracks) != len(song_ids) != len(song_names):
-                print s % (1, 91, '  !! Error: \
-                           len(tracks) != len(song_ids) != len(song_names)')
+                print s % (1, 91, '  !! Error: ' \
+                           'len(tracks) != len(song_ids) != len(song_names)')
                 sys.exit(1)
 
             for i in xrange(len(tracks)):
                 song_info = {}
                 song_info['song_id'] = song_ids[i]
+                song_info['song_played'] = song_played[i]
                 song_info['album_id'] = album_id
                 song_info['song_url'] = u'http://www.xiami.com/song/' \
                                         + song_ids[i]
@@ -840,6 +847,8 @@ class xiami(object):
             return 'l'
 
     def play(self, songs, nn=u'1', n=1):
+        if args.play == 2:
+            songs = sorted(songs, key=lambda k: k['song_played'], reverse=True)
         for i in songs:
             self.record(i['song_id'])
             durl = self.get_durl(i['song_id'])
@@ -996,7 +1005,7 @@ def main(argv):
     p = argparse.ArgumentParser(description='downloading any xiami.com')
     p.add_argument('xxx', type=str, nargs='*', \
         help='命令对象.')
-    p.add_argument('-p', '--play', action='store_true', \
+    p.add_argument('-p', '--play', action='count', \
         help='play with mpv')
     p.add_argument('-l', '--low', action='store_true', \
         help='low mp3')
@@ -1052,7 +1061,7 @@ def main(argv):
 
     elif comd == 'd' or comd == 'download' \
         or comd == 'p' or comd == 'play':
-        if comd == 'p' or comd == 'play': args.play = True
+        if not args.play: args.play = 1
         urls = xxx
         x = xiami()
         x.init()

@@ -82,7 +82,8 @@
 
     参数:
 
-        -p, --play                 play with mpv
+        -p, --play                 按顺序播放
+        -pp                        按歌曲被播放的次数，从高到低播放
         -l, --low                  低品质mp3
         -d, --undescription        不加入disk的描述
         -f num, --from_ num        从第num个开始
