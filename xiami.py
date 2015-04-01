@@ -1059,8 +1059,13 @@ def main(argv):
         g = open(cookie_file, 'w')
         g.close()
 
-    elif comd == 'd' or comd == 'download' \
-        or comd == 'p' or comd == 'play':
+    elif comd == 'd' or comd == 'download':
+        urls = xxx
+        x = xiami()
+        x.init()
+        x.url_parser(urls)
+
+    elif comd == 'p' or comd == 'play':
         if not args.play: args.play = 1
         urls = xxx
         x = xiami()
