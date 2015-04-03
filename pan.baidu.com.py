@@ -221,7 +221,6 @@ class panbaiducom_HOME(object):
             return True
 
     def login(self, username, password):
-        from getpass import getpass
         print s % (1, 97, '\n  -- login')
 
         # error_message: at _check_account_exception from
@@ -340,44 +339,39 @@ class panbaiducom_HOME(object):
         """
 
         # for shuffle
-        if 's' in args.type_.split(','):
+        if 's' in args.type_:
             random.shuffle(fileslist)
             return fileslist
 
-        def sort(reverse, arg, fileslist=fileslist):
-            tdict = {fileslist[i][arg] : i for i in xrange(len(fileslist))}
-            keys = tdict.keys()
-            keys.sort(reverse=reverse)
-            indexs = [tdict[i] for i in keys]
-            fileslist = [fileslist[i] for i in indexs]
-            return fileslist
-
         # for time
-        if arguments.get('name'):
+        elif arguments.get('name'):
             reverse = None
             if arguments['name'] == 'reverse':
                 reverse = True
             elif arguments['name'] == 'no_reverse':
                 reverse = False
-            fileslist = sort(reverse, 'server_filename')
+            fileslist = sorted(fileslist, key=lambda k: k['server_filename'],
+                               reverse=reverse)
 
         # for size
-        if arguments.get('size'):
+        elif arguments.get('size'):
             reverse = None
             if arguments['size'] == 'reverse':
                 reverse = True
             elif arguments['size'] == 'no_reverse':
                 reverse = False
-            fileslist = sort(reverse, 'size')
+            fileslist = sorted(fileslist, key=lambda k: k['size'],
+                               reverse=reverse)
 
         # for time
-        if arguments.get('time'):
+        elif arguments.get('time'):
             reverse = None
             if arguments['time'] == 'reverse':
                 reverse = True
             elif arguments['time'] == 'no_reverse':
                 reverse = False
-            fileslist = sort(reverse, 'server_mtime')
+            fileslist = sorted(fileslist, key=lambda k: k['server_mtime'],
+                               reverse=reverse)
 
         # for head, tail, include, exclude
         heads = args.heads
@@ -437,7 +431,6 @@ class panbaiducom_HOME(object):
 
         dirs = [i for i in fileslist if i['isdir']]
         t, tt = [], []
-        args.type_ = args.type_ if args.type_ else ''
         if 'e' in args.type_:
             for i in dirs:
                 d = i['path'].encode('utf8')
@@ -446,16 +439,16 @@ class panbaiducom_HOME(object):
                     t.append(i)
                 else:
                     tt.append(i)
-        if 'e' in args.type_.split(','): dirs = t
-        if 'ne' in args.type_.split(','): dirs = tt
+        if 'e' in args.type_: dirs = t
+        if 'ne' in args.type_: dirs = tt
         files = [i for i in fileslist if not i['isdir']]
         if arguments.get('desc') == 1:
             dirs.reverse()
             files.reverse()
 
-        if 'f' in args.type_.split(','):
+        if 'f' in args.type_:
             fileslist = files
-        elif 'd' in args.type_.split(','):
+        elif 'd' in args.type_:
             fileslist = dirs
         else:
             fileslist = dirs + files
@@ -673,7 +666,7 @@ class panbaiducom_HOME(object):
                                         and os.path.splitext(
                                             i['server_filename']
                                         )[-1].lower() in mediatype]
-                                if 's' in args.type_.split(','):
+                                if 's' in args.type_:
                                     j['list'] = self._sift(j['list'])
 
                             if args.heads or args.tails or args.includes \
@@ -705,7 +698,7 @@ class panbaiducom_HOME(object):
                                     'dir_': os.path.split(t)[0],
                                     'dlink': i['dlink'].encode('utf8'),
                                     'm3u8': self._get_m3u8(i) \
-                                        if 'm3' in args.type_.split(',') else None,
+                                        if 'm3' in args.type_ else None,
                                     'name': i['server_filename'].encode('utf8'),
                                     'size': i['size'],
                                     'nn': nn,
@@ -724,7 +717,7 @@ class panbaiducom_HOME(object):
                         'dir_': os.path.split(t)[0],
                         #'dlink': self._get_dlink(meta['info'][0]),
                         'm3u8': self._get_m3u8(meta['info'][0]) \
-                            if 'm3' in args.type_.split(',') else None,
+                            if 'm3' in args.type_ else None,
                         'dlink': meta['info'][0]['dlink'].encode('utf8'),
                         'name': meta['info'][0]['server_filename'].encode('utf8'),
                         'size': meta['info'][0]['size'],
@@ -773,7 +766,7 @@ class panbaiducom_HOME(object):
 
         status = os.system(cmd)
         exit = True
-        if 'ie' in args.type_.split(','):
+        if 'ie' in args.type_:
             if status == 2 and not args.aria2c:
                 pass
             elif status == (7 << 8) and args.aria2c:
@@ -1048,7 +1041,7 @@ class panbaiducom_HOME(object):
                 'remotepaths': set()
             }
 
-        if args.type_ and 'e' in args.type_:
+        if 'e' in args.type_:
             path = os.path.join(rpath, os.path.basename(lpath))
             meta = self._meta([path])
             if meta:
@@ -1144,7 +1137,7 @@ class panbaiducom_HOME(object):
                         print s % (1, 92, '  |-- RapidUpload: Success.\n')
                         break
                     else:
-                        if args.type_ and 'r' in args.type_.split(','):   # only rapidupload
+                        if 'r' in args.type_:   # only rapidupload
                             print s % (1, 91, '  |-- can\'t be RapidUploaded\n')
                             break
                         print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
@@ -1330,7 +1323,7 @@ class panbaiducom_HOME(object):
 
     def save_share(self, url, remotepath, infos=None):
         infos = self._get_share_infos(url, remotepath, infos)
-        if args.type_ == 'c':
+        if 'c' in args.type_:
             save_share_datas = {}
             if os.path.exists(save_share_path):
                 f = open(save_share_path, 'rb')
@@ -1361,7 +1354,7 @@ class panbaiducom_HOME(object):
                     print s % (1, 91, '  !! Error at save_share, errno:'), result
                     time.sleep(5)
 
-            if args.type_ == 'c':
+            if 'c' in args.type_:
                 save_share_datas[url] = infos
                 self.save_datas(save_share_path, save_share_datas)
 
@@ -1590,10 +1583,10 @@ class panbaiducom_HOME(object):
         return t
 
     def _find_display(self, info):
-        if 'f' in args.type_.split(','):
+        if 'f' in args.type_:
             if info['isdir']:
                 return
-        elif 'd' in args.type_.split(','):
+        elif 'd' in args.type_:
             if not info['isdir']:
                 return
         else:
@@ -1703,7 +1696,7 @@ class panbaiducom_HOME(object):
                 else:
                     print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
 
-        if 'all' in args.type_.split(','):
+        if 'all' in args.type_:
             for user in self.accounts:
                 cookie = self.accounts[user]['cookies']
                 ss.cookies.clear()
@@ -1745,7 +1738,7 @@ class panbaiducom_HOME(object):
             if args.heads or args.tails or args.includes or args.excludes \
                     or args.type_:
                 tinfos = self._sift(infos)
-            if args.type_ != 'du':
+            if 'du' not in args.type_:
                 self._ls_display(tinfos, dir_)
             else:
                 sum_size += sum([i['size'] for i in tinfos])
@@ -1754,7 +1747,7 @@ class panbaiducom_HOME(object):
                 directorys[y:y] = subdirs
                 y += 1
 
-        if args.type_ == 'du':
+        if 'du' in args.type_:
             print 'd', s % ( 1, 91, sizeof_fmt(sum_size)), \
                 sum_size, directorys[0]
 
@@ -1765,7 +1758,7 @@ class panbaiducom_HOME(object):
                 if meta['info'][0]['isdir']:
                     self._ls_directory(order, desc, path)
                 else:
-                    if args.type_ == 'du': args.view = True
+                    if 'du' in args.type_: args.view = True
                     self._ls_display(meta['info'][0])
             else:
                 print s % (1, 91, '  !! path is not existed.\n'), \
@@ -1912,7 +1905,7 @@ class panbaiducom_HOME(object):
             if args.recursive and info['isdir']: continue
 
             base_dir, old_filename = os.path.split(info['path'])
-            if 'bd64' in args.type_.split(','):
+            if 'bd64' in args.type_:
                 told_filename, ext = os.path.splitext(old_filename)
                 if not told_filename.endswith('.base64'): continue
                 codestr = told_filename[:-7]
@@ -1972,9 +1965,9 @@ class panbaiducom_HOME(object):
             print s % (1, 92, '  ++ aborted.')
 
     def _rmcre_do(self, type, infos, todir=None):
-        if 'd' in args.type_.split(','):
+        if 'd' in args.type_:
             infos = [i for i in infos if i['isdir']]
-        if 'f' in args.type_.split(','):
+        if 'f' in args.type_:
             infos = [i for i in infos if not i['isdir']]
 
         if not infos: return
@@ -2093,7 +2086,7 @@ class panbaiducom_HOME(object):
             return j['magnet_info'], ''
 
     def _get_selected_idx(self, infos):
-        types = args.type_.split(',')
+        types = args.type_
         if not args.type_: return []
         #if 'a' in types: return [str(i+1) for i in xrange(len(infos))]
         if 'a' in types: return []
@@ -2711,8 +2704,12 @@ def main(argv):
     global VERIFY
     comd = argv[1]
     args = p.parse_args(argv[2:])
+    if args.type_:
+        args.type_ = args.type_.split(',')
+    else:
+        args.type_ = []
     VERIFY = args.VERIFY
-    if (comd == 'rnr' or comd == 'rnre') and 'bd64' not in args.type_.split(','):
+    if (comd == 'rnr' or comd == 'rnre') and 'bd64' not in args.type_:
         if len(argv[2:]) < 3:
             print s % (1, 91, "  !! 参数错误\n rnr foo bar /path/to")
             sys.exit(1)
@@ -2723,6 +2720,7 @@ def main(argv):
     #######################################################
 
     if comd == 'login' or comd == 'g':
+        from getpass import getpass
         x = panbaiducom_HOME()
 
         if len(xxx) < 1:
@@ -2987,7 +2985,7 @@ def main(argv):
         elif comd == 'l' or comd == 'ln':
             x.ls('name', None, xxx)
         elif comd == 'du':
-            args.type_ = 'du'
+            args.type_.append('du')
             x.ls('name', None, xxx)
         elif comd == 'll' or comd == 'lnn':
             x.ls('name', 1, xxx)
@@ -3012,8 +3010,7 @@ def main(argv):
                 sys.exit(1)
 
         if args.recursive \
-                and (not 'f' in args.type_.split(',') \
-                    and not 'd' in args.type_.split(',')):
+                and (not 'f' in args.type_ and not 'd' in args.type_):
             print s % (1, 91, '  !! you don\'t choose "-t f" or "-t d", it will delete all files and directorys matched.')
             ipt = raw_input(s % (1, 93, '  are your sure? [y/N] '))
             if ipt != 'y':
@@ -3021,7 +3018,7 @@ def main(argv):
                 sys.exit()
 
         if comd == 'rnr' or comd == 'rnre':
-            if 'bd64' in args.type_.split(','):
+            if 'bd64' in args.type_:
                 foo, bar = '', ''
                 dirs = xxx
             else:
@@ -3090,7 +3087,7 @@ def main(argv):
                 ' a url1 url2 .. [directory] [-t {m,d,p,a}]')
             sys.exit(1)
 
-        args.type_ = 'm' if not args.type_ else args.type_  # default args.type_
+        if not args.type_: args.type_.append('m') # default is mediatype
 
         if xxx[-1].startswith('/') and not xxx[0].startswith('/'):
             remotepath = xxx[-1] if xxx[-1][-1] == '/' else xxx[-1] + '/'
