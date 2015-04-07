@@ -2930,7 +2930,7 @@ def handle_command(comd, xxx):
             print s % (1, 91, '  login\n  login username\n  login username password')
 
         xh.login(username, password)
-        result = x.check_login()
+        result = xh.check_login()
         if result:
             xh.save_cookies(username, on=1)
             print s % (1, 92, '  ++ login succeeds.')
