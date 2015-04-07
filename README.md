@@ -187,6 +187,10 @@
 
     **支持加密上传**, 需要 shadowsocks
 
+    **cd, ls 功能完全支持**
+
+    **所有路径可以是 相对路径 或 绝对路径**
+
     他人分享的网盘连接，只支持单个的下载。
 
     下载工具默认为wget, 可用参数-a num选用aria2
@@ -216,7 +220,8 @@
     <a name="cmd"></a>
     命令:
 
-    **!!注意：命令参数中，所有网盘的路径必须是 绝对路径**
+    **!!注意：**
+    **命令参数中，所有网盘的路径和本地路径可以是 相对路径 或 绝对路径**
 
         # 登录
         g
@@ -233,33 +238,44 @@
         # 帐号信息
         user
 
-        p  或 play url1 url2 .. path1 path2 ..               播放
-        u  或 upload localpath remotepath                    上传
-        s  或 save url remotepath [-s secret]                转存
+        # 显示当前工作目录
+        cwd
+
+        # 切换当前工作目录
+        cd path    # 支持 ./../...
+
+        # 播放
+        p  或 play url1 url2 .. path1 path2 ..
+
+        # 上传
+        u  或 upload localpath remotepath
+
+        # 转存
+        s  或 save url remotepath [-s secret]
 
         # 下载
-        d  或 download url1 url2 .. path1 path2 ..           非递归下载 到当前目录(cwd)
-        d  或 download url1 url2 .. path1 path2 .. -R        递归下载 到当前目录(cwd)
+        d  或 download url1 url2 path1 path2           非递归下载 到当前目录(cwd)
+        d  或 download url1 url2 path1 path2 -R        递归下载 到当前目录(cwd)
         # !! 注意:
-        # d /path/to/download -R      递归下载 *download文件夹* 到当前目录(cwd)
-        # d /path/to/download/ -R     递归下载 *download文件夹中的文件* 到当前目录(cwd)
+        # d /path/to/download -R       递归下载 *download文件夹* 到当前目录(cwd)
+        # d /path/to/download/ -R      递归下载 *download文件夹中的文件* 到当前目录(cwd)
 
         # 下载并解密
         d /path/to/download -R -t dc -P password [-m aes-256-cfb]
 
         # 文件操作
-        md 或 mkdir path1 path2 ..                           创建文件夹
-        rn 或 rename path new_path                           重命名
-        rm 或 remove path1 path2 ..                          删除
-        mv 或 move path1 path2 .. /path/to/directory         移动
-        cp 或 copy path /path/to/directory_or_file           复制
-        cp 或 copy path1 path2 .. /path/to/directory         复制
+        md 或 mkdir path1 path2                           创建文件夹
+        rn 或 rename path new_path                        重命名
+        rm 或 remove path1 path2                          删除
+        mv 或 move path1 path2 /path/to/directory         移动
+        cp 或 copy path /path/to/directory_or_file        复制
+        cp 或 copy path1 path2 /path/to/directory         复制
 
         # 使用正则表达式进行文件操作
-        rnr 或 rnre foo bar dir1 dir2 .. -I re1 re2 ..                                            重命名文件夹中的文件名
-        rmr 或 rmre dir1 dir2 .. -E re1 re2 ..                    删除文件夹下匹配到的文件
-        mvr 或 mvre dir1 dir2 .. /path/to/dir -H head1 head2 ..   移动文件夹下匹配到的文件
-        cpr 或 cpre dir1 dir2 .. /path/to/dir -T tail1 tail2 ..   复制文件夹下匹配到的文件
+        rnr 或 rnre foo bar dir1 dir2 -I re1 re2             重命名文件夹中的文件名
+        rmr 或 rmre dir1 dir2 -E re1 re2                     删除文件夹下匹配到的文件
+        mvr 或 mvre dir1 dir2 /path/to/dir -H head1 head2    移动文件夹下匹配到的文件
+        cpr 或 cpre dir1 dir2 /path/to/dir -T tail1 tail2    复制文件夹下匹配到的文件
         # 递归加 -R
         # rmr, mvr, cpr 中 -t, -I, -E, -H, -T 至少要有一个，放在命令行末尾
         # -I, -E, -H, -T 后可跟多个匹配式
@@ -271,53 +287,53 @@
         rmr / -I '.*' -y    # ！！ 删除网盘中的所有文件
 
         # 回复用bt.py做base64加密的文件
-        rnr /path/to/decode1 /path/to/decode2 .. -t f,bd64
+        rnr /path/to/decode1 /path/to/decode2 -t f,bd64
 
         # 搜索
-        f   或 find keyword1 keyword2 .. [directory]             非递归搜索
-        ff  keyword1 keyword2 .. [directory]                     非递归搜索 反序
-        ft  keyword1 keyword2 .. [directory]                     非递归搜索 by time
-        ftt keyword1 keyword2 .. [directory]                     非递归搜索 by time 反序
-        fs  keyword1 keyword2 .. [directory]                     非递归搜索 by size
-        fss keyword1 keyword2 .. [directory]                     非递归搜索 by size 反序
-        fn  keyword1 keyword2 .. [directory]                     非递归搜索 by name
-        fnn keyword1 keyword2 .. [directory]                     非递归搜索 by name 反序
+        f   或 find keyword1 keyword2 [directory]             非递归搜索
+        ff  keyword1 keyword2 [directory]                     非递归搜索 反序
+        ft  keyword1 keyword2 [directory]                     非递归搜索 by time
+        ftt keyword1 keyword2 [directory]                     非递归搜索 by time 反序
+        fs  keyword1 keyword2 [directory]                     非递归搜索 by size
+        fss keyword1 keyword2 [directory]                     非递归搜索 by size 反序
+        fn  keyword1 keyword2 [directory]                     非递归搜索 by name
+        fnn keyword1 keyword2 [directory]                     非递归搜索 by name 反序
         # 递归搜索加 -R
         f 'ice and fire' /doc -R
         # 搜索所有的账户加 -t all
-        f keyword1 keyword2 .. [directory] -t all -R
-        f keyword1 keyword2 .. [directory] -t f,all -R
+        f keyword1 keyword2 [directory] -t all -R
+        f keyword1 keyword2 [directory] -t f,all -R
         # directory 默认为 /
         # 关于-H, -T, -I, -E
         # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
-        f keyword1 keyword2 ... [directory] -H head -T tail -I "re(gul.*) ex(p|g)ress$"
-        f keyword1 keyword2 ... [directory] -H head -T tail -E "re(gul.*) ex(p|g)ress$"
+        f keyword1 keyword2 [directory] -H head -T tail -I "re(gul.*) ex(p|g)ress$"
+        f keyword1 keyword2 [directory] -H head -T tail -E "re(gul.*) ex(p|g)ress$"
         # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
-        f keyword1 keyword2 .. [directory] \| d -R              递归搜索后递归下载
-        ftt keyword1 keyword2 .. [directory] \| p -R            递归搜索(by time 反序)后递归播放
-        f keyword1 keyword2 .. [directory] \| rnr foo bar -R    递归搜索后rename by regex
-        f keyword1 keyword2 .. [directory] \| rm -R -T tail     递归搜索后删除
-        f keyword1 keyword2 .. [directory] \| mv /path/to -R    递归搜索后移动
+        f keyword1 keyword2 [directory] \| d -R              递归搜索后递归下载
+        ftt keyword1 keyword2 [directory] \| p -R            递归搜索(by time 反序)后递归播放
+        f keyword1 keyword2 [directory] \| rnr foo bar -R    递归搜索后rename by regex
+        f keyword1 keyword2 [directory] \| rm -R -T tail     递归搜索后删除
+        f keyword1 keyword2 [directory] \| mv /path/to -R    递归搜索后移动
 
         # 列出文件
-        l path1 path2 ..                               ls by name
-        ll path1 path2 ..                              ls by name 反序
-        ln path1 path2 ..                              ls by name
-        lnn path1 path2 ..                             ls by name 反序
-        lt path1 path2 ..                              ls by time
-        ltt path1 path2 ..                             ls by time 反序
-        ls path1 path2 ..                              ls by size
-        lss path1 path2 ..                             ls by size 反序
+        l path1 path2                               ls by name
+        ll path1 path2                              ls by name 反序
+        ln path1 path2                              ls by name
+        lnn path1 path2                             ls by name 反序
+        lt path1 path2                              ls by time
+        ltt path1 path2                             ls by time 反序
+        ls path1 path2                              ls by size
+        lss path1 path2                             ls by size 反序
         l /doc/books /videos
         # 以下是只列出文件或文件夹
-        l path1 path2 .. -t f                         ls files
-        l path1 path2 .. -t d                         ls directorys
+        l path1 path2 -t f                         ls files
+        l path1 path2 -t d                         ls directorys
         # 关于-H, -T, -I, -E
         # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
-        l path1 path2 .. -H head -T tail -I "^re(gul.*) ex(p|g)ress$"
-        l path1 path2 .. -H head -T tail -E "^re(gul.*) ex(p|g)ress$"
+        l path1 path2 -H head -T tail -I "^re(gul.*) ex(p|g)ress$"
+        l path1 path2 -H head -T tail -E "^re(gul.*) ex(p|g)ress$"
         # 显示文件size, md5
-        l path1 path2 .. -v
+        l path1 path2 -v
         # 空文件夹
         l path1 path2 -t e,d
         # 非空文件夹
@@ -325,25 +341,25 @@
 
         # 分享文件
         S 或 share path1 path2 .. 为每个提供的文件路劲创建分享链接
-        S 或 share [-P pawd 或 --passwd pawd] path1 path2 .. 为每个提供的路径创建加密的分享链接
+        S 或 share [-P pawd 或 --passwd pawd] path1 path2 为每个提供的路径创建加密的分享链接
 
         # 查看文件占用空间
-        du path1 path2 ..               文件夹下所有*文件(不包含下层文件夹)*总大小
-        du path1 path2 .. -R            文件夹下所有*文件(包含下层文件夹)*总大小
-                                        如果下层文件多，会花一些时间
-        # 相当于 l path1 path2 .. -t du [-R]
+        du path1 path2               文件夹下所有*文件(不包含下层文件夹)*总大小
+        du path1 path2 -R            文件夹下所有*文件(包含下层文件夹)*总大小
+                                     如果下层文件多，会花一些时间
+        # 相当于 l path1 path2 -t du [-R]
         # eg:
         du /doc /videos -R
 
         # 离线下载
-        a 或 add http https ftp ed2k .. remotepath
-        a 或 add magnet .. remotepath [-t {m,i,d,p}]
-        a 或 add remote_torrent .. [-t {m,i,d,p}]   # 使用网盘中torrent
+        a 或 add http https ftp ed2k remotepath
+        a 或 add magnet remotepath [-t {m,i,d,p}]
+        a 或 add remote_torrent [-t {m,i,d,p}]   # 使用网盘中torrent
 
         # 离线任务操作
         j  或 job                               # 列出离线下载任务
         jd 或 jobdump                           # 清除全部 *非正在下载中的任务*
-        jc 或 jobclear taskid1 taskid2 ..       # 清除 *正在下载中的任务*
+        jc 或 jobclear taskid1 taskid2          # 清除 *正在下载中的任务*
         jca 或 jobclearall                      # 清除 *全部任务*
 
     参数:
@@ -419,7 +435,22 @@
 
         bp user
 
+    显示当前工作目录
+
+        bp cwd
+
+    切换当前工作目录
+
+        bp cd         # 切换到 /
+        bp cd path    # 支持 ./../...
+        bp cd ..
+        bp cd ../../Music
+        bp cd ...
+
     下载:
+
+        # 下载当前工作目录 (递归)
+        bp d . -R
 
         # 下载自己网盘中的*单个或多个文件*
         bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2 ..
@@ -434,7 +465,7 @@
         bp d -R /path/to/directory1 /path/to/directory2 .. -T .mp3
 
         # 非递归下载
-        bp d /path/to/directory1 /path/to/directory2 ..
+        bp d relative_path/to/directory1 /path/to/directory2 ..
 
         # 下载别人分享的*单个文件*
         bp d http://pan.baidu.com/s/1o6psfnxx ..
@@ -466,7 +497,9 @@
 
         bp p /movie/her.mkv
         bp p http://pan.baidu.com/s/xxxxxxxxx -s [secret]
-        bp p /movie -R     # 递归播放 /movie 中所有媒体文件
+
+        bp cd /movie
+        bp p movie -R     # 递归播放 /movie 中所有媒体文件
 
         # 播放流媒体(m3u8)
         上面的命令后加 -t m3
@@ -516,7 +549,7 @@
         # -m o --> 重传
         # -m c --> 续传 (默认)
 
-        bp u ~/Videos/*.mkv /videos -t r
+        bp u ~/Videos/*.mkv ../videos -t r
         # 只进行rapidupload
 
         bp u ~/Documents ~/Videos ~/Documents /backup -t e

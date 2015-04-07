@@ -4,6 +4,7 @@
 import os
 import sys
 import requests
+requests.packages.urllib3.disable_warnings() # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
 from requests_toolbelt import MultipartEncoder
 import urllib
 import json
@@ -129,6 +130,40 @@ def import_shadowsocks():
         print s % (1, 92, '  pip2 install shadowsocks')
         sys.exit(1)
 
+def get_abspath(pt):
+    if '~' == pt[0]:
+        path = os.path.expanduser(pt)
+    else:
+        path = os.path.abspath(pt)
+    if os.path.exists(path):
+        return path
+    else:
+        print s % (1, 91, '  !! path isn\'t existed.'), pt
+        return None
+
+def make_server_path(cwd, path):
+    def cd(cwd, part):
+        if part == '..':
+            cwd = os.path.dirname(cwd)
+        elif part == '.':
+            pass
+        elif part == '':
+            pass
+        elif part == '...':
+            cwd = os.path.dirname(cwd)
+            cwd = os.path.dirname(cwd)
+        else:
+            cwd = os.path.join(cwd, part)
+        return cwd
+
+    if path[0] == '/':
+        return path
+    else:
+        parts = path.split('/')
+        for p in parts:
+            cwd = cd(cwd, p)
+        return cwd
+
 # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
 def sizeof_fmt(num):
     for x in ['B','KB','MB','GB']:
@@ -158,8 +193,8 @@ class panbaiducom_HOME(object):
         self.ondup = 'overwrite'
         self.accounts = self._check_cookie_file()
 
+        self.highlights = []
         if any([args.tails, args.heads, args.includes]):
-            self.highlights = []
             for tail in args.tails:
                 self.highlights.append({'text': tail.decode('utf8', 'ignore'),
                                         'is_regex': 0})
@@ -209,7 +244,10 @@ class panbaiducom_HOME(object):
             j = self.accounts
             u = [u for u in j if j[u]['on']]
             if u:
-                ss.cookies.update(j[u[0]]['cookies'])
+                user = u[0]
+                self.user = user
+                self.cwd = j[user]['cwd'] if j[user].get('cwd') else '/'
+                ss.cookies.update(j[user]['cookies'])
             else:
                 print s % (1, 91, '  !! no account is online, please login or userchange')
                 sys.exit(1)
@@ -217,7 +255,6 @@ class panbaiducom_HOME(object):
             if not self.check_login():
                 print s % (1, 91, '  !! cookie is invalid, please login\n'), u[0]
                 sys.exit(1)
-            self.save_cookies(u[0], on=1)
         else:
             print s % (1, 97, '  no account, please login')
             sys.exit(1)
@@ -334,8 +371,8 @@ class panbaiducom_HOME(object):
                     login_error_msg[errno]
                 sys.exit(1)
 
-    def save_cookies(self, username, on=0):
-        self.username = username
+    def save_cookies(self, username=None, on=0):
+        if not username: username = self.user
         accounts = self.accounts
         accounts[username] = {}
         accounts[username]['cookies'] = ss.cookies.get_dict()
@@ -343,6 +380,10 @@ class panbaiducom_HOME(object):
         quota = self._get_quota()
         capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
         accounts[username]['capacity'] = capacity
+        if hasattr(self, 'cwd'):
+            accounts[username]['cwd'] = self.cwd
+        else:
+            accounts[username]['cwd'] = '/'
         for u in accounts:
             if u != username and on:
                 accounts[u]['on'] = 0
@@ -484,11 +525,11 @@ class panbaiducom_HOME(object):
         t = re.search(r'path=(.+?)(&|$)', url)
         if t:
             t = t.group(1)
+            t = urllib.unquote_plus(t)
+            t = urllib.unquote_plus(t)
+            return t
         else:
-            t = '/'
-        t = urllib.unquote_plus(t)
-        t = urllib.unquote_plus(t)
-        return t
+            return url
 
     def _get_quota(self):
         url = 'http://pan.baidu.com/api/quota'
@@ -669,6 +710,7 @@ class panbaiducom_HOME(object):
     def download(self, paths):
         for path in paths:
             path = self._get_path(path) if path[0] != '/' else path
+            path = make_server_path(self.cwd, path)
             base_dir = '' if os.path.split(path)[0] == '/' \
                 else os.path.split(path)[0]
 
@@ -1244,6 +1286,7 @@ class panbaiducom_HOME(object):
         self._cipherer = encrypt.Encryptor(pwd, method)
 
     def upload(self, localpaths, remotepath):
+        remotepath = make_server_path(self.cwd, remotepath)
         self.upload_datas = {}
         if os.path.exists(upload_datas_path):
             f = open(upload_datas_path, 'rb')
@@ -1258,18 +1301,12 @@ class panbaiducom_HOME(object):
             self.toEncrypt = False
 
         for localpath in localpaths:
-            lpath = localpath
-            if localpath[0] == '~':
-                lpath = os.path.expanduser(localpath)
-            else:
-                lpath = os.path.abspath(localpath)
+            lpath = get_abspath(localpath)
             rpath = remotepath if remotepath[0] == '/' else '/' + remotepath
 
-            if os.path.exists(lpath):
-                pass
-            else:
+            if not lpath:
                 print s % (1, 91, '  !! Error: localpath doesn\'t exist')
-                print s % (1, 91, '  ==>'), lpath
+                print s % (1, 91, '  ==>'), localpath
                 continue
 
             if os.path.isdir(lpath):
@@ -1398,6 +1435,7 @@ class panbaiducom_HOME(object):
         return infos
 
     def save_share(self, url, remotepath, infos=None):
+        remotepath = make_server_path(self.cwd, remotepath)
         infos = self._get_share_infos(url, remotepath, infos)
         if 'c' in args.type_:
             save_share_datas = {}
@@ -1553,6 +1591,7 @@ class panbaiducom_HOME(object):
 
     def save_inbox_share(self, url, remotepath, infos=None):
         ss.headers['Referer'] = 'http://pan.baidu.com'
+        remotepath = make_server_path(self.cwd, remotepath)
         remotepath = remotepath if remotepath[-1] != '/' else remotepath[:-1]
         infos = self._get_share_inbox_infos(url, remotepath, infos)
         for info in infos:
@@ -1586,7 +1625,7 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
-            "dir": directory if directory else "",
+            "dir": directory if directory else self.cwd,
             "key": keyword,
             #"timeStamp": "0.15937364846467972",
             #"bdstoken": self._get_bdstoken(),
@@ -1665,13 +1704,12 @@ class panbaiducom_HOME(object):
         elif 'd' in args.type_:
             if not info['isdir']:
                 return
-        else:
-            pass
 
+        path = info['path']
         if args.ls_color == 'on':
             isdir = s % (1, 93, 'd') if info['isdir'] else s % (1, 97, '-')
             size = s % (1, 91, sizeof_fmt(info['size']).rjust(8))
-            base_dir, filename = os.path.split(info['path'])
+            base_dir, filename = os.path.split(path)
             base_dir = s % (2, 95, base_dir.encode('utf8')) \
                 if base_dir != '/' else '/'
 
@@ -1684,14 +1722,20 @@ class panbaiducom_HOME(object):
                     filename, self.highlights, 93
                 )
 
-            path = os.path.join(base_dir, filename)
+            if args.view:
+                path = os.path.join(base_dir, filename)
+            else:
+                path = filename
 
         elif args.ls_color == 'off':
             isdir = 'd' if info['isdir'] else '-'
             size = sizeof_fmt(info['size']).rjust(8)
-            path = info['path'].encode('utf8')
+            if args.view:
+                path = path.encode('utf8')
+            else:
+                path = os.path.basename(path).encode('utf8')
 
-        if args.view and info.get('md5'):
+        if args.view == True and info.get('md5'):
             smd5 = info['md5'].encode('utf8')
             template = '%s %s %s %s %s' % (
                 isdir, size, info['size'], smd5, path
@@ -1772,6 +1816,7 @@ class panbaiducom_HOME(object):
                 else:
                     print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
 
+        args.view = 'find'
         if 'all' in args.type_:
             for user in self.accounts:
                 cookie = self.accounts[user]['cookies']
@@ -1828,7 +1873,9 @@ class panbaiducom_HOME(object):
                 sum_size, directorys[0]
 
     def ls(self, order, desc, paths):
+        if not paths: paths = [self.cwd]
         for path in paths:
+            path = make_server_path(self.cwd, path)
             meta = self._meta([path])
             if meta:
                 if meta['info'][0]['isdir']:
@@ -1868,6 +1915,8 @@ class panbaiducom_HOME(object):
             print s % (1, 91, '  !! Error at filemanager')
 
     def move(self, paths, remotepath):
+        paths = [ make_server_path(self.cwd, path) for path in paths ]
+        remotepath = make_server_path(self.cwd, remotepath)
         self._exist(paths)
 
         meta = self._meta([remotepath])
@@ -1889,6 +1938,8 @@ class panbaiducom_HOME(object):
         self._filemanager('move', data)
 
     def copy(self, paths, remotepath):
+        paths = [ make_server_path(self.cwd, path) for path in paths ]
+        remotepath = make_server_path(self.cwd, remotepath)
         self._exist(paths)
 
         t = None
@@ -1937,12 +1988,15 @@ class panbaiducom_HOME(object):
         self._filemanager('copy', data)
 
     def remove(self, paths):
+        paths = [ make_server_path(self.cwd, path) for path in paths ]
         self._exist(paths)
 
         data = 'filelist=' + urllib.quote_plus(json.dumps(paths))
         self._filemanager('delete', data)
 
     def rename(self, path, remotepath):
+        path = make_server_path(self.cwd, path)
+        remotepath = make_server_path(self.cwd, remotepath)
         self._exist([path])
 
         meta = self._meta([remotepath])
@@ -2084,6 +2138,7 @@ class panbaiducom_HOME(object):
     def filemanager_re(self, type, dirs, todir=None, foo=None, bar=None):
         tinfos = []
         for path in dirs:
+            path = make_server_path(self.cwd, path)
             meta = self._meta([path])
             if meta:
                 if meta['info'][0]['isdir']:
@@ -2110,6 +2165,7 @@ class panbaiducom_HOME(object):
             if type == 'rename':
                 self._rnre_do(foo, bar, tinfos)
             else:
+                todir = make_server_path(self.cwd, todir)
                 self._rmcre_do(type, tinfos, todir=todir)
 
     ##############################################################
@@ -2288,6 +2344,7 @@ class panbaiducom_HOME(object):
                 return
 
     def add_tasks(self, urls, remotepath):
+        remotepath = make_server_path(self.cwd, remotepath)
         for url in urls:
             if url.startswith('magnet:') or url.startswith('/'):
                 if url.startswith('/'):
@@ -2504,6 +2561,7 @@ class panbaiducom_HOME(object):
 
     def mkdir(self, paths):
         for path in paths:
+            path = make_server_path(self.cwd, path)
             print s % (1, 97, '  ++ mkdir:'), path
             meta = self._meta([path])
             if not meta:
@@ -2576,20 +2634,10 @@ class panbaiducom_HOME(object):
             return ENoError
 
     def share(self, paths, pwd):
+        paths = [ make_server_path(self.cwd, path) for path in paths ]
         self._share(paths, pwd)
 
     def decrypt(self, paths):
-        def get_abspath(pt):
-            if '~' == pt[0]:
-                path = os.path.expanduser(pt)
-            else:
-                path = os.path.abspath(pt)
-            if os.path.exists(path):
-                return path
-            else:
-                print s % (1, 91, '  !! path isn\'t existed.'), pt
-                return None
-
         def store(path, decrypted_block):
             with open(path, 'ab') as g:
                 g.write(decrypted_block)
@@ -2633,6 +2681,24 @@ class panbaiducom_HOME(object):
                         do(os.path.join(parent, file))
             elif os.path.isfile(path):
                 do(path)
+
+    def change_directory(self, path):
+        def cd_do(path):
+            meta = self._meta([path])
+            if meta:
+                if meta['info'][0]['isdir']:
+                    self.cwd = path
+                else:
+                    self.cwd = os.path.dirname(path)
+            else:
+                print s % (1, 93, '  !! path isn\'t existed.'), path
+
+        if not path:
+            self.cwd = '/'
+        else:
+            path = path[0]
+            path = make_server_path(self.cwd, path)
+            cd_do(path)
 
 class panbaiducom(object):
     @staticmethod
@@ -2773,7 +2839,7 @@ def sighandler(signum, frame):
     #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
-def main(argv):
+def handle_signal():
     signal.signal(signal.SIGBUS, sighandler)
     signal.signal(signal.SIGHUP, sighandler)
     # http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
@@ -2788,12 +2854,7 @@ def main(argv):
     signal.signal(signal.SIGSEGV, sighandler)
     signal.signal(signal.SIGTERM, sighandler)
 
-    usage = "usage: https://github.com/PeterDing/iScript#pan.baidu.com.py"
-    if len(argv) <= 1:
-        print usage
-        sys.exit()
-
-    ######################################################
+def handle_args(argv):
     # for argparse
     p = argparse.ArgumentParser(description='about pan.baidu.com.' \
         ' 用法见 https://github.com/PeterDing/iScript')
@@ -2849,11 +2910,12 @@ def main(argv):
         args = p.parse_args(argv[4:])
     xxx = args.xxx
     args.comd = comd
-    #######################################################
+    return comd, xxx
 
+def handle_command(comd, xxx):
     if comd == 'login' or comd == 'g':
         from getpass import getpass
-        x = panbaiducom_HOME()
+        xh = panbaiducom_HOME()
 
         if len(xxx) < 1:
             username = raw_input(s % (1, 97, '  username: '))
@@ -2867,10 +2929,10 @@ def main(argv):
         else:
             print s % (1, 91, '  login\n  login username\n  login username password')
 
-        x.login(username, password)
+        xh.login(username, password)
         result = x.check_login()
         if result:
-            x.save_cookies(username, on=1)
+            xh.save_cookies(username, on=1)
             print s % (1, 92, '  ++ login succeeds.')
         else:
             print s % (1, 91, '  login failes')
@@ -2929,9 +2991,6 @@ def main(argv):
             sys.exit(1)
         global px
 
-        # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
-        requests.packages.urllib3.disable_warnings()
-
         px = panbaiducom_HOME()
         px.init()
         px.upload(xxx[:-1], xxx[-1])
@@ -2965,7 +3024,7 @@ def main(argv):
     elif comd == 'd' or comd == 'download' \
         or comd == 'p' or comd == 'play':
         if len(xxx) < 1:
-            print s % (1, 91, '  !! 参数错误\n download url1 url2 ..\n' \
+            print s % (1, 91, '  !! 参数错误\n download path1 .. url1 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
 
@@ -2978,9 +3037,7 @@ def main(argv):
         paths4 = []
 
         for path in paths:
-            if path[0] == '/':
-                paths1.append(path)
-            elif '/disk/home' in path:
+            if '/disk/home' in path:
                 paths1.append(path)
             elif 'baidu.com/pcloud/album/file' in path:
                 paths2.append(path)
@@ -2990,7 +3047,7 @@ def main(argv):
             elif 'pcs.baidu.com' in path:
                 paths4.append(path)
             else:
-                print s % (2, 91, '  !!! url 地址不正确.'), path
+                paths1.append(path)
 
         if paths1:
             x = panbaiducom_HOME()
@@ -3087,7 +3144,7 @@ def main(argv):
         or comd == 'ln' or comd == 'lnn'\
         or comd == 'ls' or comd == 'lss' \
         or comd == 'lt' or comd == 'ltt':
-        if len(xxx) < 1:
+        if len(xxx) < 1 and (comd[0] != 'l'):
             print s % (1, 91, '  !! 参数错误\n move path1 path2 .. /path/to/directory\n' \
                 ' mv path1 path2 .. /path/to/directory\n' \
                 ' remove path1 path2 ..\n' \
@@ -3100,10 +3157,10 @@ def main(argv):
                 ' l path1 path2 ..\n' \
                 ' ls path1 path2 ..\n')
             sys.exit(1)
-        e = True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! path is incorrect.')
-            sys.exit(1)
+        #e = True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
+        #if e and (comd[0] != 'l'):
+            #print s % (1, 91, '  !! path is incorrect.')
+            #sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
         if comd == 'mv' or comd == 'move':
@@ -3158,10 +3215,10 @@ def main(argv):
                 bar = argv[3]
                 dirs = xxx
 
-            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-            if e:
-                print s % (1, 91, '  !! path is incorrect.')
-                sys.exit(1)
+            #e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            #if e:
+                #print s % (1, 91, '  !! path is incorrect.')
+                #sys.exit(1)
 
             x = panbaiducom_HOME()
             x.init()
@@ -3173,10 +3230,10 @@ def main(argv):
                 sys.exit(1)
 
             dirs = xxx
-            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-            if e:
-                print s % (1, 91, '  !! path is incorrect.')
-                sys.exit(1)
+            #e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            #if e:
+                #print s % (1, 91, '  !! path is incorrect.')
+                #sys.exit(1)
 
             x = panbaiducom_HOME()
             x.init()
@@ -3188,10 +3245,10 @@ def main(argv):
                 sys.exit(1)
 
             dirs = xxx
-            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-            if e:
-                print s % (1, 91, '  !! path is incorrect.')
-                sys.exit(1)
+            #e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            #if e:
+                #print s % (1, 91, '  !! path is incorrect.')
+                #sys.exit(1)
 
             x = panbaiducom_HOME()
             x.init()
@@ -3203,10 +3260,10 @@ def main(argv):
                 sys.exit(1)
 
             dirs = xxx
-            e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
-            if e:
-                print s % (1, 91, '  !! path is incorrect.')
-                sys.exit(1)
+            #e = True if 'f' in ['f' for i in dirs if i[0] != '/'] else False
+            #if e:
+                #print s % (1, 91, '  !! path is incorrect.')
+                #sys.exit(1)
 
             x = panbaiducom_HOME()
             x.init()
@@ -3221,8 +3278,9 @@ def main(argv):
 
         if not args.type_: args.type_.append('m') # default is mediatype
 
-        if xxx[-1].startswith('/') and not xxx[0].startswith('/'):
-            remotepath = xxx[-1] if xxx[-1][-1] == '/' else xxx[-1] + '/'
+        if len(xxx[-1]) < 4 \
+            or xxx[-1][:4] not in ['magn', 'http', 'ed2k', 'ftp:']:
+            remotepath = xxx[-1]
             urls = xxx[:-1]
         else:
             remotepath = '/'
@@ -3238,10 +3296,10 @@ def main(argv):
                 ' md path1 path2 ..')
             sys.exit(1)
         paths = xxx
-        e =  True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
-        if e:
-            print s % (1, 91, '  !! some path is wrong')
-            sys.exit(1)
+        #e =  True if 'f' in ['f' for i in xxx if i[0] != '/'] else False
+        #if e:
+            #print s % (1, 91, '  !! some path is wrong')
+            #sys.exit(1)
         x = panbaiducom_HOME()
         x.init()
         x.mkdir(paths)
@@ -3277,10 +3335,42 @@ def main(argv):
 
     elif comd == 'dc' or comd == 'decrypt':
         x = panbaiducom_HOME()
+        x.init()
         x.decrypt(xxx)
+
+    elif comd == 'cd':
+        x = panbaiducom_HOME()
+        x.init()
+
+        if len(xxx) > 1:
+            print s % (1, 91, '  !! 参数错误\n cd path')
+            sys.exit(1)
+
+        x.change_directory(xxx)
+
+    elif comd == 'cwd':
+        xd = panbaiducom_HOME()
+        xd.init()
+        print xd.cwd
 
     else:
         print s % (2, 91, '  !! 命令错误\n')
+
+    if 'x' in locals():
+        x.save_cookies(on=1)
+    elif 'px' in locals():
+        px.save_cookies(on=1)
+
+def main(argv):
+    handle_signal()
+
+    usage = "usage: https://github.com/PeterDing/iScript#pan.baidu.com.py"
+    if len(argv) <= 1:
+        print usage
+        sys.exit()
+
+    comd, xxx = handle_args(argv)
+    handle_command(comd, xxx)
 
 if __name__ == '__main__':
     argv = sys.argv
