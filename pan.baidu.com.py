@@ -1735,7 +1735,7 @@ class panbaiducom_HOME(object):
             else:
                 path = os.path.basename(path).encode('utf8')
 
-        if args.view == True and info.get('md5'):
+        if args.view > 1 and info.get('md5'):
             smd5 = info['md5'].encode('utf8')
             template = '%s %s %s %s %s' % (
                 isdir, size, info['size'], smd5, path
@@ -2862,7 +2862,7 @@ def handle_args(argv):
     p.add_argument('-a', '--aria2c', action='store', default=None, \
         type=int, help='aria2c分段下载数量')
     p.add_argument('-p', '--play', action='store_true', help='play with mpv')
-    p.add_argument('-v', '--view', action='store_true', help='view details')
+    p.add_argument('-v', '--view', action='count', help='view details')
     p.add_argument('-V', '--VERIFY', action='store_true', help='verify')
     p.add_argument('-y', '--yes', action='store_true', help='yes')
     p.add_argument('-q', '--quiet', action='store_true', help='quiet for download and play')

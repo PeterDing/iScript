@@ -371,9 +371,9 @@
         -V, --VERIFY                        verification
         -v, --view                          view detail
                                             eg:
-                                            a magnet /path -v  # 离线下载并显示下载的文件
-                                            d -p url1 url2 .. -v  # 显示播放文件的完整路径
-                                            l path1 path2 .. -v  # 显示文件的size, md5
+                                            a magnet /path -v     # 离线下载并显示下载的文件
+                                            d -p url1 url2 -v  # 显示播放文件的完整路径
+                                            l path1 path2 -vv  # 显示文件的size, md5
         -s SECRET, --secret SECRET          提取密码
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数, 用 “,” 分隔
@@ -591,13 +591,13 @@
         bp f 三体 /doc/fiction -R
         bp f 晓波 /doc -R
 
-        bp ff  keyword1 keyword2 .. /path/to/music       非递归搜索 反序
-        bp ft  keyword1 keyword2 .. /path/to/doc         非递归搜索 by time
-        bp ftt keyword1 keyword2 .. /path/to/other       非递归搜索 by time 反序
-        bp fs  keyword1 keyword2 ..                      非递归搜索 by size
-        bp fss keyword1 keyword2 ..                      非递归搜索 by size 反序
-        bp fn  keyword1 keyword2 ..                      非递归搜索 by name
-        bp fnn keyword1 keyword2 ..                      非递归搜索 by name 反序
+        bp ff  keyword1 keyword2 /path/to/music       非递归搜索 反序
+        bp ft  keyword1 keyword2 /path/to/doc         非递归搜索 by time
+        bp ftt keyword1 keyword2 /path/to/other       非递归搜索 by time 反序
+        bp fs  keyword1 keyword2                      非递归搜索 by size
+        bp fss keyword1 keyword2                      非递归搜索 by size 反序
+        bp fn  keyword1 keyword2                      非递归搜索 by name
+        bp fnn keyword1 keyword2                      非递归搜索 by name 反序
 
         # 递归搜索加 -R
         # 关于-H, -T, -I, -E
