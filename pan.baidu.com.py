@@ -37,6 +37,17 @@ MaxSliceSize = 2 * OneG
 MaxSlicePieces = 1024
 ENoError = 0
 
+CIPHERS = [
+    "aes-256-cfb", "aes-128-cfb", "aes-192-cfb",
+    "aes-256-ofb", "aes-128-ofb", "aes-192-ofb",
+    "aes-128-ctr", "aes-192-ctr", "aes-256-ctr",
+    "aes-128-cfb8", "aes-192-cfb8", "aes-256-cfb8",
+    "aes-128-cfb1", "aes-192-cfb1", "aes-256-cfb1",
+    "bf-cfb", "camellia-128-cfb", "camellia-192-cfb",
+    "camellia-256-cfb", "cast5-cfb", "chacha20",
+    "idea-cfb", "rc2-cfb", "rc4-md5", "salsa20", "seed-cfb"
+]
+
 ############################################################
 # wget exit status
 wget_es = {
@@ -108,6 +119,16 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
+def import_shadowsocks():
+    try:
+        global encrypt
+        from shadowsocks import encrypt
+    except ImportError:
+        print s % (1, 93, '  !! you don\'t install shadowsocks for python2.')
+        print s % (1, 97, '  install shadowsocks:')
+        print s % (1, 92, '  pip2 install shadowsocks')
+        sys.exit(1)
+
 # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
 def sizeof_fmt(num):
     for x in ['B','KB','MB','GB']:
@@ -135,18 +156,22 @@ class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
-        self.highlights = []
         self.accounts = self._check_cookie_file()
 
-        for tail in args.tails:
-            self.highlights.append({'text': tail.decode('utf8', 'ignore'),
-                                    'is_regex': 0})
-        for head in args.heads:
-            self.highlights.append({'text': head.decode('utf8', 'ignore'),
-                                    'is_regex': 0})
-        for include in args.includes:
-            self.highlights.append({'text': include.decode('utf8', 'ignore'),
-                                    'is_regex': 1})
+        if any([args.tails, args.heads, args.includes]):
+            self.highlights = []
+            for tail in args.tails:
+                self.highlights.append({'text': tail.decode('utf8', 'ignore'),
+                                        'is_regex': 0})
+            for head in args.heads:
+                self.highlights.append({'text': head.decode('utf8', 'ignore'),
+                                        'is_regex': 0})
+            for include in args.includes:
+                self.highlights.append({'text': include.decode('utf8', 'ignore'),
+                                        'is_regex': 1})
+
+        if 'ec' in args.type_ or 'dc' in args.type_ or args.comd == 'dc':
+            import_shadowsocks()
 
     @staticmethod
     def _check_cookie_file():
@@ -706,6 +731,8 @@ class panbaiducom_HOME(object):
                                 }
                                 nn += 1
                                 self._download_do(infos)
+                                if 'dc' in args.type_:
+                                    self.decrypt([infos['file']])
 
                 elif not meta['info'][0]['isdir']:
                     t =  os.path.join(
@@ -723,6 +750,8 @@ class panbaiducom_HOME(object):
                         'size': meta['info'][0]['size'],
                     }
                     self._download_do(infos)
+                    if 'dc' in args.type_:
+                        self.decrypt([infos['file']])
 
             else:
                 print s % (1, 91, '  !! path is not existed.\n'), \
@@ -922,10 +951,22 @@ class panbaiducom_HOME(object):
             "app_id": "250528",
             "ondup": self.ondup,
             "dir": rpath,
-            "filename": os.path.basename(lpath),
             "BDUSS": ss.cookies['BDUSS'],
         }
-        files = {'file': ('file', open(lpath, 'rb'), '')}
+
+        if self.toEncrypt:
+            fl = self._cipherer.encrypt(open(lpath, 'rb').read())
+            file = b'__' + bytes(DefaultSliceSize) + b'__' + fl
+            file = cStringIO.StringIO(file)
+            if 'np' not in args.type_:
+                p['filename'] = 'encrypted_' + os.path.basename(lpath)
+            else:
+                p['filename'] = os.path.basename(lpath)
+        else:
+            file = open(lpath, 'rb')
+            p['filename'] = os.path.basename(lpath)
+
+        files = {'file': ('file', file, '')}
         data = MultipartEncoder(files)
         theaders = headers
         theaders['Content-Type'] = data.content_type
@@ -943,9 +984,14 @@ class panbaiducom_HOME(object):
             "method": "createsuperfile",
             "app_id": "250528",
             "ondup": self.ondup,
-            "path": os.path.join(rpath, os.path.basename(lpath)),
             "BDUSS": ss.cookies['BDUSS'],
         }
+
+        if self.toEncrypt and 'np' not in args.type_:
+            p['path'] = 'encrypted_' + os.path.join(rpath, os.path.basename(lpath)),
+        else:
+            p['path'] = os.path.join(rpath, os.path.basename(lpath)),
+
         data = {
             'param': json.dumps(
                 {'block_list': self.upload_datas[lpath]['slice_md5s']}
@@ -958,7 +1004,7 @@ class panbaiducom_HOME(object):
         else:
             return r.json()
 
-    def _upload_slice(self):
+    def _upload_slice(self, piece=0, slice=DefaultSliceSize):
         p = {
             "method": "upload",
             "app_id": "250528",
@@ -966,7 +1012,14 @@ class panbaiducom_HOME(object):
             "BDUSS": ss.cookies['BDUSS'],
         }
 
-        file = cStringIO.StringIO(self.__slice_block)
+        if self.toEncrypt:
+            __slice_block = self._cipherer.encrypt(self.__slice_block)
+            if piece == 0:
+                __slice_block = b'__' +  bytes(slice) + b'__' + __slice_block
+        else:
+            __slice_block = self.__slice_block
+
+        file = cStringIO.StringIO(__slice_block)
         files = {'file': ('file', file, '')}
         data = MultipartEncoder(files)
         theaders = headers
@@ -1001,9 +1054,9 @@ class panbaiducom_HOME(object):
 
         return pieces, slice
 
-    def _get_upload_function(self, rapidupload_is_fall=False):
+    def _get_upload_function(self, rapidupload_is_fail=False):
         if self.__current_file_size > MinRapidUploadFileSize:
-            if not rapidupload_is_fall:
+            if not rapidupload_is_fail and not self.toEncrypt:
                 return '_rapidupload_file'
             else:
                 if self.__current_file_size <= DefaultSliceSize:
@@ -1041,6 +1094,12 @@ class panbaiducom_HOME(object):
                 'remotepaths': set()
             }
 
+        if self.toEncrypt:
+            self._init_cipherer()
+            self.upload_datas[lpath]['is_over'] = False
+            self.upload_datas[lpath]['remotepaths'] = set()
+            self.upload_datas[lpath]['slice_md5s'] = []
+
         if 'e' in args.type_:
             path = os.path.join(rpath, os.path.basename(lpath))
             meta = self._meta([path])
@@ -1054,7 +1113,7 @@ class panbaiducom_HOME(object):
                 self.upload_datas[lpath]['is_over'] = False
                 pass
 
-        if args.uploadmode == 'o':
+        if args.mode == 'o':
             self.upload_datas[lpath]['is_over'] = False
             self.upload_datas[lpath]['slice_md5s'] = []
 
@@ -1062,7 +1121,7 @@ class panbaiducom_HOME(object):
             if not self.upload_datas[lpath]['is_over']:
                 m = self.upload_datas[lpath]['upload_function']
                 if m == '_upload_file_slices':
-                    time.sleep(2)
+                    #time.sleep(2)
                     print '  |-- upload_function:', s % (1, 97, '_upload_file_slices')
                     pieces, slice = self._get_pieces_slice()
                     f = open(lpath, 'rb')
@@ -1079,7 +1138,7 @@ class panbaiducom_HOME(object):
                         if self.__slice_block:
                             self.__slice_md5 = md5.new(self.__slice_block).hexdigest()
                             while True:
-                                result = self._upload_slice()
+                                result = self._upload_slice(piece=piece, slice=slice)
                                 if result == ENoError:
                                     break
                                 else:
@@ -1114,7 +1173,7 @@ class panbaiducom_HOME(object):
                         #sys.exit(1)
 
                 elif m == '_upload_one_file':
-                    time.sleep(2)
+                    #time.sleep(2)
                     result = self._upload_one_file(lpath, rpath)
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
@@ -1128,7 +1187,7 @@ class panbaiducom_HOME(object):
                         #sys.exit(1)
 
                 elif m == '_rapidupload_file':
-                    time.sleep(2)
+                    #time.sleep(2)
                     result = self._rapidupload_file(lpath, rpath)
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
@@ -1142,7 +1201,7 @@ class panbaiducom_HOME(object):
                             break
                         print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
                             'now trying normal uploading.')
-                        upload_function = self._get_upload_function(rapidupload_is_fall=True)
+                        upload_function = self._get_upload_function(rapidupload_is_fail=True)
                         self.upload_datas[lpath]['upload_function'] = upload_function
                         if upload_function == '_upload_file_slices':
                             if not self.upload_datas[lpath].has_key('slice_md5s'):
@@ -1153,13 +1212,13 @@ class panbaiducom_HOME(object):
                     break
 
             else:
-                if args.uploadmode == 'c':
+                if args.mode == 'c':
                     if rpath in self.upload_datas[lpath]['remotepaths']:
                         print s % (1, 92, '  |-- file was uploaded.\n')
                         break
                     else:
                         self.upload_datas[lpath]['is_over'] = False
-                elif args.uploadmode == 'o':
+                elif args.mode == 'o':
                     print s % (1, 93, '  |-- reupload.')
                     self.upload_datas[lpath]['is_over'] = False
 
@@ -1173,6 +1232,17 @@ class panbaiducom_HOME(object):
                 remotepath = os.path.join(rpath, t)
                 self._upload_file(localpath, remotepath)
 
+    def _init_cipherer(self):
+        method = args.mode
+        if method not in CIPHERS:
+            method = 'aes-256-cfb'
+        pwd = args.passwd
+        if not pwd:
+            print s % (1, 91, '  !! missing Password.\n'), '  -P password'
+            sys.exit(1)
+
+        self._cipherer = encrypt.Encryptor(pwd, method)
+
     def upload(self, localpaths, remotepath):
         self.upload_datas = {}
         if os.path.exists(upload_datas_path):
@@ -1180,6 +1250,12 @@ class panbaiducom_HOME(object):
             upload_datas = pk.load(f)
             if upload_datas:
                 self.upload_datas = upload_datas
+
+        # initiate Crypter
+        if 'ec' in args.type_:
+            self.toEncrypt = True
+        else:
+            self.toEncrypt = False
 
         for localpath in localpaths:
             lpath = localpath
@@ -2502,6 +2578,62 @@ class panbaiducom_HOME(object):
     def share(self, paths, pwd):
         self._share(paths, pwd)
 
+    def decrypt(self, paths):
+        def get_abspath(pt):
+            if '~' == pt[0]:
+                path = os.path.expanduser(pt)
+            else:
+                path = os.path.abspath(pt)
+            if os.path.exists(path):
+                return path
+            else:
+                print s % (1, 91, '  !! path isn\'t existed.'), pt
+                return None
+
+        def store(path, decrypted_block):
+            with open(path, 'ab') as g:
+                g.write(decrypted_block)
+
+        def do(file):
+            self._init_cipherer()
+            encrypted_file = open(file, 'rb')
+            block = encrypted_file.read(100)
+            encrypted_file.seek(0)
+            head = re.search(r'^__\d+__', block)
+            if not head:
+                print s % (1, 91, '  |-- file isn\'t encrypted.'), file
+                return
+            head = head.group()
+            head_len = len(head)
+            slice_size = int(re.search(r'__(\d+)__', head).group(1))
+            piece = 0
+            while True:
+                if piece == 0:
+                    block = encrypted_file.read(head_len + slice_size)
+                    block = block[head_len:]
+                    piece = 1
+                else:
+                    block = encrypted_file.read(slice_size)
+                if block:
+                    decrypted_block = self._cipherer.decrypt(block)
+                    store(file + '.decrypt', decrypted_block)
+                else:
+                    break
+
+            if 'no' not in args.type_:  # no overwrite
+                os.rename(file + '.decrypt', file)
+
+        for pt in paths:
+            path = get_abspath(pt)
+            if not path: continue
+
+            if os.path.isdir(path):
+                for parent, dir_, files in os.walk(path):
+                    for file in files:
+                        do(os.path.join(parent, file))
+            elif os.path.isfile(path):
+                do(path)
+
 class panbaiducom(object):
     @staticmethod
     def get_web_fileinfo(cm, url):
@@ -2685,8 +2817,8 @@ def main(argv):
     p.add_argument('-P', '--passwd', action='store', \
         default=None, type=str, help='设置分享密码，eg: -P pawd')
     # for upload
-    p.add_argument('-m', '--uploadmode', action='store', \
-        default='c', type=str, choices=['o', 'c'], \
+    p.add_argument('-m', '--mode', action='store', \
+        default='c', type=str, choices=['o', 'c'] + CIPHERS, \
         help='上传模式: o --> 重传. c --> 续传 .')
     # for recurse, head, tail, include, exclude
     p.add_argument('-R', '--recursive', action='store_true', help='递归 ls')
@@ -3142,6 +3274,10 @@ def main(argv):
 
         elif comd == 'jca' or comd == 'jobclearall':
             x.jobclearall()
+
+    elif comd == 'dc' or comd == 'decrypt':
+        x = panbaiducom_HOME()
+        x.decrypt(xxx)
 
     else:
         print s % (2, 91, '  !! 命令错误\n')

@@ -42,8 +42,6 @@
 
     xiami.py 是一个虾米音乐的命令行(CLI)客户端。提供登录、下载、播放、收藏的功能。
 
-    **从2014.9.30起，需要下载或播放高品质音乐的用户，按虾米要求，要绑定taobao账号，并用淘宝账号登陆**
-
     初次使用需要登录 xm login  (原xiami账号)
 
     **支持淘宝账户**    xm logintaobao
@@ -51,6 +49,8 @@
     **对于淘宝账户，登录后只保存有关虾米的cookies，删除了有关淘宝的cookies**
 
     **vip账户**支持高品质音乐的下载和播放。
+
+    **原虾米vip用户如果不能获得高品质音乐，请用关联的淘宝帐号登录。**
 
     下载的MP3默认添加id3 tags，保存在当前目录下。
 
@@ -170,6 +170,13 @@
 
         mplayer # 我的linux上mpv播放wmv出错，换用mplayer
 
+        # 可选依赖
+        shadowsocks  # 用于加密上传。
+                     # 用 python2 的 pip 安装
+
+        # 除了用pip安装包，还可以手动:
+        https://github.com/PeterDing/iScript/wiki/%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3pan.baidu.com.py%E4%BE%9D%E8%B5%96%E5%8C%85
+
 2. 使用说明
 
     pan.baidu.com.py 是一个百度网盘的命令行客户端。
@@ -177,6 +184,8 @@
     初次使用需要登录 bp login
 
     **支持多帐号登录**
+
+    **支持加密上传**, 需要 shadowsocks
 
     他人分享的网盘连接，只支持单个的下载。
 
@@ -234,6 +243,9 @@
         # !! 注意:
         # d /path/to/download -R      递归下载 *download文件夹* 到当前目录(cwd)
         # d /path/to/download/ -R     递归下载 *download文件夹中的文件* 到当前目录(cwd)
+
+        # 下载并解密
+        d /path/to/download -R -t dc -P password [-m aes-256-cfb]
 
         # 文件操作
         md 或 mkdir path1 path2 ..                           创建文件夹
@@ -350,6 +362,9 @@
         -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
         -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                             eg:
+                                            d -t dc     # 下载并解密,覆盖加密文件(默认)
+                                            d -t dc,no  # 下载并解密,不覆盖加密文件
+                                            dc -t no    # 解密,不覆盖加密文件
                                             d -t ie     # ignore error, 忽略除Ctrl-C以外的下载错误
                                             p -t m3     # 播放流媒体(m3u8)
                                             s -t c      # 连续转存 (如果转存出错，再次运行命令
@@ -360,12 +375,15 @@
                                             l -t e,d    # 空文件夹
                                             f -t all    # 搜索所有账户
                                             a -t m,d,p,a
+                                            u -t ec     # encrypt, 加密上传, 默认加前缀
+                                            u -t ec,np  # encrypt, 加密上传, 不加前缀
                                             u -t r      # 只进行 rapidupload
                                             u -t e      # 如果云端已经存在则不上传(不比对md5)
                                             u -t r,e
                                             -t s        # shuffle，乱序
         -l amount, --limit amount           下载速度限制，eg: -l 100k
-        -m {o,c}, --uploadmode {o,c}        上传模式:  o   # 重新上传. c   # 连续上传.
+        -m {o,c}, --mode {o,c}              模式:  o # 重新上传.   c # 连续上传.
+                                            加密方法: https://github.com/shadowsocks/shadowsocks/wiki/Encryption
         -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
         -H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2 ..
         -T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2 ..
@@ -430,6 +448,20 @@
         bp d /movie/her.mkv -a 4
         bp d url -s [secret] -a 10
 
+        # 下载并解码
+        ## 默认加密方法为 aes-256-cfb
+        bp d /path/to/encrypted_file -t dc -P password    # 覆盖加密文件
+        bp d /path/to/encrypted_file -t dc,no   # 不覆盖加密文件
+        ## 设置加密方法
+        bp d /path/to/encrypted_file -t dc -P password -m 'rc4-md5'
+        bp d /path/to/directory -t dc -P password -m 'rc4-md5'
+
+    解码已下载的加密文件:
+
+        bp dc /local/to/encrypted_file -P password -m 'aes-256-cfb'
+        bp dc /local/to/encrypted_file -P password
+        bp dc /local/to/directory -P password
+
     播放:
 
         bp p /movie/her.mkv
@@ -492,6 +524,15 @@
         # 用 -t e 时, -m o 无效
 
         bp u ~/Documents ~/Videos ~/Documents /backup -t r,e  # 以上两种模式
+
+    加密上传:
+
+        bp u ~/{p1,p2,p3} -t ec -P password   # 默认加密方法 'aes-256-cfb'
+        bp u ~/{p1,p2,p3} -t ec -P password -m 'rc4-md5'
+
+        # 注意:
+        # 上传后的文件名会默认加上前缀 encrypted_
+        # 不加前缀用 -t ec,np
 
     转存:
 
