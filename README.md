@@ -199,7 +199,7 @@
 
     下载默认为非递归，递归下载加 -R
 
-    搜索时，默认在 /
+    搜索时，默认在 cwd
 
     搜索支持高亮
 
@@ -290,7 +290,7 @@
         rnr /path/to/decode1 /path/to/decode2 -t f,bd64
 
         # 搜索
-        # directory 必须是绝对路径
+        # directory 必须是绝对路径, 默认是 cwd
         f   或 find keyword1 keyword2 [directory]             非递归搜索
         ff  keyword1 keyword2 [directory]                     非递归搜索 反序
         ft  keyword1 keyword2 [directory]                     非递归搜索 by time

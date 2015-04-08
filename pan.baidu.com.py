@@ -3116,12 +3116,12 @@ def handle_command(comd, xxx):
         iii = xxx.index('|') if '|' in xxx else -1
         fxxx = xxx[:iii] if iii != -1 else xxx
         pxxx = xxx[iii+1:] if iii != -1 else None
-        directory = None
         if fxxx[-1][0] == '/':
             keywords = fxxx[:-1]
             directory = fxxx[-1]
         else:
             keywords = fxxx
+            directory = x.cwd
 
         if comd == 'f' or comd == 'find':
             x.find(keywords, directory=directory, pipe=pxxx)
