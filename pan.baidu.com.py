@@ -3287,6 +3287,13 @@ def handle_command(comd, xxx):
             remotepath = '/'
             urls = xxx
 
+        localtorrents = [i for i in xxx \
+                         if i[:4] not in ['magn', 'http', 'ed2k', 'ftp:'] \
+                            and i[-8:] == '.torrent']
+        if localtorrents:
+            remotepath = '/'
+            urls = localtorrents
+
         x = panbaiducom_HOME()
         x.init()
         x.add_tasks(urls, remotepath)
