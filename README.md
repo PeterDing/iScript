@@ -332,8 +332,10 @@
         # -I, -E, -H, -T 后可跟多个匹配式, 需要放在命令行末尾
         l path1 path2 -H head -T tail -I "^re(gul.*) ex(p|g)ress$"
         l path1 path2 -H head -T tail -E "^re(gul.*) ex(p|g)ress$"
-        # 显示文件size, md5
+        # 显示绝对路径
         l path1 path2 -v
+        # 显示文件size, md5
+        l path1 path2 -vv
         # 空文件夹
         l path1 path2 -t e,d
         # 非空文件夹
@@ -385,6 +387,7 @@
                                             p -t m3     # 播放流媒体(m3u8)
                                             s -t c      # 连续转存 (如果转存出错，再次运行命令
                                                         # 可以从出错的地方开始，用于转存大量文件时)
+                                            l -v        # 显示绝对路径
                                             l -t f      # 文件
                                             l -t d      # 文件夹
                                             l -t du     # 查看文件占用空间

@@ -1816,7 +1816,7 @@ class panbaiducom_HOME(object):
                 else:
                     print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
 
-        args.view = 'find'
+        if not args.view: args.view = 1
         if 'all' in args.type_:
             for user in self.accounts:
                 cookie = self.accounts[user]['cookies']
@@ -3055,16 +3055,16 @@ def handle_command(comd, xxx):
             x.download(paths1)
 
         if paths2:
-            x = panbaiducom()
-            x.do2(paths2)
+            xw = panbaiducom()
+            xw.do2(paths2)
 
         if paths3:
-            x = panbaiducom()
-            x.do(paths3)
+            xw = panbaiducom()
+            xw.do(paths3)
 
         if paths4:
-            x = panbaiducom()
-            x.do4(paths4)
+            xw = panbaiducom()
+            xw.do4(paths4)
 
     elif comd == 's' or comd == 'save':
         if len(xxx) != 2:
