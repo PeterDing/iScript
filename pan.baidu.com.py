@@ -234,7 +234,7 @@ class panbaiducom_HOME(object):
             if type(j[i]) != type({}):
                 del j[i]
             else:
-                if not j[i].get('cookies') and not j[i].get('on'):
+                if not j[i].get('cookies'):
                     del j[i]
 
         return j
@@ -371,7 +371,7 @@ class panbaiducom_HOME(object):
                     login_error_msg[errno]
                 sys.exit(1)
 
-    def save_cookies(self, username=None, on=0):
+    def save_cookies(self, username=None, on=0, tocwd=False):
         if not username: username = self.user
         accounts = self.accounts
         accounts[username] = {}
@@ -381,7 +381,9 @@ class panbaiducom_HOME(object):
         capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
         accounts[username]['capacity'] = capacity
         if hasattr(self, 'cwd'):
-            accounts[username]['cwd'] = self.cwd
+            if not accounts[username].get('cwd'):
+                accounts[username]['cwd'] = '/'
+            if tocwd: accounts[username]['cwd'] = self.cwd
         else:
             accounts[username]['cwd'] = '/'
         for u in accounts:
@@ -1831,7 +1833,7 @@ class panbaiducom_HOME(object):
                     print '\n' + user + ':'
 
                 do()
-                self.save_cookies(user, on=self.accounts[user]['on'])
+                #self.save_cookies(user, on=self.accounts[user]['on'])
         else:
             do()
         sys.exit()
@@ -3365,9 +3367,9 @@ def handle_command(comd, xxx):
         print s % (2, 91, '  !! 命令错误\n')
 
     if 'x' in locals():
-        x.save_cookies(on=1)
+        x.save_cookies(on=1, tocwd=True)
     elif 'px' in locals():
-        px.save_cookies(on=1)
+        px.save_cookies(on=1, tocwd=True)
 
 def main(argv):
     handle_signal()
