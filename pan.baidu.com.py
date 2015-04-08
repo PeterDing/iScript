@@ -2407,7 +2407,8 @@ class panbaiducom_HOME(object):
                 status_color = 92 if i['status'] == '0' else 91
                 print template % (
                         i['id'].encode('utf8'),
-                        status_color, self.jobstatus[i['status'].encode('utf8')],
+                        status_color,
+                        self.jobstatus.get(i['status'].encode('utf8'), '未知'),
                         i['done'],
                         i['name'].encode('utf8'),
                         i['path'].encode('utf8'),
@@ -2486,7 +2487,7 @@ class panbaiducom_HOME(object):
             "clienttype": 0,
             "channel": "chunlei",
             "method": "list_task",
-            "need_task_info": 0,
+            "need_task_info": 1,
             "status": 255,
             "start": 0,
             "limit": 1000,
@@ -2496,7 +2497,7 @@ class panbaiducom_HOME(object):
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
         r = ss.get(url, params=p)
         j = r.json()
-        if j.get('errno'):
+        if j.get('error_code'):
             print s % (1, 91, '  !! Error at _query_task:'), j
             sys.exit(1)
 
