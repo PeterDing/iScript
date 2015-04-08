@@ -1032,9 +1032,9 @@ class panbaiducom_HOME(object):
         }
 
         if self.toEncrypt and 'np' not in args.type_:
-            p['path'] = 'encrypted_' + os.path.join(rpath, os.path.basename(lpath)),
+            p['path'] = os.path.join(rpath, 'encrypted_' + os.path.basename(lpath))
         else:
-            p['path'] = os.path.join(rpath, os.path.basename(lpath)),
+            p['path'] = os.path.join(rpath, os.path.basename(lpath))
 
         data = {
             'param': json.dumps(
@@ -1062,9 +1062,10 @@ class panbaiducom_HOME(object):
                 __slice_block = b'__' +  bytes(slice) + b'__' + __slice_block
         else:
             __slice_block = self.__slice_block
+        self.__slice_md5 = md5.new(__slice_block).hexdigest()
 
-        file = cStringIO.StringIO(__slice_block)
-        files = {'file': ('file', file, '')}
+        fl = cStringIO.StringIO(__slice_block)
+        files = {'file': ('file', fl, '')}
         data = MultipartEncoder(files)
         theaders = headers
         theaders['Content-Type'] = data.content_type
@@ -1180,7 +1181,6 @@ class panbaiducom_HOME(object):
                     for piece in xrange(current_piece_point, pieces):
                         self.__slice_block = f.read(slice)
                         if self.__slice_block:
-                            self.__slice_md5 = md5.new(self.__slice_block).hexdigest()
                             while True:
                                 result = self._upload_slice(piece=piece, slice=slice)
                                 if result == ENoError:
@@ -1198,6 +1198,7 @@ class panbaiducom_HOME(object):
                                 pre='     ', msg='%s/%s' % (str(piece+1), \
                                                             str(pieces))
                             )
+                    f.close()
 
                     if result != ENoError:
                         self.upload_datas[lpath]['slice_md5s'] = []
@@ -1208,12 +1209,13 @@ class panbaiducom_HOME(object):
                     if result == ENoError:
                         self.upload_datas[lpath]['is_over'] = True
                         self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        del self.upload_datas[lpath]['slice_md5s']
+                        self.upload_datas[lpath]['slice_md5s'] = []
                         self.save_datas(upload_datas_path, self.upload_datas)
                         print s % (1, 92, '\n  |-- success.\n')
                         break
                     else:
                         print s % (1, 91, '\n  !! Error at _combine_file:'), result
+                        break
                         #sys.exit(1)
 
                 elif m == '_upload_one_file':
