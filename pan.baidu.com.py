@@ -1627,11 +1627,12 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
-            "dir": directory if directory else self.cwd,
             "key": keyword,
+            "dir": directory if directory else "",
             #"timeStamp": "0.15937364846467972",
             #"bdstoken": self._get_bdstoken(),
         }
+
         if args.recursive: p['recursion'] = 1
         url = 'http://pan.baidu.com/api/search'
         r = ss.get(url, params=p)

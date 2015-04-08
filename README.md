@@ -290,6 +290,7 @@
         rnr /path/to/decode1 /path/to/decode2 -t f,bd64
 
         # 搜索
+        # directory 必须是绝对路径
         f   或 find keyword1 keyword2 [directory]             非递归搜索
         ff  keyword1 keyword2 [directory]                     非递归搜索 反序
         ft  keyword1 keyword2 [directory]                     非递归搜索 by time
