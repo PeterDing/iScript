@@ -1834,6 +1834,7 @@ class panbaiducom_HOME(object):
                 self.save_cookies(user, on=self.accounts[user]['on'])
         else:
             do()
+        sys.exit()
 
     ##############################################################
     # for ls
