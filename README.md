@@ -28,7 +28,7 @@
 <a name="xiami.py"></a>
 ### xiami.py - 下载或播放高品质虾米音乐(xiami.com)
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -38,7 +38,7 @@
 
         mpv (http://mpv.io)
 
-2. 使用说明
+#### 2. 使用说明
 
     xiami.py 是一个虾米音乐的命令行(CLI)客户端。提供登录、下载、播放、收藏的功能。
 
@@ -60,7 +60,7 @@
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
-    命令:
+    #### 命令:
 
         # 虾米账号登录
         g
@@ -80,7 +80,7 @@
         p 或 play  url1 url2 ..         # 播放
         s 或 save  url1 url2 ..         # 收藏
 
-    参数:
+    #### 参数:
 
         -p, --play                 按顺序播放
         -pp                        按歌曲被播放的次数，从高到低播放
@@ -90,7 +90,7 @@
         -t TAGS, --tags TAGS       收藏用的tags,用英文逗号分开, eg: -t piano,cello,guitar
         -n, --undownload           不下载,用于修改已存在的MP3的id3 tags
 
-3. 用法
+#### 3. 用法
 
     \# xm 是xiami.py的马甲 (alias xm='python2 /path/to/xiami.py')
 
@@ -125,19 +125,19 @@
         xm d http://www.xiami.com/genre/detail/gid/2?spm=a1z1s.3057857.6850221.1.g9ySan
         xm d http://www.xiami.com/genre/detail/sid/2970?spm=a1z1s.3057857.6850221.4.pkepgt
 
-    播放:
+    #### 播放:
 
         # url 是上面的
         xm p url
 
-    收藏:
+    #### 收藏:
 
         xm s http://www.xiami.com/album/168709?spm=a1z1s.6928801.1561534521.114.ShN6mD
         xm s -t 'tag1,tag 2,tag 3' http://www.xiami.com/song/2082998?spm=a1z1s.6659513.0.0.DT2j7T
         xm s http://www.xiami.com/song/showcollect/id/30374035?spm=a1z1s.3061701.6856305.16.fvh75t
         xm s http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
-4. 参考:
+#### 4. 参考:
 
 > http://kanoha.org/2011/08/30/xiami-absolute-address/
 
@@ -152,7 +152,7 @@
 <a name="pan.baidu.com.py"></a>
 ### pan.baidu.com.py - 百度网盘的下载、离线下载、上传、播放、转存、文件操作
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -177,7 +177,7 @@
         # 除了用pip安装包，还可以手动:
         https://github.com/PeterDing/iScript/wiki/%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3pan.baidu.com.py%E4%BE%9D%E8%B5%96%E5%8C%85
 
-2. 使用说明
+#### 2. 使用说明
 
     pan.baidu.com.py 是一个百度网盘的命令行客户端。
 
@@ -218,7 +218,7 @@
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
     <a name="cmd"></a>
-    命令:
+    #### 命令:
 
     **!!注意：**
     **命令参数中，所有网盘的路径和本地路径可以是 相对路径 或 绝对路径**
@@ -365,7 +365,7 @@
         jc 或 jobclear taskid1 taskid2          # 清除 *正在下载中的任务*
         jca 或 jobclearall                      # 清除 *全部任务*
 
-    参数:
+    #### 参数:
 
         -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
         -p, --play                          play with mpv
@@ -413,11 +413,11 @@
 
         # -t, -H, -T, -I, -E 都能用于 download, play, ls, find, rnre, rmre, cpre, mvre
 
-3. 用法
+#### 3. 用法
 
     \# bp 是pan.baidu.com.py的马甲 (alias bp='python2 /path/to/pan.baidu.com.py')
 
-    登录:
+    #### 登录:
 
         bp g
         bp login
@@ -427,23 +427,23 @@
         # 多帐号登录
         # 一直用 bp login 即可
 
-    删除帐号:
+    #### 删除帐号:
 
         bp ud
 
-    切换帐号:
+    #### 切换帐号:
 
         bp uc
 
-    帐号信息:
+    #### 帐号信息:
 
         bp user
 
-    显示当前工作目录
+    #### 显示当前工作目录
 
         bp cwd
 
-    切换当前工作目录
+    #### 切换当前工作目录
 
         bp cd         # 切换到 /
         bp cd path    # 支持 ./../...
@@ -451,7 +451,7 @@
         bp cd ../../Music
         bp cd ...
 
-    下载:
+    #### 下载:
 
         # 下载当前工作目录 (递归)
         bp d . -R
@@ -491,13 +491,13 @@
         bp d /path/to/encrypted_file -t dc -P password -m 'rc4-md5'
         bp d /path/to/directory -t dc -P password -m 'rc4-md5'
 
-    解码已下载的加密文件:
+    #### 解码已下载的加密文件:
 
         bp dc /local/to/encrypted_file -P password -m 'aes-256-cfb'
         bp dc /local/to/encrypted_file -P password
         bp dc /local/to/directory -P password
 
-    播放:
+    #### 播放:
 
         bp p /movie/her.mkv
         bp p http://pan.baidu.com/s/xxxxxxxxx -s [secret]
@@ -510,7 +510,7 @@
         清晰度与在浏览器上播放的一样.
         如果源文件是高清的(720P,1280P),那么流媒体会自动转为480P.
 
-    离线下载:
+    #### 离线下载:
 
         bp a http://mirrors.kernel.org/archlinux/iso/latest/archlinux-2014.06.01-dual.iso /path/to/save
         bp a https://github.com/PeterDing/iScript/archive/master.zip /path/to/save
@@ -524,7 +524,7 @@
                            ↓
                   网盘中的torrent
 
-    magnet离线下载 -- 文件选择:
+    #### magnet离线下载 -- 文件选择:
 
         -t m    # 视频文件 (默认), 如: mkv, avi ..etc
         -t i    # 图像文件, 如: jpg, png ..etc
@@ -537,7 +537,7 @@
         bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t p,d
         bp a /download/a.torrent -v -t m,i,d    # 使用网盘中torrent，下载到/download
 
-    离线任务操作:
+    #### 离线任务操作:
 
         bp j
         bp j 3482938 8302833
@@ -546,32 +546,33 @@
         bp jc 1208382 58239221 ..
         bp jca
 
-    上传:
+    #### 上传: (默认为非递归，递归加 -R)
 
         bp u ~/Documents/reading/三体\ by\ 刘慈欣.mobi /doc -m o
         # 上传模式:
         # -m o --> 重传
         # -m c --> 续传 (默认)
+        # 递归加-R
 
         bp u ~/Videos/*.mkv ../videos -t r
         # 只进行rapidupload
 
-        bp u ~/Documents ~/Videos ~/Documents /backup -t e
+        bp u ~/Documents ~/Videos ~/Documents /backup -t e -R
         # 如果云端已经存在则不上传(不比对md5)
         # 用 -t e 时, -m o 无效
 
         bp u ~/Documents ~/Videos ~/Documents /backup -t r,e  # 以上两种模式
 
-    加密上传:
+    #### 加密上传: (默认为非递归，递归加 -R)
 
-        bp u ~/{p1,p2,p3} -t ec -P password   # 默认加密方法 'aes-256-cfb'
+        bp u ~/{p1,p2,p3} -t ec -P password  # 默认加密方法 'aes-256-cfb'
         bp u ~/{p1,p2,p3} -t ec -P password -m 'rc4-md5'
 
         # 注意:
         # 上传后的文件名会默认加上前缀 encrypted_
         # 不加前缀用 -t ec,np
 
-    转存:
+    #### 转存:
 
         bp s url remotepath [-s secret]
         # url是他人分享的连接, 如: http://pan.baidu.com/share/link?shareid=xxxxxxx&uk=xxxxxxx, http://pan.baidu.com/s/xxxxxxxx
@@ -586,7 +587,7 @@
         bp s 'http://pan.baidu.com/share/link?shareid=2705944270&uk=708312363' /path/to/save -t c
         # 注意：再次运行时，命令要一样。
 
-    搜索:
+    #### 搜索:
 
         bp f keyword1 keyword2
         bp f "this is one keyword" "this is another keyword" /path/to/search
@@ -618,7 +619,7 @@
         bp f ccav \| rm -R -T avi                    递归搜索后删除
         bp f 新闻联播（大结局） \| mv /Favor -R      递归搜索后移动
 
-    恢复用bt.py做base64加密的文件:
+    #### 恢复用bt.py做base64加密的文件:
 
         rnr /ooxx -t f,bd64
         !! 注意： /ooxx 中的所有文件都必须是被base64加密的，且加密段要有.base64后缀
@@ -628,7 +629,7 @@
 
     见[命令](#cmd)
 
-4. 参考:
+#### 4. 参考:
 
 > https://gist.github.com/HououinRedflag/6191023
 
@@ -641,12 +642,12 @@
 <a name="bt.py"></a>
 ### bt.py - magnet torrent 互转、及 过滤敏.感.词
 
-1. 依赖
+#### 1. 依赖
 
         python2-requests (https://github.com/kennethreitz/requests)
         bencode (https://github.com/bittorrent/bencode)
 
-2. 使用说明
+#### 2. 使用说明
 
     magnet 和 torrent 的相互转换
 
@@ -680,7 +681,7 @@
 
     > 对于baidu, 加入离线任务后，需等待一段时间才会下载完成。
 
-    命令:
+    #### 命令:
 
         # magnet 2 torrent
         m 或 mt magnet_link1 magnet_link2 .. [-d /path/to/save]
@@ -705,7 +706,7 @@
         cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
         # foo bar 都是 regex
 
-    参数:
+    #### 参数:
 
         -p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087 (默认)
         -t TYPE_, --type_ TYPE_                 类型参数：
@@ -715,7 +716,7 @@
         -n NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
         -i localpath1 localpath2 .., --import_from localpath1 localpath2 ..      从本地文本文件导入magnet (用正则表达式匹配)
 
-3. 用法
+#### 3. 用法
 
     \# bt 是bt.py的马甲 (alias bt='python2 /path/to/bt.py')
 
@@ -741,7 +742,7 @@
         # 用base64加密的文件名:
         bt c magnet_link -t be64
 
-4. 参考:
+#### 4. 参考:
 
 > http://blog.chinaunix.net/uid-28450123-id-4051635.html
 
@@ -752,7 +753,7 @@
 <a name="115.py"></a>
 ### 115.py - 115网盘的下载和播放
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -764,7 +765,7 @@
 
         mplayer # 我的linux上mpv播放wmv出错，换用mplayer
 
-2. 使用说明
+#### 2. 使用说明
 
     初次使用需要登录 pan115 login
 
@@ -795,7 +796,7 @@
         -l amount, --limit amount      下载速度限制，eg: -l 100k
         -d "url"                       增加离线下载 "http/ftp/magnet/ed2k"
 
-3. 用法
+#### 3. 用法
 
     \# pan115 是115.py的马甲 (alias pan115='python2 /path/to/115.py')
 
@@ -820,12 +821,12 @@
         # 增加离线下载
         pan115 -d "magnet:?xt=urn:btih:757fc565c56462b28b4f9c86b21ac753500eb2a7&dn=archlinux-2014.04.01-dual.iso"
 
-    播放
+    #### 播放
 
         # url 是上面的
         pan115 -p url
 
-4. 参考:
+#### 4. 参考:
 
 > http://passport.115.com/static/wap/js/common.js?v=1.6.39
 
@@ -834,7 +835,7 @@
 <a name="yunpan.360.cn.py"></a>
 ### yunpan.360.cn.py - 360网盘的下载
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -843,7 +844,7 @@
         python2-requests (https://github.com/kennethreitz/requests)
 
 
-2. 使用说明
+#### 2. 使用说明
 
     初次使用需要登录 yp login
 
@@ -859,14 +860,14 @@
 
     cookies保存在 ~/.360.cookies
 
-    参数:
+    #### 参数:
 
         -a, --aria2c                   download with aria2c
         -f number, --from_ number      从第几个开始下载，eg: -f 42
         -t ext, --type_ ext            要下载的文件的后缀，eg: -t mp3
         -l amount, --limit amount      下载速度限制，eg: -l 100k
 
-3. 用法
+#### 3. 用法
 
     \# yp 是yunpan.360.cn.py的马甲 (alias yp='python2 /path/to/yunpan.360.cn.py')
 
@@ -889,7 +890,7 @@
         # 下载用aria2, url 是上面的
         yp -a url
 
-4. 参考:
+#### 4. 参考:
 
 > https://github.com/Shu-Ji/gorthon/blob/master/_3rdapp/CloudDisk360/main.py
 
@@ -898,7 +899,7 @@
 <a name="music.baidu.com.py"></a>
 ### music.baidu.com.py - 下载或播放高品质百度音乐(music.baidu.com)
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -906,11 +907,11 @@
 
         mpv (http://mpv.io)
 
-2. 使用说明
+#### 2. 使用说明
 
     默认执行下载，如要播放，加参数-p。
 
-    参数：
+    #### 参数：
 
         -f, --flac  download flac
         -i, --high  download 320, default
@@ -923,7 +924,7 @@
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
-3. 用法
+#### 3. 用法
 
     \# bm 是music.baidu.com.py的马甲 (alias bm='python2 /path/to/music.baidu.com.py')
 
@@ -933,12 +934,12 @@
         # 下载单曲
         bm http://music.baidu.com/song/117948039
 
-    播放:
+    #### 播放:
 
         # url 是上面的
         bm -p url
 
-4. 参考:
+#### 4. 参考:
 
 > http://v2ex.com/t/77685 # 第9楼
 
@@ -947,7 +948,7 @@
 <a name="music.163.com.py"></a>
 ### music.163.com.py - 下载或播放高品质网易音乐(music.163.com)
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -957,7 +958,7 @@
 
         mpv (http://mpv.io)
 
-2. 使用说明
+#### 2. 使用说明
 
     **默认下载和播放高品质音乐，如果服务器没有高品质音乐则转到低品质音乐。**
 
@@ -969,7 +970,7 @@
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
-3. 用法
+#### 3. 用法
 
     \# nm 是music.163.com.py的马甲 (alias nm='python2 /path/to/music.163.com.py')
 
@@ -992,12 +993,12 @@
         nm http://music.163.com/#/discover/toplist?id=11641012
 
 
-    播放:
+    #### 播放:
 
         # url 是上面的
         nm -p url
 
-4. 参考:
+#### 4. 参考:
 
 > https://github.com/yanunon/NeteaseCloudMusic/wiki/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90API%E5%88%86%E6%9E%90
 
@@ -1008,7 +1009,7 @@
 <a name="flvxz_cl.py"></a>
 ### flvxz_cl.py - flvxz.com 视频解析 client - 支持下载、播放
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -1016,13 +1017,13 @@
 
         mpv (http://mpv.io)
 
-2. 使用说明
+#### 2. 使用说明
 
     flvxz.com 视频解析
 
     **不提供视频合并操作**
 
-    支持的网站:
+    #### 支持的网站:
 
         """
         已知支持120个以上视频网站，覆盖大多数国内视频站点，少量国外视频站点
@@ -1033,21 +1034,21 @@
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
-3. 用法
+#### 3. 用法
 
     \# fl是flvxz_cl.py的马甲 (alias fl='python2 /path/to/flvxz_cl.py')
 
-    下载:
+    #### 下载:
 
         fl http://v.youku.com/v_show/id_XNTI2Mzg4NjAw.html
         fl http://www.tudou.com/albumplay/Lqfme5hSolM/tJ_Gl3POz7Y.html
 
-    播放:
+    #### 播放:
 
         # url 是上面的
         fl url -p
 
-4. 相关脚本:
+#### 4. 相关脚本:
 
 > https://github.com/iambus/youku-lixian
 
@@ -1060,13 +1061,13 @@
 <a name="tumblr.py"></a>
 ### tumblr.py - 下载某个tumblr.com的所有图片
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
         python2-requests (https://github.com/kennethreitz/requests)
 
-2. 使用说明
+#### 2. 使用说明
 
     * 使用前需用在 http://www.tumblr.com/oauth/apps 加入一个app，证实后得到api_key，再在源码中填入，完成后则可使用。
 
@@ -1080,13 +1081,13 @@
 
     支持连续下载，下载进度储存在下载文件夹内的 json.json。
 
-    参数:
+    #### 参数:
 
         -p PROCESSES, --processes PROCESSES      指定多进程数,默认为10个,最多为20个 eg: -p 20
         -c, --check           尝试修复未下载成功的图片
         -t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
 
-3. 用法
+#### 3. 用法
 
     \# tm是tumblr.py的马甲 (alias tm='python2 /path/to/tumblr.py')
 
@@ -1103,7 +1104,7 @@
 <a name="unzip.py"></a>
 ### unzip.py - 解决linux下unzip乱码的问题
 
-用法
+#### 用法
 
         python2 unzip.py azipfile1.zip azipfile2.zip ..
         python2 unzip.py azipfile.zip -s secret
@@ -1118,10 +1119,10 @@
 <a name="ed2k_search.py"></a>
 ### ed2k_search.py - 基于 donkey4u.com 的emule搜索
 
-1. 依赖
+#### 1. 依赖
         python2
 
-2. 用法
+#### 2. 用法
 
     \# ed 是ed2k_search.py的马甲 (alias ed='python2 /path/to/ed2k_search.py')
 
@@ -1136,7 +1137,7 @@
 
 **警告: 18岁以下者，请自觉远离。**
 
-1. 依赖
+#### 1. 依赖
 
         wget
 
@@ -1146,7 +1147,7 @@
 
         mpv (http://mpv.io)
 
-2. 使用说明
+#### 2. 使用说明
 
     > 没有解决 *7个/day* 限制
 
@@ -1160,15 +1161,15 @@
 
     > 在运行脚本的终端，输入1次Enter，关闭当前播放并播放下一个文件，连续输入2次Enter，关闭当前播放并退出。
 
-3. 用法
+#### 3. 用法
 
     \# pn 是91porn.py的马甲 (alias pn='python2 /path/to/91porn.py')
 
-    下载：
+    #### 下载：
 
         pn url # 91porn.com(或其镜像) 视频的url
 
-    播放:
+    #### 播放:
 
         pn -p url
 
@@ -1176,7 +1177,7 @@
 
         pn -u url
 
-4. 参考
+#### 4. 参考
 
 > http://v2ex.com/t/110196 # 第16楼
 

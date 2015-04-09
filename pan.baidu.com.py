@@ -1270,13 +1270,14 @@ class panbaiducom_HOME(object):
 
     def _upload_dir(self, lpath, rpath):
         base_dir = os.path.split(lpath)[0]
-        for a, b, c in os.walk(lpath):
-            for path in c:
-                localpath = os.path.join(a, path)
+        for parent, directories, files in os.walk(lpath):
+            for file in files:
+                localpath = os.path.join(parent, file)
                 t = localpath.replace(base_dir + '/', '')
                 t = os.path.split(t)[0]
                 remotepath = os.path.join(rpath, t)
                 self._upload_file(localpath, remotepath)
+            if not args.recursive: break
 
     def _init_cipherer(self):
         method = args.mode
@@ -2683,9 +2684,10 @@ class panbaiducom_HOME(object):
             if not path: continue
 
             if os.path.isdir(path):
-                for parent, dir_, files in os.walk(path):
+                for parent, directories, files in os.walk(path):
                     for file in files:
                         do(os.path.join(parent, file))
+                    if not args.recursive: break
             elif os.path.isfile(path):
                 do(path)
 
