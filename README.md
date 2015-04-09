@@ -548,6 +548,12 @@
 
     #### 上传: (默认为非递归，递归加 -R)
 
+        # 支持文件类型选择
+        bp u ~/Documents/*           # 默认上传所以文件
+        bp u ~/Documents/* -t f      # 不上传文件夹
+        bp u ~/Documents/* -t d      # 不上传文件
+        bp u ~/Documents/* -t f,d    # 不上传文件和文件夹
+
         bp u ~/Documents/reading/三体\ by\ 刘慈欣.mobi /doc -m o
         # 上传模式:
         # -m o --> 重传

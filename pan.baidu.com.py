@@ -1292,6 +1292,7 @@ class panbaiducom_HOME(object):
 
     def upload(self, localpaths, remotepath):
         remotepath = make_server_path(self.cwd, remotepath)
+        rpath = remotepath if remotepath[0] == '/' else '/' + remotepath
         self.upload_datas = {}
         if os.path.exists(upload_datas_path):
             f = open(upload_datas_path, 'rb')
@@ -1307,20 +1308,19 @@ class panbaiducom_HOME(object):
 
         for localpath in localpaths:
             lpath = get_abspath(localpath)
-            rpath = remotepath if remotepath[0] == '/' else '/' + remotepath
 
             if not lpath:
                 print s % (1, 91, '  !! Error: localpath doesn\'t exist')
                 print s % (1, 91, '  ==>'), localpath
                 continue
 
-            if os.path.isdir(lpath):
+            if os.path.isdir(lpath) and 'f' not in args.type_:
                 self._upload_dir(lpath, rpath)
-            elif os.path.isfile(lpath):
+            elif os.path.isfile(lpath) and 'd' not in args.type_:
                 self._upload_file(lpath, rpath)
             else:
-                print s % (1, 91, '  !! Error: localpath ?')
-                sys.exit(1)
+                #print s % (1, 91, '  !! Error: localpath ?'), localpath
+                pass
 
         self.save_datas(upload_datas_path, self.upload_datas)
 
