@@ -1900,7 +1900,7 @@ class panbaiducom_HOME(object):
     def _exist(self, list_):
         meta = self._meta(list_)
         if not meta:
-            print s % (1, 91, '  !! Error at _exist, some paths are not existed.')
+            print s % (1, 91, '  !! Error at _exist, some paths are not existed.'), list_
             sys.exit(1)
 
     def _filemanager(self, opera, data):
@@ -2351,7 +2351,7 @@ class panbaiducom_HOME(object):
                 return
 
     def add_tasks(self, urls, remotepath):
-        remotepath = make_server_path(self.cwd, remotepath)
+        remotepath = make_server_path(self.cwd, remotepath) + '/'
         for url in urls:
             if url.startswith('magnet:') or url.startswith('/'):
                 if url.startswith('/'):
