@@ -507,9 +507,11 @@ class xiami(object):
             t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
             album_description = t
 
-        t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
-        tt = t.rfind('.')
-        t = '%s_4%s' % (t[:tt], t[tt:])
+        #t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
+        t = re.search(r'id="albumCover".+?"(http://.+?)" ', html1).group(1)
+        #tt = t.rfind('.')
+        #t = '%s_4%s' % (t[:tt], t[tt:])
+        t = t.replace('_2.', '_4.')
         album_pic_url = t
 
         songs = []
