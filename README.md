@@ -265,6 +265,9 @@ p  或 play url1 url2 .. path1 path2 ..
 # 上传
 u  或 upload localpath remotepath
 
+# 加密上传
+u localpath remotepath -P password -t ec -R
+
 # 转存
 s  或 save url remotepath [-s secret]
 
@@ -386,6 +389,7 @@ jca 或 jobclearall                      # 清除 *全部任务*
 ```
 -a num, --aria2c num                aria2c分段下载数量: eg: -a 10
 -p, --play                          play with mpv
+-P password, --passwd password      分享密码，加密密码
 -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
 -q, --quiet                         无输出模式, 用于 download, play
 -V, --VERIFY                        verification
@@ -516,8 +520,8 @@ bp d url -s [secret] -a 10
 
 # 下载并解码
 ## 默认加密方法为 aes-256-cfb
-bp d /path/to/encrypted_file -t dc -P password    # 覆盖加密文件
-bp d /path/to/encrypted_file -t dc,no   # 不覆盖加密文件
+bp d /path/to/encrypted_file -t dc -P password     # 覆盖加密文件 (默认)
+bp d /path/to/encrypted_file -t dc,no -P password  # 不覆盖加密文件
 ## 设置加密方法
 bp d /path/to/encrypted_file -t dc -P password -m 'rc4-md5'
 bp d /path/to/directory -t dc -P password -m 'rc4-md5'

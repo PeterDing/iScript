@@ -922,7 +922,7 @@ class xiami(object):
                     print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
 
                 file_name_for_wget = file_name.replace('`', '\`')
-                cmd = 'wget -c -T 5 -nv ' \
+                cmd = 'wget -c -nv ' \
                     '-U "%s" ' \
                     '--header "Referer:http://img.xiami.com' \
                     '/static/swf/seiya/1.4/player.swf?v=%s" ' \

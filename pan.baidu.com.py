@@ -1339,8 +1339,7 @@ class panbaiducom_HOME(object):
 
         if not info['isdir']:
             remote_file_path = '/'.join(
-                [info['remotepath'], os.path.split(info['path'])[-1]]
-            )
+                [info['remotepath'], os.path.split(info['path'])[-1]] )
             meta = self._meta([remote_file_path])
             if meta:
                 j = {'errno': 'file has exist'}
@@ -1464,7 +1463,7 @@ class panbaiducom_HOME(object):
                         infos += self._get_share_list(info)
                         break
                     else:
-                        print s % (1, 91, '  !! Error: can\'t transfer file')
+                        print s % (1, 91, '  !! Error: can\'t transfer file'), result
                         break
                 elif result['errno'] == 'file has exist':
                         print s % (1, 93, '  |-- file has exist.')
@@ -3085,7 +3084,7 @@ def handle_command(comd, xxx):
         path = x._get_path(xxx[0])
         remotepath = xxx[1].decode('utf8', 'ignore')
         infos = []
-        if path != '/':
+        if path != '/' and path[0] == '/':
             infos.append(
                 {
                     'isdir': 1,
