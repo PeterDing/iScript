@@ -369,10 +369,8 @@ class neteaseMusic(object):
 
     def play(self, amount_songs, n=None):
         for i in self.song_infos:
-            r = ss.get(i['durl'], allow_redirects=False)
-            real_durl = r.headers['location']
             self.display_infos(i)
-            cmd = 'mpv --really-quiet --audio-display no "%s"' % real_durl
+            cmd = 'mpv --really-quiet --audio-display no %s' % i['durl']
             os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -401,7 +399,6 @@ class neteaseMusic(object):
                 else:
                     ii += 1
                     continue
-            file_name_for_wget = file_name.replace('`', '\`')
             if not args.undownload:
                 q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
                 mp3_quality = q[i['mp3_quality']]
@@ -415,10 +412,9 @@ class neteaseMusic(object):
                           u'  ++ mp3_quality: %s' \
                         % (n, amount_songs, col,
                            s % (1, 91, mp3_quality)))
-
-                r = ss.get(i['durl'], allow_redirects=False)
-                real_durl = r.headers['location']
-                cmd = 'wget -c -nv -O "%s.tmp" %s' % (file_name_for_wget, real_durl)
+                file_name_for_wget = file_name.replace('`', '\`')
+                cmd = 'wget -c -nv -U "%s" -O "%s.tmp" %s' \
+                    % (headers['User-Agent'], file_name_for_wget, i['durl'])
                 cmd = cmd.encode('utf8')
                 status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
