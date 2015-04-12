@@ -1140,13 +1140,16 @@ class panbaiducom_HOME(object):
             }
 
         if self.toEncrypt:
-            self._init_cipherer()
+            self._init_cipherer(toencrypt=True)
             self.upload_datas[lpath]['is_over'] = False
-            self.upload_datas[lpath]['remotepaths'] = set()
+            #self.upload_datas[lpath]['remotepaths'] = set()
             self.upload_datas[lpath]['slice_md5s'] = []
 
         if 'e' in args.type_:
-            path = os.path.join(rpath, os.path.basename(lpath))
+            if 'ec' in args.type_ and not 'np' in args.type_:
+                path = os.path.join(rpath, 'encrypted_' + os.path.basename(lpath))
+            else:
+                path = os.path.join(rpath, os.path.basename(lpath))
             meta = self._meta([path])
             if meta:
                 self.upload_datas[lpath]['is_over'] = True
@@ -1279,16 +1282,15 @@ class panbaiducom_HOME(object):
                 self._upload_file(localpath, remotepath)
             if not args.recursive: break
 
-    def _init_cipherer(self):
+    def _init_cipherer(self, toencrypt=False):
         method = args.mode
         if method not in CIPHERS:
             method = 'aes-256-cfb'
-        pwd = args.passwd
-        if not pwd:
-            print s % (1, 91, '  !! missing Password.\n'), '  -P password'
+        if not args.passwd:
+            print s % (1, 91, '  !! missing Password.\n')
             sys.exit(1)
 
-        self._cipherer = encrypt.Encryptor(pwd, method)
+        self._cipherer = encrypt.Encryptor(args.passwd, method)
 
     def upload(self, localpaths, remotepath):
         remotepath = make_server_path(self.cwd, remotepath)
@@ -2645,11 +2647,15 @@ class panbaiducom_HOME(object):
         self._share(paths, pwd)
 
     def decrypt(self, paths):
+        def init_decrypted_file(path):
+            open(path, 'w').close()
+
         def store(path, decrypted_block):
             with open(path, 'ab') as g:
                 g.write(decrypted_block)
 
         def do(file):
+            init_decrypted_file(file + '.decrypt')
             self._init_cipherer()
             encrypted_file = open(file, 'rb')
             block = encrypted_file.read(100)
@@ -2884,7 +2890,7 @@ def handle_args(argv):
     p.add_argument('-l', '--limit', action='store', \
         default=None, type=str, help='下载速度限制，eg: -l 100k')
     p.add_argument('-P', '--passwd', action='store', \
-        default=None, type=str, help='设置分享密码，eg: -P pawd')
+        default=None, type=str, help='设置密码，eg: -P pawd')
     # for upload
     p.add_argument('-m', '--mode', action='store', \
         default='c', type=str, choices=['o', 'c'] + CIPHERS, \
@@ -2919,6 +2925,21 @@ def handle_args(argv):
     xxx = args.xxx
     args.comd = comd
     return comd, xxx
+
+def enter_password():
+    if not args.passwd:
+        from getpass import getpass
+        if 'ec' in args.type_:
+            while True:
+                pwd1 = getpass(s % (2, 97, 'Password: '))
+                pwd2 = getpass(s % (2, 97, 'verify Password: '))
+                if pwd1 == pwd2:
+                    args.passwd = pwd1
+                    break
+                else:
+                    print s % (2, 91, '! Passwords do not match.')
+        elif 'dc' in args.type_:
+            args.passwd = getpass(s % (2, 97, 'Password: '))
 
 def handle_command(comd, xxx):
     if comd == 'login' or comd == 'g':
@@ -2999,6 +3020,8 @@ def handle_command(comd, xxx):
             sys.exit(1)
         global px
 
+        enter_password()
+
         px = panbaiducom_HOME()
         px.init()
         px.upload(xxx[:-1], xxx[-1])
@@ -3037,6 +3060,8 @@ def handle_command(comd, xxx):
             sys.exit(1)
 
         if comd == 'p' or comd == 'play': args.play = True
+
+        enter_password()
 
         paths  = xxx
         paths1 = []
@@ -3349,6 +3374,9 @@ def handle_command(comd, xxx):
             x.jobclearall()
 
     elif comd == 'dc' or comd == 'decrypt':
+        if 'dc' not in args.type_: args.type_.append('dc')
+        enter_password()
+
         x = panbaiducom_HOME()
         x.init()
         x.decrypt(xxx)

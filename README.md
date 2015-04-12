@@ -266,20 +266,23 @@ p  或 play url1 url2 .. path1 path2 ..
 u  或 upload localpath remotepath
 
 # 加密上传
-u localpath remotepath -P password -t ec -R
+u localpath remotepath [-P password] -t ec -R
 
 # 转存
 s  或 save url remotepath [-s secret]
 
 # 下载
-d  或 download url1 url2 path1 path2           非递归下载 到当前目录(cwd)
-d  或 download url1 url2 path1 path2 -R        递归下载 到当前目录(cwd)
+d  或 download url1 url2 path1 path2           非递归下载 到当前本地目录
+d  或 download url1 url2 path1 path2 -R        递归下载 到当前本地目录
 # !! 注意:
-# d /path/to/download -R       递归下载 *download文件夹* 到当前目录(cwd)
-# d /path/to/download/ -R      递归下载 *download文件夹中的文件* 到当前目录(cwd)
+# d /path/to/download -R       递归下载 *download文件夹* 到当前本地目录
+# d /path/to/download/ -R      递归下载 *download文件夹中的文件* 到当前本地目录
 
 # 下载并解密
-d /path/to/download -R -t dc -P password [-m aes-256-cfb]
+d /path/to/download -R -t dc [-P password] [-m aes-256-cfb]
+
+# 解密已下载的文件
+dc path1 path2 -R [-P password] [-m aes-256-cfb]
 
 # 文件操作
 md 或 mkdir path1 path2                           创建文件夹
@@ -395,6 +398,7 @@ jca 或 jobclearall                      # 清除 *全部任务*
 -V, --VERIFY                        verification
 -v, --view                          view detail
                                     eg:
+                                    l -v        # 显示绝对路径
                                     a magnet /path -v     # 离线下载并显示下载的文件
                                     d -p url1 url2 -v  # 显示播放文件的完整路径
                                     l path1 path2 -vv  # 显示文件的size, md5
@@ -409,7 +413,6 @@ jca 或 jobclearall                      # 清除 *全部任务*
                                     p -t m3     # 播放流媒体(m3u8)
                                     s -t c      # 连续转存 (如果转存出错，再次运行命令
                                                 # 可以从出错的地方开始，用于转存大量文件时)
-                                    l -v        # 显示绝对路径
                                     l -t f      # 文件
                                     l -t d      # 文件夹
                                     l -t du     # 查看文件占用空间
@@ -520,19 +523,19 @@ bp d url -s [secret] -a 10
 
 # 下载并解码
 ## 默认加密方法为 aes-256-cfb
-bp d /path/to/encrypted_file -t dc -P password     # 覆盖加密文件 (默认)
-bp d /path/to/encrypted_file -t dc,no -P password  # 不覆盖加密文件
+bp d /path/to/encrypted_file -t dc [-P password]     # 覆盖加密文件 (默认)
+bp d /path/to/encrypted_file -t dc,no [-P password]  # 不覆盖加密文件
 ## 设置加密方法
-bp d /path/to/encrypted_file -t dc -P password -m 'rc4-md5'
-bp d /path/to/directory -t dc -P password -m 'rc4-md5'
+bp d /path/to/encrypted_file -t dc [-P password] -m 'rc4-md5'
+bp d /path/to/directory -t dc [-P password] -m 'rc4-md5'
 ```
 
 #### 解码已下载的加密文件:
 
 ```
-bp dc /local/to/encrypted_file -P password -m 'aes-256-cfb'
-bp dc /local/to/encrypted_file -P password
-bp dc /local/to/directory -P password
+bp dc /local/to/encrypted_file [-P password] -m 'aes-256-cfb'
+bp dc /local/to/encrypted_file [-P password]
+bp dc /local/to/directory [-P password]
 ```
 
 #### 播放:
@@ -620,8 +623,8 @@ bp u ~/Documents ~/Videos ~/Documents /backup -t r,e  # 以上两种模式
 #### 加密上传: (默认为非递归，递归加 -R)
 
 ```
-bp u ~/{p1,p2,p3} -t ec -P password  # 默认加密方法 'aes-256-cfb'
-bp u ~/{p1,p2,p3} -t ec -P password -m 'rc4-md5'
+bp u ~/{p1,p2,p3} -t ec [-P password]  # 默认加密方法 'aes-256-cfb'
+bp u ~/{p1,p2,p3} -t ec [-P password] -m 'rc4-md5'
 
 # 注意:
 # 上传后的文件名会默认加上前缀 encrypted_
@@ -648,6 +651,7 @@ bp s 'http://pan.baidu.com/share/link?shareid=2705944270&uk=708312363' /path/to/
 #### 搜索:
 
 ```
+# 默认搜索当前服务器工作目录 cwd
 bp f keyword1 keyword2
 bp f "this is one keyword" "this is another keyword" /path/to/search
 
