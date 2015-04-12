@@ -490,8 +490,8 @@ class xiami(object):
         t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1)
         artist_name = modificate_text(t)
 
-        t = re.findall(u'(\d+)年(\d+)月(\d+)', html1)[0]
-        year = '-'.join(t)
+        t = re.findall(u'(\d+)年(\d+)月(\d+)', html1)
+        year = '-'.join(t[0]) if t else ''
 
         album_description = ''
         t = re.search(u'专辑介绍：(.+?)<div class="album_intro_toggle">',
