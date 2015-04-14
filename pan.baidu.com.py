@@ -933,18 +933,27 @@ class panbaiducom_HOME(object):
             "blocks": 0,  # 0 or 1
             #"bdstoken": self._get_bdstoken()
         }
-        data = {'target': json.dumps(file_list)}
         url = 'http://pan.baidu.com/api/filemetas'
+        i = 0
+        j = {}
         while True:
-            try:
-                r = ss.post(url, params=p, data=data)
-                j = r.json()
-                if j['errno'] == 0:
-                    return j
-                else:
-                    return False
-            except Exception:
-                time.sleep(1)
+            fl = file_list[i:i+100]
+            if fl:
+                data = {'target': json.dumps(fl)}
+                try:
+                    r = ss.post(url, params=p, data=data)
+                    js = r.json()
+                    if js['errno'] == 0 and i == 0:
+                        j = js
+                    elif js['errno'] == 0:
+                        j['info'].append(js['info'])
+                    else:
+                        return False
+                except Exception:
+                    time.sleep(1)
+            else:
+                return j
+            i += 100
 
     ################################################################
     # for upload
@@ -1819,7 +1828,7 @@ class panbaiducom_HOME(object):
                     if not warn('move', display=True): return
                     paths = [i['path'].encode('utf8') for i in infos]
                     remotepath = pipe[1]
-                    self.move(paths, remotepath)
+                    self.move(paths, remotepath, check=False)
                 else:
                     print s % (1, 91, '  !! command is supported by download, play, rnre, rm, mv')
 
@@ -1901,7 +1910,8 @@ class panbaiducom_HOME(object):
     def _exist(self, list_):
         meta = self._meta(list_)
         if not meta:
-            print s % (1, 91, '  !! Error at _exist, some paths are not existed.'), list_
+            print s % (1, 91, '  !! Error at _exist, some paths are not existed.'), \
+                list_ if len(list_) <= 10 else ''
             sys.exit(1)
 
     def _filemanager(self, opera, data):
@@ -1922,10 +1932,10 @@ class panbaiducom_HOME(object):
         else:
             print s % (1, 91, '  !! Error at filemanager')
 
-    def move(self, paths, remotepath):
+    def move(self, paths, remotepath, check=True):
         paths = [ make_server_path(self.cwd, path) for path in paths ]
         remotepath = make_server_path(self.cwd, remotepath)
-        self._exist(paths)
+        if check: self._exist(paths)
 
         meta = self._meta([remotepath])
         if not meta:
@@ -2137,7 +2147,7 @@ class panbaiducom_HOME(object):
             if type == 'remove':
                 self.remove(paths)
             if type == 'move':
-                self.move(paths, todir)
+                self.move(paths, todir, check=False)
             elif type == 'copy':
                 self.copy(paths, todir)
         else:
