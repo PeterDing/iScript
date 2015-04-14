@@ -79,9 +79,9 @@ logintaobao username password
 
 signout                      # 退出登录
 
-d 或 download url1 url2 ..      # 下载
-p 或 play  url1 url2 ..         # 播放
-s 或 save  url1 url2 ..         # 收藏
+d 或 download url1 url2      # 下载
+p 或 play  url1 url2         # 播放
+s 或 save  url1 url2         # 收藏
 ```
 
 #### 参数:
@@ -260,7 +260,7 @@ cwd
 cd path    # 支持 ./../...
 
 # 播放
-p  或 play url1 url2 .. path1 path2 ..
+p  或 play url1 url2 path1 path2
 
 # 上传
 u  或 upload localpath remotepath
@@ -364,7 +364,7 @@ l path1 path2 -t e,d
 l path1 path2 -t ne,d
 
 # 分享文件
-S 或 share path1 path2 .. 为每个提供的文件路劲创建分享链接
+S 或 share path1 path2 为每个提供的文件路劲创建分享链接
 S 或 share [-P pawd 或 --passwd pawd] path1 path2 为每个提供的路径创建加密的分享链接
 
 # 查看文件占用空间
@@ -429,10 +429,10 @@ jca 或 jobclearall                      # 清除 *全部任务*
 -m {o,c}, --mode {o,c}              模式:  o # 重新上传.   c # 连续上传.
                                     加密方法: https://github.com/shadowsocks/shadowsocks/wiki/Encryption
 -R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
--H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2 ..
--T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2 ..
--I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi" ..
--E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg" ..
+-H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2
+-T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2
+-I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi"
+-E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg"
 -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
 # -t, -H, -T, -I, -E 都能用于 download, play, ls, find, rnre, rmre, cpre, mvre
@@ -495,23 +495,23 @@ bp cd ...
 bp d . -R
 
 # 下载自己网盘中的*单个或多个文件*
-bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2 ..
+bp d http://pan.baidu.com/disk/home#dir/path=/path/to/filename1 http://pan.baidu.com/disk/home#dir/path=/path/to/filename2
 # or
-bp d /path/to/filename1 /path/to/filename2 ..
+bp d /path/to/filename1 /path/to/filename2
 
 # 递归下载自己网盘中的*单个或多个文件夹*
-bp d -R http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2 ..
+bp d -R http://pan.baidu.com/disk/home#dir/path=/path/to/directory1 http://pan.baidu.com/disk/home#dir/path=/path/to/directory2
 # or
-bp d -R /path/to/directory1 /path/to/directory2 ..
+bp d -R /path/to/directory1 /path/to/directory2
 # 递归下载后缀为 .mp3 的文件
-bp d -R /path/to/directory1 /path/to/directory2 .. -T .mp3
+bp d -R /path/to/directory1 /path/to/directory2 -T .mp3
 
 # 非递归下载
-bp d relative_path/to/directory1 /path/to/directory2 ..
+bp d relative_path/to/directory1 /path/to/directory2
 
 # 下载别人分享的*单个文件*
-bp d http://pan.baidu.com/s/1o6psfnxx ..
-bp d 'http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284' ..
+bp d http://pan.baidu.com/s/1o6psfnxx
+bp d 'http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=2112674284'
 
 # 下载别人加密分享的*单个文件*，密码参数-s
 bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej
@@ -563,8 +563,8 @@ bp a ftp://ftp.netscape.com/testfile /path/to/save
 bp a 'magnet:?xt=urn:btih:64b7700828fd44b37c0c045091939a2c0258ddc2' /path/to/save -v -t a
 bp a 'ed2k://|file|[美]徐中約《中国近代史》第六版原版PDF.rar|547821118|D09FC5F70DEA63E585A74FBDFBD7598F|/' /path/to/save
 
-bp a     /path/to/a.torrent .. -v -t m,i   # 使用网盘中torrent，下载到/path/to
-# 注意   ---------------------
+bp a     /path/to/a.torrent -v -t m,i   # 使用网盘中torrent，下载到/path/to
+# 注意   ------------------
                    ↓
           网盘中的torrent
 ```
@@ -590,8 +590,8 @@ bp a /download/a.torrent -v -t m,i,d    # 使用网盘中torrent，下载到/dow
 bp j
 bp j 3482938 8302833
 bp jd
-bp jc taskid1 taskid2 ..
-bp jc 1208382 58239221 ..
+bp jc taskid1 taskid2
+bp jc 1208382 58239221
 bp jca
 ```
 
@@ -610,7 +610,7 @@ bp u ~/Documents/reading/三体\ by\ 刘慈欣.mobi /doc -m o
 # -m c --> 续传 (默认)
 # 递归加-R
 
-bp u ~/Videos/*.mkv ../videos -t r
+bp u ~/Videos/*.mkv /videos -t r
 # 只进行rapidupload
 
 bp u ~/Documents ~/Videos ~/Documents /backup -t e -R
@@ -672,8 +672,8 @@ bp fnn keyword1 keyword2                      非递归搜索 by name 反序
 bp f mp3 /path/to/search -H "[" "01" -T ".tmp" -I ".*-.*" -R
 
 # 搜索所有的账户
-bp f iDoNotKnow .. [directory] -t all -R
-bp f archlinux ubuntu .. [directory] -t f,all -T .iso -R
+bp f iDoNotKnow [directory] -t all -R
+bp f archlinux ubuntu [directory] -t f,all -T .iso -R
 
 # 搜索 加 通道(只支持 donwload, play, rnre, rm, mv)
 bp f bioloy \| d -R                          递归搜索后递归下载
@@ -755,26 +755,26 @@ http://magnet.vuze.com
 
 ```
 # magnet 2 torrent
-m 或 mt magnet_link1 magnet_link2 .. [-d /path/to/save]
+m 或 mt magnet_link1 magnet_link2 [-d /path/to/save]
 m -i /there/are/files -d new
 
 # torrent 2 magnet, 输出magnet
-t 或 tm path1 path2 ..
+t 或 tm path1 path2
 
 # 过滤敏.感.词
 # 有2种模式
 # -t n (默认)     用数字替换文件名
 # -t be64         用base64加密文件名，torrent用百度下载后，可用 pan.baidu.com.py rnr /path -t f,bd64 改回原名字
-c 或 ct magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save]
+c 或 ct magnet_link1 magnet_link2 /path/to/torrent1 /path/to/torrent2 [-d /path/to/save]
 c -i /there/are/files and_other_dir -d new    # 从文件或文件夹中寻找 magnet，再过滤
 # 过滤敏.感.词 - 将magnet或torrent转成不敏感的 torrent
 # /path/to/save 默认为 .
 
 # 用base64加密的文件名:
-c magnet_link1 magnet_link2 .. /path/to/torrent1 /path/to/torrent2 .. [-d /path/to/save] -t be64
+c magnet_link1 magnet_link2 /path/to/torrent1 /path/to/torrent2 [-d /path/to/save] -t be64
 
 # 使用正则表达式过滤敏.感.词
-cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
+cr 或 ctre foo bar magnet_link1 /path/to/torrent1 [-d /path/to/save]
 # foo bar 都是 regex
 ```
 
@@ -787,7 +787,7 @@ cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
                                         -t be64         用base64加密文件名，torrent用百度下载后，可用 pan.baidu.com.py rnr /path -t f,bd64 改回原名字
 -d DIRECTORY, --directory DIRECTORY     指定torrents的保存路径, eg: -d /path/to/save
 -n NAME, --name NAME                    顶级文件夹名称, eg: -m thistopdirectory
--i localpath1 localpath2 .., --import_from localpath1 localpath2 ..      从本地文本文件导入magnet (用正则表达式匹配)
+-i localpath1 localpath2, --import_from localpath1 localpath2      从本地文本文件导入magnet (用正则表达式匹配)
 ```
 
 #### 3. 用法
@@ -795,17 +795,17 @@ cr 或 ctre foo bar magnet_link1 /path/to/torrent1 .. [-d /path/to/save]
 bt 是bt.py的马甲 (alias bt='python2 /path/to/bt.py')
 
 ```
-bt mt magnet_link1 magnet_link2 .. [-d /path/to/save]
-bt tm path1 path2 ..
-bt ct magnet_link1 path1 .. [-d /path/to/save]
+bt mt magnet_link1 magnet_link2 [-d /path/to/save]
+bt tm path1 path2
+bt ct magnet_link1 path1 [-d /path/to/save]
 
-bt m magnet_link1 magnet_link2 .. [-d /path/to/save]
-bt t path1 path2 ..
-bt c magnet_link1 path1 .. [-d /path/to/save]
+bt m magnet_link1 magnet_link2 [-d /path/to/save]
+bt t path1 path2
+bt c magnet_link1 path1 [-d /path/to/save]
 
 # 用torrage.com
-bt m magnet_link1 path1 .. -p 127.0.0.1:8087
-bt c magnet_link1 path1 .. -p 127.0.0.1:8087
+bt m magnet_link1 path1 -p 127.0.0.1:8087
+bt c magnet_link1 path1 -p 127.0.0.1:8087
 
 # 从文件或文件夹中寻找 magnet，再过滤
 bt c -i ~/Downloads -d new
@@ -1221,7 +1221,7 @@ tm cool
 #### 用法
 
 ```
-python2 unzip.py azipfile1.zip azipfile2.zip ..
+python2 unzip.py azipfile1.zip azipfile2.zip
 python2 unzip.py azipfile.zip -s secret
 # -s 密码
 ```
