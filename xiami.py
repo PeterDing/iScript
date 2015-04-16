@@ -886,7 +886,7 @@ class xiami(object):
 
         ii = 1
         for i in songs:
-            num = random.randint(0, 100) % 7
+            num = random.randint(0, 100) % 8
             col = s % (2, num + 90, i['file_name'])
             t = modificate_file_name_for_wget(i['file_name'])
             file_name = os.path.join(dir_, t)

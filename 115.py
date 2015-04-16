@@ -261,7 +261,7 @@ class pan115(object):
             if os.path.exists(infos['file']):
                 return 0
 
-        num = random.randint(0, 7) % 7
+        num = random.randint(0, 7) % 8
         col = s % (2, num + 90, infos['file'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] \
@@ -305,7 +305,7 @@ class pan115(object):
 
     @staticmethod
     def play(infos):
-        num = random.randint(0, 7) % 7
+        num = random.randint(0, 7) % 8
         col = s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
         infos['total_file'] = infos['total_file'] \

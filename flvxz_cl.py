@@ -57,7 +57,7 @@ def download(infos):
         #if os.path.exists(infos['filename']):
             #return 0
 
-    num = random.randint(0, 7) % 7
+    num = random.randint(0, 7) % 8
     col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ 正在下载:', '#', \
         s % (1, 97, infos['n']), '/', \
@@ -78,7 +78,7 @@ def download(infos):
         sys.exit(1)
 
 def play(infos):
-    num = random.randint(0, 7) % 7
+    num = random.randint(0, 7) % 8
     col = s % (2, num + 90, os.path.basename(infos['filename']))
     print '\n  ++ play:', '#', \
         s % (1, 97, infos['n']), '/', \

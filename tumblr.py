@@ -179,7 +179,7 @@ class tumblr(object):
         def run(i):
             if os.path.exists(i['filepath']):
                 return
-            num = random.randint(0, 7) % 7
+            num = random.randint(0, 7) % 8
             col = s % (1, num + 90, i['filepath'])
             print '  ++ download: %s' % col
             cmd = [

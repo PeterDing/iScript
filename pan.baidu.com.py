@@ -810,7 +810,7 @@ class panbaiducom_HOME(object):
             if os.path.exists(infos['file']):
                 return
 
-        num = random.randint(0, 7) % 7
+        num = random.randint(0, 7) % 8
         col = sizeof_fmt(infos['size']) + ' # ' + s % (2, num + 90, infos['path']) \
             if args.view else s % (2, num + 90, infos['name'])
         infos['nn'] = infos['nn'] if infos.get('nn') else 1
@@ -857,7 +857,7 @@ class panbaiducom_HOME(object):
 
     @staticmethod
     def _play_do(infos):
-        num = random.randint(0, 7) % 7
+        num = random.randint(0, 7) % 8
         col = sizeof_fmt(infos['size']) \
             + ' # ' \
             + s % (2, num + 90, infos['path']) \
