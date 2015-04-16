@@ -83,7 +83,7 @@ class tumblr(object):
 
     def get_site_infos(self, postid=None):
         self.infos['photos'] = []
-        self.url = 'http://api.tumblr.com/v2/blog/%s/posts/photo' \
+        self.url = 'https://api.tumblr.com/v2/blog/%s/posts/photo' \
             % self.infos['host']
         params = {
             "offset": self.key if not postid else "",
@@ -130,7 +130,7 @@ class tumblr(object):
 
     def get_tag_infos(self):
         self.infos['photos'] = []
-        self.url = 'http://api.tumblr.com/v2/tagged'
+        self.url = 'https://api.tumblr.com/v2/tagged'
         params = {
             "limit": 20,
             "type": "photo",
@@ -186,7 +186,7 @@ class tumblr(object):
                 'wget', '-c', '-q',
                 '-O', '%s.tmp' % i['filepath'],
                 '--user-agent', '"%s"' % headers['User-Agent'],
-                '%s' % i['durl']
+                '%s' % i['durl'].replace('http:', 'https:')
             ]
             f = subprocess.Popen(cmd)
             return f, i['filepath']
