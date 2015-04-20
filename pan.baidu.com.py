@@ -156,13 +156,29 @@ def make_server_path(cwd, path):
             cwd = os.path.join(cwd, part)
         return cwd
 
-    if path[0] == '/':
+    if not path or path[0] == '/':
         return path
     else:
         parts = path.split('/')
         for p in parts:
             cwd = cd(cwd, p)
         return cwd
+
+def fast_pcs_server(j):
+    if 'fs' not in args.type_:
+        return j
+
+    do = lambda dlink: \
+        re.sub(r'://[^/]+?/', '://www.baidupcs.com/', dlink)
+        #re.sub(r'://[^/]+?/', '://c.pcs.baidu.com/', dlink)
+
+    if isinstance(j, dict) and j.get('info') and len(j['info']) > 0:
+        for i in xrange(len(j['info'])):
+            if j['info'][i].get('dlink'):
+                j['info'][i]['dlink'] = do(j['info'][i]['dlink'])
+    else:
+        j = do(j)
+    return j
 
 # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
 def sizeof_fmt(num):
@@ -374,8 +390,9 @@ class panbaiducom_HOME(object):
     def save_cookies(self, username=None, on=0, tocwd=False):
         if not username: username = self.user
         accounts = self.accounts
-        accounts[username] = {}
-        accounts[username]['cookies'] = ss.cookies.get_dict()
+        accounts[username] = accounts.get(username, {})
+        accounts[username]['cookies'] = \
+            accounts[username].get('cookies', ss.cookies.get_dict())
         accounts[username]['on'] = on
         quota = self._get_quota()
         capacity = '%s/%s' % (sizeof_fmt(quota['used']), sizeof_fmt(quota['total']))
@@ -818,6 +835,7 @@ class panbaiducom_HOME(object):
         print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', \
             s % (1, 97, infos['total_file']), '#', col
 
+        #cookie = 'BDUSS=%s' % ss.cookies.get('BDUSS')
         if args.aria2c:
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
@@ -944,8 +962,12 @@ class panbaiducom_HOME(object):
                     r = ss.post(url, params=p, data=data)
                     js = r.json()
                     if js['errno'] == 0 and i == 0:
+                        if dlink:
+                            js = fast_pcs_server(js)
                         j = js
                     elif js['errno'] == 0:
+                        if dlink:
+                            js = fast_pcs_server(js)
                         j['info'].append(js['info'])
                     else:
                         return False
@@ -1930,7 +1952,7 @@ class panbaiducom_HOME(object):
         elif j['errno'] == 12:
             print s % (1, 91, '  !! Error at filemanager:'), "部分文件已存在于目标文件夹中"
         else:
-            print s % (1, 91, '  !! Error at filemanager')
+            print s % (1, 91, '  !! Error at filemanager'), j
 
     def move(self, paths, remotepath, check=True):
         paths = [ make_server_path(self.cwd, path) for path in paths ]
@@ -2023,7 +2045,7 @@ class panbaiducom_HOME(object):
                 s % (1, 91, 'is existed.')
             sys.exit(1)
 
-        base_dir = os.path.split(remotepath)[0]
+        base_dir, newname = os.path.split(remotepath)
         meta = self._meta([base_dir])
         if not meta:
             self._make_dir(base_dir)
@@ -2035,7 +2057,7 @@ class panbaiducom_HOME(object):
         t = [{
                 'path': path,
                 'dest': base_dir,
-                'newname': os.path.basename(remotepath)
+                'newname': newname
         }]
         data = 'filelist=' + urllib.quote_plus(json.dumps(t))
         self._filemanager('move', data)
@@ -2793,7 +2815,8 @@ class panbaiducom(object):
             r = ss.post(url, data=data, params=self.params)
             j = r.json()
             if not j['errno']:
-                self.infos['dlink'] = j['dlink'].encode('utf8')
+                dlink = fast_pcs_server(j['dlink'].encode('utf8'))
+                self.infos['dlink'] = dlink
                 if args.play:
                     panbaiducom_HOME._play_do(self.infos)
                 else:
@@ -2815,7 +2838,7 @@ class panbaiducom(object):
                     'name': name,
                     'file': os.path.join(os.getcwd(), name),
                     'dir_': os.getcwd(),
-                    'dlink': dlink.group(1)
+                    'dlink': fast_pcs_server(dlink.group(1))
                 }
                 if args.play:
                     panbaiducom_HOME._play_do(self.infos)
@@ -2846,7 +2869,7 @@ class panbaiducom(object):
                 'name': name,
                 'file': os.path.join(os.getcwd(), name),
                 'dir_': os.getcwd(),
-                'dlink': path
+                'dlink': fast_pcs_server(path)
             }
 
             if args.play:

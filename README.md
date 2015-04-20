@@ -191,6 +191,10 @@ shadowsocks  # 用于加密上传。
 https://github.com/PeterDing/iScript/wiki/%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3pan.baidu.com.py%E4%BE%9D%E8%B5%96%E5%8C%85
 ```
 
+#### other
+
+[解决百度网盘下载速度问题](https://github.com/PeterDing/iScript/wiki/解决百度网盘下载速度问题)
+
 #### 2. 使用说明
 
 pan.baidu.com.py 是一个百度网盘的命令行客户端。
@@ -406,6 +410,8 @@ jca 或 jobclearall                      # 清除 *全部任务*
 -f number, --from_ number           从第几个开始(用于download, play)，eg: p /video -f 42
 -t ext, --type_ ext                 类型参数, 用 “,” 分隔
                                     eg:
+                                    -t fs       # 换用下载服务器，用于下载、播放
+                                                # 如果wiki中的速度解决方法不管用，可以试试加该参数
                                     d -t dc     # 下载并解密,覆盖加密文件(默认)
                                     d -t dc,no  # 下载并解密,不覆盖加密文件
                                     dc -t no    # 解密,不覆盖加密文件
@@ -428,11 +434,11 @@ jca 或 jobclearall                      # 清除 *全部任务*
 -l amount, --limit amount           下载速度限制，eg: -l 100k
 -m {o,c}, --mode {o,c}              模式:  o # 重新上传.   c # 连续上传.
                                     加密方法: https://github.com/shadowsocks/shadowsocks/wiki/Encryption
--R, --recursive                     递归, 用于download, play, ls, find, rmre, rnre, rmre, cpre
+-R, --recursive                     递归, 用于download, play, upload, ls, find, rmre, rnre, rmre, cpre
 -H HEADS, --head HEADS              匹配开头的字符，eg: -H Head1 Head2
 -T TAILS, --tail TAILS              匹配结尾的字符，eg: -T Tail1 Tail2
--I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I "*.mp3" "*.avi"
--E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E "*.html" "*.jpg"
+-I INCLUDES, --include INCLUDES     不排除匹配到表达的文件名, 可以是正则表达式，eg: -I ".*.mp3" ".*.avi"
+-E EXCLUDES, --exclude EXCLUDES     排除匹配到表达的文件名, 可以是正则表达式，eg: -E ".*.html" ".*.jpg"
 -c {on, off}, --ls_color {on, off}  ls 颜色，默认是on
 
 # -t, -H, -T, -I, -E 都能用于 download, play, ls, find, rnre, rmre, cpre, mvre
@@ -491,6 +497,9 @@ bp cd ...
 #### 下载:
 
 ```
+## 下载、播放速度慢？
+如果wiki中的速度解决方法不管用，可以试试加该参数 -t fs
+
 # 下载当前工作目录 (递归)
 bp d . -R
 
