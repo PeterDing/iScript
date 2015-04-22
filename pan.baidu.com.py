@@ -180,6 +180,14 @@ def fast_pcs_server(j):
         j = do(j)
     return j
 
+def is_wenxintishi(dlink):
+    r = ss.get(dlink, stream=True)
+    url = r.url
+    if 'wenxintishi' in url:
+        return True
+    else:
+        return False
+
 # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
 def sizeof_fmt(num):
     for x in ['B','KB','MB','GB']:
@@ -719,7 +727,7 @@ class panbaiducom_HOME(object):
 
         url = "https://pcs.baidu.com/rest/2.0/pcs/file"
 
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, verify=VERIFY)
         m3u8 = r.content
         if 'baidupcs.com/video' in m3u8:
             return m3u8
@@ -887,6 +895,9 @@ class panbaiducom_HOME(object):
             % (s % (1, 92, ' m3u8') if infos.get('m3u8') else ''), \
             s % (1, 97, infos['nn']), '/', \
             s % (1, 97, infos['total_file']), '#', col
+        if is_wenxintishi(infos['dlink']):
+            print s % (1, 93, '  !! 百度8秒 !!')
+            return
 
         if not infos.get('m3u8'):
             if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
