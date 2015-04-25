@@ -60,15 +60,19 @@ class nrop19(object):
 
                 params = {
                     'VID': n1.group(1),
-                    'mp4': 1,
+                    'mp4': '1',
                     'seccode': n2.group(1),
                     'max_vid': n3.group(1),
                 }
 
-                r = ss.get(apiurl, params=params)
+                #tapiurl = apiurl + '?' + \
+                    #'&'.join(['='.join(item) for item in params.items()])
+                #print tapiurl
+
+                r = requests.get(apiurl, params=params)
                 if r.ok:
                     dlink = re.search(
-                        r'file=(http.+?\.mp4)', r.content).group(1)
+                        r'file=(http.+?)&', r.content).group(1)
                     name = re.search(
                         r'viewkey=([\d\w]+)', self.url).group(1)
                     infos = {
