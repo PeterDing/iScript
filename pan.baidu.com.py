@@ -181,7 +181,12 @@ def fast_pcs_server(j):
     return j
 
 def is_wenxintishi(dlink):
-    r = ss.get(dlink, stream=True)
+    while True:
+        try:
+            r = ss.get(dlink, stream=True)
+            break
+        except requests.exceptions.ConnectionError:
+            time.sleep(2)
     url = r.url
     if 'wenxintishi' in url:
         return True
@@ -729,10 +734,10 @@ class panbaiducom_HOME(object):
 
         r = ss.get(url, params=p, verify=VERIFY)
         m3u8 = r.content
-        if 'baidupcs.com/video' in m3u8:
-            return m3u8
-        else:
+        if '#EXTM3U' not in m3u8[:7]:
             return None
+        #m3u8 = fast_pcs_server(m3u8)
+        return m3u8
 
     def download(self, paths):
         for path in paths:
@@ -756,12 +761,12 @@ class panbaiducom_HOME(object):
                             if args.play:
                                 j['list'] = [
                                     i for i in j['list'] \
-                                    if not i['isdir'] \
-                                        and os.path.splitext(
-                                            i['server_filename']
-                                        )[-1].lower() in mediatype]
-                                if 's' in args.type_:
-                                    j['list'] = self._sift(j['list'])
+                                        if not i['isdir'] \
+                                            and os.path.splitext(
+                                                i['server_filename']
+                                            )[-1].lower() in mediatype]
+                            if 's' in args.type_:
+                                j['list'] = self._sift(j['list'])
 
                             if args.heads or args.tails or args.includes \
                                     or args.excludes:
@@ -818,6 +823,9 @@ class panbaiducom_HOME(object):
                         'name': meta['info'][0]['server_filename'].encode('utf8'),
                         'size': meta['info'][0]['size'],
                     }
+                    if args.play:
+                        if not os.path.splitext(infos['name'])[-1].lower() in mediatype:
+                            continue
                     self._download_do(infos)
                     if 'dc' in args.type_:
                         self.decrypt([infos['file']])
