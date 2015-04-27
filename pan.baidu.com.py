@@ -113,8 +113,8 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://www.baidu.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
-        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " \
+        "(KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36"
 }
 
 ss = requests.session()
@@ -856,20 +856,24 @@ class panbaiducom_HOME(object):
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
             tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
-            cmd = 'aria2c -c%s%s%s ' \
+                #'--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                #'--header "Referer:http://pan.baidu.com/disk/home " ' \
+            cmd = 'aria2c -c -k 1M%s%s%s ' \
                 '-o "%s.tmp" -d "%s" ' \
                 '--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
-                '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, taria2c, tlimit, infos['name'], \
+                '"%s"' \
+                % (quiet, taria2c, tlimit, infos['name'],
                     infos['dir_'], infos['dlink'])
         else:
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
             cmd = 'wget -c%s%s ' \
                 '-O "%s.tmp" ' \
-                '--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
-                '--header "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, tlimit, infos['file'], infos['dlink'])
+                '--user-agent "%s" ' \
+                '--header "Referer:http://pan.baidu.com/disk/home" ' \
+                '"%s"' \
+                % (quiet, tlimit, infos['file'],
+                   headers['User-Agent'], infos['dlink'])
 
         status = os.system(cmd)
         exit = True
@@ -910,24 +914,25 @@ class panbaiducom_HOME(object):
         if not infos.get('m3u8'):
             if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
                 quiet = ' -really-quiet' if args.quiet else ''
+                    #'-http-header-fields "User-Agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 cmd = 'mplayer%s -cache 10000 ' \
-                    '-http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                    '-http-header-fields "User-Agent:%s" ' \
                     '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (quiet, infos['dlink'])
+                    % (quiet, headers['User-Agent'], infos['dlink'])
             else:
                 quiet = ' --really-quiet' if args.quiet else ''
                 cmd = 'mpv%s --no-ytdl --cache 10000 --cache-default 10000 ' \
-                    '--http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                    '--http-header-fields "User-Agent:%s" ' \
                     '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (quiet, infos['dlink'])
+                    % (quiet, headers['User-Agent'], infos['dlink'])
         else:
             with open('/tmp/tmp_pan.baidu.com.py.m3u8', 'w') as g:
                 g.write(infos['m3u8'])
             quiet = ' --really-quiet' if args.quiet else ''
             cmd = 'mpv%s --cache 10000 --cache-default 10000 ' \
-                '--http-header-fields "user-agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                '--http-header-fields "User-Agent:%s" ' \
                 '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, '/tmp/tmp_pan.baidu.com.py.m3u8')
+                % (quiet, headers['User-Agent'], '/tmp/tmp_pan.baidu.com.py.m3u8')
 
         os.system(cmd)
         timeout = 1
