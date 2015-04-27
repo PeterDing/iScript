@@ -140,6 +140,11 @@ class nrop19(object):
         self.get_infos()
 
 def main(url):
+    if args.proxy:
+        ss.proxies = {
+            'http': args.proxy,
+            'https': args.proxy
+        }
     x = nrop19(url)
     x.do()
 
@@ -152,6 +157,8 @@ if __name__ == '__main__':
     p.add_argument('-p', '--play', action='store_true', \
                 help='play with mpv')
     p.add_argument('-u', '--get_url', action='store_true', \
+                help='print download_url without download')
+    p.add_argument('--proxy', action='store', type=str, default=None, \
                 help='print download_url without download')
     args = p.parse_args()
     main(args.url)
