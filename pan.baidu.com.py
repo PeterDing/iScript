@@ -12,7 +12,8 @@ import cPickle as pk
 import re
 import time
 import argparse
-import random
+from random import SystemRandom
+random = SystemRandom()
 import select
 import base64
 import md5
