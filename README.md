@@ -181,8 +181,6 @@ requests-toolbelt (https://github.com/sigmavirus24/requests-toolbelt)
 
 mpv (http://mpv.io)
 
-mplayer # 我的linux上mpv播放wmv出错，换用mplayer
-
 # 可选依赖
 shadowsocks  # 用于加密上传。
              # 用 python2 的 pip 安装
@@ -193,7 +191,7 @@ https://github.com/PeterDing/iScript/wiki/%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3pa
 
 #### other
 
-[解决百度网盘下载速度问题](https://github.com/PeterDing/iScript/wiki/解决百度网盘下载速度问题)
+[尝试解决百度网盘下载速度问题](https://github.com/PeterDing/iScript/wiki/解决百度网盘下载速度问题)
 
 #### 2. 使用说明
 

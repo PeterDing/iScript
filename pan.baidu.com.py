@@ -912,28 +912,16 @@ class panbaiducom_HOME(object):
             print s % (1, 93, '  !! 百度8秒 !!')
             return
 
-        if not infos.get('m3u8'):
-            if os.path.splitext(infos['file'])[-1].lower() == '.wmv':
-                quiet = ' -really-quiet' if args.quiet else ''
-                    #'-http-header-fields "User-Agent:netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
-                cmd = 'mplayer%s -cache 10000 ' \
-                    '-http-header-fields "User-Agent:%s" ' \
-                    '-http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (quiet, headers['User-Agent'], infos['dlink'])
-            else:
-                quiet = ' --really-quiet' if args.quiet else ''
-                cmd = 'mpv%s --no-ytdl --cache 10000 --cache-default 10000 ' \
-                    '--http-header-fields "User-Agent:%s" ' \
-                    '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                    % (quiet, headers['User-Agent'], infos['dlink'])
-        else:
+        if infos.get('m3u8'):
             with open('/tmp/tmp_pan.baidu.com.py.m3u8', 'w') as g:
                 g.write(infos['m3u8'])
-            quiet = ' --really-quiet' if args.quiet else ''
-            cmd = 'mpv%s --cache 10000 --cache-default 10000 ' \
-                '--http-header-fields "User-Agent:%s" ' \
-                '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-                % (quiet, headers['User-Agent'], '/tmp/tmp_pan.baidu.com.py.m3u8')
+            infos['dlink'] = '/tmp/tmp_pan.baidu.com.py.m3u8'
+
+        quiet = ' --really-quiet' if args.quiet else ''
+        cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
+            '--http-header-fields "User-Agent:%s" ' \
+            '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
+            % (quiet, headers['User-Agent'], infos['dlink'])
 
         os.system(cmd)
         timeout = 1
