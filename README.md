@@ -44,6 +44,8 @@ mpv (http://mpv.io)
 
 xiami.py 是一个虾米音乐的命令行(CLI)客户端。提供登录、下载、播放、收藏的功能。
 
+**提供对[落网 luoo.net](luoo.net)的分析**
+
 初次使用需要登录 xm login  (原xiami账号)
 
 **支持淘宝账户**    xm logintaobao
@@ -131,6 +133,10 @@ xm d http://www.xiami.com/chart/index/c/2?spm=a1z1s.2943549.6827465.6.VrEAoY
 # 下载 风格 genre, radio
 xm d http://www.xiami.com/genre/detail/gid/2?spm=a1z1s.3057857.6850221.1.g9ySan
 xm d http://www.xiami.com/genre/detail/sid/2970?spm=a1z1s.3057857.6850221.4.pkepgt
+
+# 下载落网期刊
+# 分析落网期刊的音乐后，在虾米上搜索并下载
+xm d http://www.luoo.net/music/706
 ```
 
 #### 播放:

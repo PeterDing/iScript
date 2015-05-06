@@ -476,6 +476,9 @@ class xiami(object):
                 elif code == 'r':
                     self.download_genre_radio(url_genre)
 
+            elif 'luoo.net' in url:
+                self.hack_luoo(url)
+
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
@@ -829,6 +832,30 @@ class xiami(object):
                 self.disc_description_archives = {}
                 n += 1
 
+    def hack_luoo(self, url):
+        # parse luoo.net
+        theaders = headers
+        theaders.pop('Referer')
+        r = requests.get(url)
+        if not r.ok:
+            return None
+        cn = r.content
+        songs_info = re.findall(r'<p class="name">(.+?)</p>\s+'
+                                r'<p class="artist">(.+?)</p>\s+'
+                                r'<p class="album">(.+?)</p>', cn)
+
+        # search song at xiami
+        for info in songs_info:
+            url = 'http://www.xiami.com/web/search-songs?key=%s' \
+                % urllib.quote(' '.join(info))
+            r = ss.get(url)
+            if not r.ok and r.content == null:
+                print s % (1, 93, '  !! no find:'), ' - '.join(info)
+                return None
+            j = r.json()
+            self.song_id = j[0]['id']
+            self.download_song()
+
     def display_infos(self, i, nn, n):
         print '\n  ----------------'
         print '  >>', n, '/', nn
@@ -922,12 +949,13 @@ class xiami(object):
                     print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
 
                 file_name_for_wget = file_name.replace('`', '\`')
-                cmd = 'wget -c -nv ' \
+                quiet = ' -q' if args.quiet else ' -nv'
+                cmd = 'wget -c%s ' \
                     '-U "%s" ' \
                     '--header "Referer:http://img.xiami.com' \
                     '/static/swf/seiya/1.4/player.swf?v=%s" ' \
                     '-O "%s.tmp" %s' \
-                    % (headers['User-Agent'], int(time.time()*1000),
+                    % (quiet, headers['User-Agent'], int(time.time()*1000),
                        file_name_for_wget, durl)
                 cmd = cmd.encode('utf8')
                 status = os.system(cmd)
@@ -1011,6 +1039,8 @@ def main(argv):
         help='play with mpv')
     p.add_argument('-l', '--low', action='store_true', \
         help='low mp3')
+    p.add_argument('-q', '--quiet', action='store_true', \
+        help='quiet for download')
     p.add_argument('-f', '--from_', action='store', \
         default=1, type=int, \
         help='从第几个开始下载，eg: -f 42')
