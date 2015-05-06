@@ -44,7 +44,7 @@ mpv (http://mpv.io)
 
 xiami.py 是一个虾米音乐的命令行(CLI)客户端。提供登录、下载、播放、收藏的功能。
 
-**提供对[落网 luoo.net](luoo.net)的分析**
+**提供对[落网 luoo.net](http://www.luoo.net)的分析**
 
 初次使用需要登录 xm login  (原xiami账号)
 
