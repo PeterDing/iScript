@@ -841,18 +841,18 @@ class xiami(object):
             return None
         cn = r.content
         songs_info = re.findall(r'<p class="name">(.+?)</p>\s+'
-                                r'<p class="artist">(.+?)</p>\s+'
-                                r'<p class="album">(.+?)</p>', cn)
+                                r'<p class="artist">Artist: (.+?)</p>\s+'
+                                r'<p class="album">Album: (.+?)</p>', cn)
 
         # search song at xiami
         for info in songs_info:
             url = 'http://www.xiami.com/web/search-songs?key=%s' \
                 % urllib.quote(' '.join(info))
             r = ss.get(url)
-            if not r.ok and r.content == null:
-                print s % (1, 93, '  !! no find:'), ' - '.join(info)
-                return None
             j = r.json()
+            if not r.ok or not j:
+                print s % (1, 93, '  !! no find:'), ' - '.join(info)
+                continue
             self.song_id = j[0]['id']
             self.download_song()
 
