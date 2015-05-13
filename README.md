@@ -1121,8 +1121,8 @@ nm -p url
 
 ---
 
-<a name="flvxz_cl.py"></a>
-### flvxz_cl.py - flvxz.com 视频解析 client - 支持下载、播放
+<a name="flv_cmd.py"></a>
+### flv_cmd.py - 基于在线服务的视频解析 client - 支持下载、播放
 
 #### 1. 依赖
 
@@ -1136,16 +1136,15 @@ mpv (http://mpv.io)
 
 #### 2. 使用说明
 
-flvxz.com 视频解析
+~~flvxz.com 视频解析~~ 不能用。
+
+flvgo.com 视频解析
 
 **不提供视频合并操作**
 
 #### 支持的网站:
 
-"""
-已知支持120个以上视频网站，覆盖大多数国内视频站点，少量国外视频站点
-                                                      """
-                                               -- flvxz.com
+http://flvgo.com/sites
 
 关于播放操作:
 
@@ -1171,11 +1170,11 @@ fl url -p
 
 #### 4. 相关脚本:
 
+> https://github.com/soimort/you-get
+
 > https://github.com/iambus/youku-lixian
 
 > https://github.com/rg3/youtube-dl
-
-> https://github.com/soimort/you-get
 
 ---
 
