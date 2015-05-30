@@ -1289,7 +1289,9 @@ mpv (http://mpv.io)
 
 #### 2. 使用说明
 
-> 没有解决 *7个/day* 限制
+> youtube-dl 已支持91porn
+
+没有解决每个ip *10个/day* 限制
 
 下载工具默认为wget, 可用参数-a选用aria2
 
