@@ -32,13 +32,13 @@ wget_es = {
 ############################################################
 
 # file extensions
-mediatype = {
+mediatype = [
     ".wma", ".wav", ".mp3", ".aac", ".ra", ".ram", ".mp2", ".ogg", ".aif",
     ".mpega", ".amr", ".mid", ".midi", ".m4a", ".m4v", ".wmv", ".rmvb",
     ".mpeg4", ".mpeg2", ".flv", ".avi", ".3gp", ".mpga", ".qt", ".rm",
     ".wmz", ".wmd", ".wvx", ".wmx", ".wm", ".swf", ".mpg", ".mp4", ".mkv",
     ".mpeg", ".mov", ".mdf", ".iso", ".asf"
-}
+]
 
 s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
 
