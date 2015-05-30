@@ -1804,9 +1804,7 @@ class panbaiducom_HOME(object):
                 kw = keyword.decode('utf8', 'ignore')
                 self.highlights.append({'text': kw, 'is_regex': 0})
             infos = {i['fs_id']: i for i in infos}.values()
-            infos = self._sift(infos, name=arguments.get('name'), \
-                size=arguments.get('size'), time=arguments.get('time'), \
-                desc=arguments.get('desc'))
+            infos = self._sift(infos, **arguments)
 
             if not infos: return
             if not arguments.get('pipe'):
@@ -3017,10 +3015,10 @@ def handle_command(comd, xxx):
         comd == 'user':
         accounts = panbaiducom_HOME._check_cookie_file()
         if accounts:
-            cu = zip(range(len(accounts)), [u for u in accounts])
+            cu = zip(range(len(accounts)), sorted([u for u in accounts]))
             for i, u in cu:
                 print s % (1, 92, i+1) if accounts[u]['on'] else s % (1, 91, i+1), \
-                    accounts[u]['capacity'], \
+                    accounts[u]['capacity'].ljust(15), \
                     s % (2, 92, u) if accounts[u]['on'] else s % (2, 97, u)
             if comd == 'userdelete' or comd == 'ud': print s % (2, 97, 0), s % (2, 91, 'ALL')
             elif comd == 'user': sys.exit()
