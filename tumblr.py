@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import json
+from collections import deque
 import requests
 import argparse
 import random
@@ -64,17 +65,18 @@ def async(tasks, queue, run=None, cb=None, num=10):
     nsize = num - len(queue)
     for i in xrange(nsize):
         try:
-            task = tasks.pop(0)
+            task = tasks.popleft()
         except IndexError:
             break
         f = run(task)
         if f: queue.append(f)
-    return tasks, queue
+    #return tasks, queue
 
 class tumblr(object):
     def __init__(self):
         self.queue = []
-        self.tasks = []
+        self.tasks = deque()
+        self.key = 0
 
     def save_json(self):
         with open(self.json_path, 'w') as g:
@@ -95,7 +97,6 @@ class tumblr(object):
             "api_key": api_key
         }
 
-        r = None
         while True:
             try:
                 r = ss.get(self.url, params=params)
@@ -194,14 +195,11 @@ class tumblr(object):
         def callback(filepath):
             os.rename('%s.tmp' % filepath, filepath)
 
-        tasks = self.infos['photos'] + self.tasks
-        self.tasks = []
+        self.tasks.extend(self.infos['photos'])
         while True:
-            tasks, self.queue = async(
-                tasks, self.queue, run=run,
+            async(self.tasks, self.queue, run=run,
                 cb=callback, num=self.processes)
-            if len(tasks) <= self.processes:
-                self.tasks = tasks
+            if len(self.tasks) <= self.processes:
                 break
 
     def download_site(self, url):
@@ -213,15 +211,12 @@ class tumblr(object):
         if not os.path.exists(self.infos['dir_']):
             os.makedirs(self.infos['dir_'])
             self.json_path = os.path.join(self.infos['dir_'], 'json.json')
-            self.key = 0
             print s % (1, 92, '\n   ## begin'), 'key = %s' % self.key
         else:
             self.json_path = os.path.join(self.infos['dir_'], 'json.json')
             if os.path.exists(self.json_path):
                 self.key = json.loads(open(self.json_path).read())['key'] - 20
                 print s % (1, 92, '\n   ## begin'), 'key = %s' % self.key
-            else:
-                self.key = 0
 
         if args.check:
             t = os.listdir(self.infos['dir_'])
