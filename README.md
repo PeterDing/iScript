@@ -734,6 +734,11 @@ magnet 和 torrent 的相互转换
 
 过滤敏.感.词功能用于净网时期的 baidu, xunlei
 
+在中国大陆使用代理可能有更好的效果：  
+使用代理有两种方法：  
+1. shadowsocks + proxychains  
+2. -p protocol://ip:port  
+
 ~~8.30日后，无法使用。 见 http://tieba.baidu.com/p/3265467666~~
 
 [**百度云疑似解封，百度网盘内八秒视频部分恢复**](http://fuli.ba/baiduyunhuifuguankan.html)
@@ -794,7 +799,7 @@ cr 或 ctre foo bar magnet_link1 /path/to/torrent1 [-d /path/to/save]
 #### 参数:
 
 ```
--p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p 127.0.0.1:8087 (默认)
+-p PROXY, --proxy PROXY                 proxy for torrage.com, eg: -p "sooks5://127.0.0.1:8883"
 -t TYPE_, --type_ TYPE_                 类型参数：
                                         -t n (默认)     用数字替换文件名
                                         -t be64         用base64加密文件名，torrent用百度下载后，可用 pan.baidu.com.py rnr /path -t f,bd64 改回原名字
@@ -1152,7 +1157,7 @@ http://flvgo.com/sites
 
 #### 3. 用法
 
-fl是flvxz_cl.py的马甲 (alias fl='python2 /path/to/flvxz_cl.py')
+fl是flv_cmd.py的马甲 (alias fl='python2 /path/to/flv_cmd.py')
 
 #### 下载:
 
