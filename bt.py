@@ -11,6 +11,10 @@ import requests
 import urlparse
 import argparse
 
+s = '\x1b[%d;%dm%s\x1b[0m'       # terminual color template
+letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+           + '0123456789']
+
 ############################################################
 headers = {
     "Connection": "keep-alive",
@@ -27,11 +31,16 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
-s = u'\x1b[%d;%dm%s\x1b[0m'       # terminual color template
-letters = [i for i in '.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' \
-           + '0123456789']
+def save_img(url, ext):
+    path = os.path.join(os.path.expanduser('~'), 'vcode.%s' % ext)
+    with open(path, 'w') as g:
+        data = requests.get(url).content
+        g.write(data)
+    print "  ++ 验证码已保存至", s % (1, 97, path)
+    input_code = raw_input(s % (2, 92, "  输入验证码: "))
+    return input_code
 
-class bt(object):
+class Bt(object):
     def transfer(self, string, tpath, foo=None, bar=None):
         self.dir_dict = {}
         self.sub_dir_index = 0
@@ -113,21 +122,22 @@ class bt(object):
     def get_torrent(self, hh):
         print s % (1, 93, '\n  ++ get torrent from web')
 
-        def do(url, proxies=None, data=None, timeout=None):
+        def do(url, data=None, timeout=None):
             try:
+                proxies = {'http': args.proxy} if args.proxy else None
                 r = ss.get(url, proxies=proxies, timeout=timeout)
                 cnt = r.content
                 if r.ok and cnt and '<head>' not in cnt \
                     and '4:name' in cnt:
-                    print s % (1, 92, u'  √ get torrent.')
+                    print s % (1, 92, '  √ get torrent.')
                     return cnt
                 else:
-                    print s % (1, 91, u'  × not get.')
+                    print s % (1, 91, '  × not get.')
                     return None
             except:
                 return None
 
-        ## with xunlei
+        ## xunlei
         print s % (1, 94, '  >> try:'), 'bt.box.n0808.com'
         url = 'http://bt.box.n0808.com/%s/%s/%s.torrent' \
             % (hh[:2], hh[-2:], hh)
@@ -135,37 +145,37 @@ class bt(object):
         result = do(url)
         if result: return result
 
-        ## with https://torrage.com
+        ## https://torrage.com
         if ss.headers.get('Referer'): del ss.headers['Referer']
-        if args.proxy:
-            print s % (1, 94, '  >> try:'), 'torrage.com'
-            proxies = {
-                'http': args.proxy} if args.proxy else None
-            url = 'http://torrage.com/torrent/%s.torrent' % hh
-            try:
-                result = do(url, proxies=proxies)
-                if result: return result
-            except:
-                print s % (1, 91, '  !! proxy doesn\'t work:'), args.proxy
+        print s % (1, 94, '  >> try:'), 'torrage.com'
+        url = 'http://torrage.com/torrent/%s.torrent' % hh
+        try:
+            result = do(url)
+            if result: return result
+        except:
+            pass
 
-        ## with http://btcache.me
+        ## http://btcache.me
         if ss.headers.get('Referer'): del ss.headers['Referer']
         print s % (1, 94, '  >> try:'), 'btcache.me'
         url = 'http://btcache.me/torrent/%s' % hh
         r = ss.get(url)
         key = re.search(r'name="key" value="(.+?)"', r.content)
         if key:
+            url = 'http://btcache.me/captcha'
+            vcode = save_img(url, 'png')
             data = {
-                "key": key.group(1)
+                "key": key.group(1),
+                "captcha": vcode
             }
             ss.headers['Referer'] = url
             url = 'http://btcache.me/download'
-            result = do(url, data=data, proxies=proxies)
+            result = do(url, data=data)
             if result: return result
         else:
-            print s % (1, 91, u'  × not get.')
+            print s % (1, 91, '  × not get.')
 
-        ## some torrent stores
+        ## torrent stores
         if ss.headers.get('Referer'): del ss.headers['Referer']
         urls = [
                 #'http://www.sobt.org/Tool/downbt?info=%s',
@@ -274,7 +284,7 @@ class bt(object):
                                     tpath = os.path.join(dir_, 'change_' + i)
                                     self.transfer(string, tpath, foo=foo,
                                                   bar=bar)
-                                    paths.update(ipath)
+                                    # ??? paths.update(ipath)
                                 if os.getcwd() == os.path.abspath(dir_):
                                     do()
                                 elif os.getcwd() != os.path.abspath(dir_) and \
@@ -334,7 +344,6 @@ def main(argv):
     p.add_argument('-i', '--import_from', type=str, nargs='*',
         help='import magnet from local.')
     p.add_argument('-p', '--proxy', action='store',
-                   default='socks5://127.0.0.1:8883',
                    type=str, help='proxy for torrage.com, \
                                 eg: -p "sooks5://127.0.0.1:8883"')
     p.add_argument('-d', '--directory', action='store', default=None,
@@ -356,18 +365,18 @@ def main(argv):
     if comd == 'm' or comd == 'mt':   # magnet to torrent
         urls = xxx if not args.import_from \
                     else import_magnet(args.import_from)
-        x = bt()
+        x = Bt()
         x.magnet2torrent(urls, dir_)
 
     elif comd == 't' or comd == 'tm':   # torrent ot magnet
         paths = xxx
-        x = bt()
+        x = Bt()
         x.torrent2magnet(paths)
 
     elif comd == 'c' or comd == 'ct':   # change
         ups = xxx if not args.import_from \
                     else import_magnet(args.import_from)
-        x = bt()
+        x = Bt()
         x.change(ups, dir_, foo=None, bar=None)
 
     elif comd == 'cr' or comd == 'ctre':   # change
@@ -375,7 +384,7 @@ def main(argv):
         bar = xxx[1]
         ups = xxx[2:] if not args.import_from \
                         else import_magnet(args.import_from)
-        x = bt()
+        x = Bt()
         x.change(ups, dir_, foo=foo, bar=bar)
 
     else:
