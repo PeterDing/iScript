@@ -104,30 +104,31 @@ class tumblr(object):
             except Exception as e:
                 print s % (1, 91, '  !! Error at get_infos'), e
                 time.sleep(5)
-        if r.ok:
-            j = r.json()
-            if j['response']['posts']:
-                for i in j['response']['posts']:
-                    index = 1
-                    for ii in i['photos']:
-                        durl = ii['original_size']['url'].encode('utf8')
-                        filepath = os.path.join(self.infos['dir_'], '%s_%s.%s' \
-                            % (i['id'], index, durl.split('.')[-1]))
-                        filename = os.path.split(filepath)[-1]
-                        t = {
-                            'filepath': filepath,
-                            'durl': durl,
-                            'filename': filename
-                        }
-                        index += 1
-                        self.infos['photos'].append(t)
-            else:
-                print s % (1, 92, '\n   --- job over ---')
-                sys.exit(0)
-        else:
+
+        if not r.ok:
             print s % (1, 91, '\n   !! Error, get_infos')
             print r.status_code, r.content
             sys.exit(1)
+
+        j = r.json()
+        if not j['response']['posts']:
+            print s % (1, 92, '\n   --- job over ---')
+            sys.exit(0)
+
+        for i in j['response']['posts']:
+            index = 1
+            for ii in i['photos']:
+                durl = ii['original_size']['url'].encode('utf8')
+                filepath = os.path.join(self.infos['dir_'], '%s_%s.%s' \
+                    % (i['id'], index, durl.split('.')[-1]))
+                filename = os.path.split(filepath)[-1]
+                t = {
+                    'filepath': filepath,
+                    'durl': durl,
+                    'filename': filename
+                }
+                index += 1
+                self.infos['photos'].append(t)
 
     def get_tag_infos(self):
         self.infos['photos'] = []
@@ -148,38 +149,39 @@ class tumblr(object):
             except Exception as e:
                 print s % (1, 91, '  !! Error at get_infos'), e
                 time.sleep(5)
-        if r.ok:
-            j = r.json()
-            if j['response']:
-                for i in j['response']:
-                    index = 1
-                    if i.get('photos'):
-                        for ii in i['photos']:
-                            durl = ii['original_size']['url'].encode('utf8')
-                            filepath = os.path.join(
-                                self.infos['dir_'], '%s_%s.%s' \
-                                % (i['id'], index, durl.split('.')[-1]))
-                            filename = os.path.split(filepath)[-1]
-                            t = {
-                                'filepath': filepath,
-                                'durl': durl,
-                                'filename': filename,
-                                'key': i['timestamp']
-                            }
-                            index += 1
-                            self.infos['photos'].append(t)
-            else:
-                print s % (1, 92, '\n   --- job over ---')
-                sys.exit(0)
-        else:
+
+        if not r.ok:
             print s % (1, 91, '\n   !! Error, get_infos')
             print r.status_code, r.content
             sys.exit(1)
 
+        j = r.json()
+        if not j['response']:
+            print s % (1, 92, '\n   --- job over ---')
+            sys.exit(0)
+
+        for i in j['response']:
+            index = 1
+            if i.get('photos'):
+                for ii in i['photos']:
+                    durl = ii['original_size']['url'].encode('utf8')
+                    filepath = os.path.join(
+                        self.infos['dir_'], '%s_%s.%s' \
+                        % (i['id'], index, durl.split('.')[-1]))
+                    filename = os.path.split(filepath)[-1]
+                    t = {
+                        'filepath': filepath,
+                        'durl': durl,
+                        'filename': filename,
+                        'key': i['timestamp']
+                    }
+                    index += 1
+                    self.infos['photos'].append(t)
+
     def download(self):
         def run(i):
             if os.path.exists(i['filepath']):
-                return
+                return None
             num = random.randint(0, 7) % 8
             col = s % (1, num + 90, i['filepath'])
             print '  ++ download: %s' % col
