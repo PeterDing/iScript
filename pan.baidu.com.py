@@ -211,7 +211,7 @@ def print_process_bar(point, total, slice_size,
     speed = sizeof_fmt(slice_size / (now - start_time)) + '/s'
     t = int(nowpoint*length)
 
-    msg = '\r' + ' '.join([pre, '[%s%s]' % ('='*t, ' '*(length - t)), \
+    msg = '\r' + ' '.join([pre, '|%s%s|' % ('='*t, ' '*(length - t)), \
         str(percent) + '%', speed, msg, suf])
     sys.stdout.write(msg)
     sys.stdout.flush()
@@ -392,7 +392,7 @@ class panbaiducom_HOME(object):
                 t = re.search('codeString=(.+?)&', r.content)
                 codestring = t.group(1) if t else ""
                 vcurl = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-                verifycode = self.save_img(vcurl, 'gif') if codestring != "" else ""
+                verifycode = self.save_img(vcurl, 'jpg') if codestring != "" else ""
                 data['codestring'] = codestring
                 data['verifycode'] = verifycode
                 #self.save_cookies()
