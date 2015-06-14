@@ -1184,12 +1184,14 @@ fl url -p
 ---
 
 <a name="tumblr.py"></a>
-### tumblr.py - 下载某个tumblr.com的所有图片
+### tumblr.py - 下载某个tumblr.com的所有图片、视频、音频
 
 #### 1. 依赖
 
 ```
 wget
+
+mpv (http://mpv.io)
 
 python2-requests (https://github.com/kennethreitz/requests)
 ```
@@ -1204,7 +1206,7 @@ python2-requests (https://github.com/kennethreitz/requests)
 
 下载的文件，保存在当前目录下。
 
-默认下载原图。
+默认下载图片(原图)。
 
 支持连续下载，下载进度储存在下载文件夹内的 json.json。
 
@@ -1214,6 +1216,13 @@ python2-requests (https://github.com/kennethreitz/requests)
 -p PROCESSES, --processes PROCESSES      指定多进程数,默认为10个,最多为20个 eg: -p 20
 -c, --check           尝试修复未下载成功的图片
 -t TAG, --tag TAG     下载特定tag的图片, eg: -t beautiful
+
+-P, --play            play with mpv
+-A, --audio           download audios
+-V, --video           download videos
+-q, --quiet           quiet
+
+-f OFFSET, --offset OFFSET      从第offset个开始，只对 -V 有用。
 ```
 
 #### 3. 用法
@@ -1221,13 +1230,40 @@ python2-requests (https://github.com/kennethreitz/requests)
 tm是tumblr.py的马甲 (alias tm='python2 /path/to/tumblr.py')
 
 ```
-# 下载某个tumblr
-tm http://sosuperawesome.tumblr.com/
-tm http://sosuperawesome.tumblr.com/ -t beautiful
+# 下载图片
+tm http://sosuperawesome.tumblr.com
+tm http://sosuperawesome.tumblr.com -t beautiful
 
-# 指定tag下载
-tm beautiful
-tm cool
+# 下载单张图片
+tm http://sosuperawesome.tumblr.com/post/121467716523/murosvur-on-etsy
+
+# 下载视频
+tm url -V
+tm url -V -f 42
+tm url -V -t tag
+
+# 下载单个视频
+tm url/post/1234567890 -V
+
+# 播放视频
+tm url -VP
+tm url -VP -f 42
+
+# 下载音频
+tm url -A
+tm url -A -f 42
+tm url -A -t tag
+
+# 下载单个音频
+tm url/post/1234567890 -A
+
+# 播放音频
+tm url -AP
+tm url -AP -f 42
+
+# 播放音频(quiet)
+tm url -APq
+
 ```
 
 ---
