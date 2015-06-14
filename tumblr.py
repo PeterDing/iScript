@@ -72,7 +72,22 @@ def async(tasks, queue, run=None, cb=None, num=10):
         if f: queue.append(f)
     #return tasks, queue
 
-class tumblr(object):
+class TumblrAPI(object):
+    def _request(self, base_hostname, target, params, type=''):
+
+    def _info(self, base_hostname):
+
+    def _followers(self, base_hostname):
+
+    def _likes(self, base_hostname):
+
+    def _photo(self, base_hostname, offset='', tag='', id=''):
+
+    def _audio(self, base_hostname, offset='', tag='', id=''):
+
+    def _video(self, base_hostname, offset='', tag='', id=''):
+
+class Tumblr(TumblrAPI):
     def __init__(self):
         self.queue = []
         self.tasks = deque()
