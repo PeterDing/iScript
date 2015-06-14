@@ -14,7 +14,7 @@
 *[L]* | [music.baidu.com.py](#music.baidu.com.py)                       | 下载或播放高品质百度音乐(music.baidu.com) |
 *[L]* | [music.163.com.py](#music.163.com.py)                           | 下载或播放高品质网易音乐(music.163.com) |
 *[L]* | [flv_cmd.py](#flv_cmd.py)                                     | 基于在线服务的视频解析 client - 支持下载、播放 |
-*[L]* | [tumblr.py](#tumblr.py)                                         | 下载某个tumblr.com的所有图片 |
+*[L]* | [tumblr.py](#tumblr.py)                                         | 下载某个tumblr.com的所有图片、视频、音频 |
 *[L]* | [unzip.py](#unzip.py)                                           | 解决linux下unzip乱码的问题 |
 *[L]* | [ed2k_search.py](#ed2k_search.py)                               | 基于 donkey4u.com 的emule搜索 |
 *[L]* | [91porn.py](#91porn.py)                                         | 下载或播放91porn |
