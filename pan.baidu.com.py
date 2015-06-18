@@ -184,12 +184,12 @@ def fast_pcs_server(j):
 def is_wenxintishi(dlink):
     while True:
         try:
-            r = ss.get(dlink, stream=True)
+            res = ss.head(dlink)
             break
         except requests.exceptions.ConnectionError:
             time.sleep(2)
-    url = r.url
-    if 'wenxintishi' in url:
+    location = res.headers.get('location', '')
+    if 'wenxintishi' in location:
         return True
     else:
         return False
