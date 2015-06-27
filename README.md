@@ -6,6 +6,7 @@
 
         |         |         |
 --------|---------|---------|
+*[L]* | [leetcode_problems.py](#leetcode_problems.py)                   | 下载Leetcode的算法题 |
 *[L]* | [xiami.py](#xiami.py)                                           | 下载或播放高品质虾米音乐(xiami.com) |
 *[L]* | [pan.baidu.com.py](#pan.baidu.com.py)                           | 百度网盘的下载、离线下载、上传、播放、转存、文件操作 |
 *[L]* | [bt.py](#bt.py)                                                 | magnet torrent 互转、及 过滤敏.感.词 |
@@ -24,6 +25,33 @@
 ---
 
 ---
+
+<a name="leetcode_problems.py"></a>
+### leetcode_problems.py - 下载Leetcode的算法题
+
+#### 依赖
+
+```
+python2-requests (https://github.com/kennethreitz/requests)
+
+python2-lxml
+
+```
+
+#### 参数:
+
+```
+  --index           sort by index
+  --level           sort by level
+  --tag             sort by tag
+  --title           sort by title
+  --rm_blank        移除题中的空行
+  --line LINE       两题之间的空行
+  -r, --redownload  重新下载数据
+```
+
+下载的数据保持在 ./leecode_problems.pk
+转成的txt在 './leecode problems.txt'
 
 <a name="xiami.py"></a>
 ### xiami.py - 下载或播放高品质虾米音乐(xiami.com)
