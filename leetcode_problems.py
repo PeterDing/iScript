@@ -1,11 +1,18 @@
 #!/usr/bin/env python
+# -*- coding=utf-8 -*-
 
 import sys
 import re
 import os
 import argparse
 import requests
-from lxml import html
+from lxml import html as lxml_html
+
+try:
+    import html
+except ImportError:
+    import HTMLParser
+    html = HTMLParser.HTMLParser()
 
 try:
     import cPickle as pk
@@ -23,7 +30,7 @@ class LeetcodeProblems(object):
         indexs = re.findall(r'<td>(\d+)</td>', cm)
         problem_urls = ['https://leetcode.com' + url \
                         for url in re.findall(
-                            r'href="(/problems/.+?)"', cm)]
+                            r'<a href="(/problems/.+?)"', cm)]
         levels = re.findall(r"<td value='\d*'>(.+?)</td>", cm)
         tinfos = zip(indexs, levels, problem_urls)
         infos = []
@@ -32,11 +39,14 @@ class LeetcodeProblems(object):
             if not res.ok:
                 print('request error')
                 sys.exit()
-            tree = html.fromstring(res.text)
+            tree = lxml_html.fromstring(res.text)
             title = tree.xpath('//meta[@property="og:title"]/@content')[0]
-            description = tree.xpath('//meta[@property="og:description"]/@content')[0]
-            if self.args.rm_blank:
-                description = re.sub(r'\n+', r'\n', description)
+            description = tree.xpath('//meta[@property="description"]/@content')
+            if not description:
+                description = tree.xpath('//meta[@property="og:description"]/@content')[0]
+            else:
+                description = description[0]
+            description = html.unescape(description.strip())
             tags = tree.xpath('//div[@id="tags"]/following::a[@class="btn btn-xs btn-primary"]/text()')
             infos.append(
                 {
@@ -71,6 +81,8 @@ class LeetcodeProblems(object):
             '{description}\n' + '\n' * self.args.line
         text = ''
         for info in infos:
+            if self.args.rm_blank:
+                info['description'] = re.sub(r'[\n\r]+', r'\n', info['description'])
             text += text_template.format(**info)
 
         with open('leecode problems.txt', 'w') as g:
