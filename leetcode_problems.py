@@ -27,12 +27,14 @@ class LeetcodeProblems(object):
             print('request error')
             sys.exit()
         cm = res.text
-        indexs = re.findall(r'<td>(\d+)</td>', cm)
+        cmt = cm.split('tbody>')[-2]
+        indexs = re.findall(r'<td>(\d+)</td>', cmt)
         problem_urls = ['https://leetcode.com' + url \
                         for url in re.findall(
-                            r'<a href="(/problems/.+?)"', cm)]
-        levels = re.findall(r"<td value='\d*'>(.+?)</td>", cm)
+                            r'<a href="(/problems/.+?)"', cmt)]
+        levels = re.findall(r"<td value='\d*'>(.+?)</td>", cmt)
         tinfos = zip(indexs, levels, problem_urls)
+        assert (len(indexs) == len(problem_urls) == len(levels))
         infos = []
         for info in tinfos:
             res = requests.get(info[-1])
