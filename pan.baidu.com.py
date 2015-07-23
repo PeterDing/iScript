@@ -852,7 +852,6 @@ class panbaiducom_HOME(object):
         print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', \
             s % (1, 97, infos['total_file']), '#', col
 
-        #cookie = 'BDUSS=%s' % ss.cookies.get('BDUSS')
         if args.aria2c:
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
@@ -866,15 +865,18 @@ class panbaiducom_HOME(object):
                 % (quiet, taria2c, tlimit, infos['name'],
                     infos['dir_'], infos['dlink'])
         else:
+            cookie = 'Cookie: ' + '; '.join([
+                k + '=' + v for k, v in ss.cookies.get_dict().items()])
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
             cmd = 'wget -c%s%s ' \
                 '-O "%s.tmp" ' \
                 '--user-agent "%s" ' \
                 '--header "Referer:http://pan.baidu.com/disk/home" ' \
+                '--header "%s" ' \
                 '"%s"' \
                 % (quiet, tlimit, infos['file'],
-                   headers['User-Agent'], infos['dlink'])
+                   headers['User-Agent'], cookie, infos['dlink'])
 
         status = os.system(cmd)
         exit = True
