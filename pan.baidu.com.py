@@ -115,7 +115,7 @@ headers = {
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://www.baidu.com/",
     "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " \
-        "(KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36"
+        "(KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36"
 }
 
 ss = requests.session()
@@ -861,10 +861,11 @@ class panbaiducom_HOME(object):
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
             tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
                 #'--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                #'--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
                 #'--header "Referer:http://pan.baidu.com/disk/home " ' \
             cmd = 'aria2c -c -k 1M%s%s%s ' \
                 '-o "%s.tmp" -d "%s" ' \
-                '--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
+                '--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
                 '"%s"' \
                 % (quiet, taria2c, tlimit, infos['name'],
                     infos['dir_'], infos['dlink'])
