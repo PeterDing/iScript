@@ -852,6 +852,10 @@ class panbaiducom_HOME(object):
         print '\n  ++ download: #', s % (1, 97, infos['nn']), '/', \
             s % (1, 97, infos['total_file']), '#', col
 
+        if '8s' in args.type_ and is_wenxintishi(infos['dlink']):
+            print s % (1, 93, '  !! 百度8秒 !!')
+            return
+
         if args.aria2c:
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
@@ -919,11 +923,14 @@ class panbaiducom_HOME(object):
                 g.write(infos['m3u8'])
             infos['dlink'] = '/tmp/tmp_pan.baidu.com.py.m3u8'
 
+        cookie = 'Cookie: ' + '; '.join([
+            k + '=' + v for k, v in ss.cookies.get_dict().items()])
         quiet = ' --really-quiet' if args.quiet else ''
         cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
             '--http-header-fields "User-Agent:%s" ' \
+            '--http-header-fields "%s" ' \
             '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
-            % (quiet, headers['User-Agent'], infos['dlink'])
+            % (quiet, headers['User-Agent'], cookie, infos['dlink'])
 
         os.system(cmd)
         timeout = 1
