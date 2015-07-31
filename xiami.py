@@ -171,9 +171,20 @@ class xiami(object):
             'LoginButton': '登录'
         }
 
-        url = 'http://www.xiami.com/web/login'
-        ss.post(url, data=data)
-        self.save_cookies()
+        url = 'https://login.xiami.com/web/login'
+
+        for i in xrange(2):
+            res = ss.post(url, data=data)
+            if res.cookies.get('member_auth'):
+                self.save_cookies()
+                return True
+            else:
+                if 'checkcode' not in res.content:
+                    return False
+                validate = self.get_validate(res.content)
+                data['validate'] = validate
+
+        return False
 
     # {{{ code from https://github.com/ly0/xiami-tools/blob/master/xiami.py
     def login_taobao(self, username, password):
@@ -251,16 +262,16 @@ class xiami(object):
             return
     # }}}
 
-    def get_validate(self):
-        url = 'https://login.xiami.com/coop/checkcode?forlogin=1&%s' \
-            % int(time.time())
+    def get_validate(self, cn):
+        #url = 'https://login.xiami.com/coop/checkcode?forlogin=1&%s' \
+            #% int(time.time())
+        url = re.search(r'src="(http.+checkcode.+?)"', cn).group(1)
         path = os.path.join(os.path.expanduser('~'), 'vcode.png')
         with open(path, 'w') as g:
             data = ss.get(url).content
             g.write(data)
         print "  ++ 验证码已经保存至", s % (2, 91, path)
-        print s % (2, 92, u'  请输入验证码:')
-        validate = raw_input()
+        validate = raw_input(s % (2, 92, '  请输入验证码: '))
         return validate
 
     def save_cookies(self):
