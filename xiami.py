@@ -490,6 +490,12 @@ class xiami(object):
             elif 'luoo.net' in url:
                 self.hack_luoo(url)
 
+            elif 'sid=' in url:
+                _mod = re.search(r'sid=([\d+,]+\d)', url)
+                if _mod:
+                    song_ids = _mod.group(1).split(',')
+                    self.download_songs(song_ids)
+
             else:
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
@@ -618,6 +624,13 @@ class xiami(object):
             if not args.play else ''
         #self.song_infos = [song_info]
         self.download(songs)
+
+    def download_songs(self, song_ids):
+        for song_id in song_ids:
+            self.song_id = song_id
+            songs = self.get_song(self.song_id)
+            self.download(songs)
+
 
     def download_album(self):
         songs = self.get_songs(self.album_id)

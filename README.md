@@ -164,6 +164,9 @@ xm d http://www.xiami.com/chart/index/c/2?spm=a1z1s.2943549.6827465.6.VrEAoY
 xm d http://www.xiami.com/genre/detail/gid/2?spm=a1z1s.3057857.6850221.1.g9ySan
 xm d http://www.xiami.com/genre/detail/sid/2970?spm=a1z1s.3057857.6850221.4.pkepgt
 
+# 下载 widget (虾米播播)
+xm d http://www.xiami.com/widget/player-multi?uid=4350663&sid=1774531852,378713,3294421,1771778464,378728,378717,378727,1773346501,&width=990&height=346&mainColor=e29833&backColor=60362a&widget_from=4350663
+
 # 下载落网期刊
 # 分析落网期刊的音乐后，在虾米上搜索并下载
 xm d http://www.luoo.net/music/706
