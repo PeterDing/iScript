@@ -9,7 +9,7 @@ import re
 import json
 import collections
 import Queue
-from threading import Thread
+import threading
 import requests
 import argparse
 import random
@@ -19,6 +19,13 @@ import select
 API_KEY = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
 
 PID_PATH = '/tmp/tumblr.py.pid'
+
+NET_ERRORS = 0
+UNCOMPLETION = 0
+DOWNLOAD_ERRORS = 0
+DOWNLOADS = 0
+COMPLETION = 0
+OFFSET = 0
 
 ############################################################
 # wget exit status
@@ -63,7 +70,7 @@ def play_do(items, quiet):
     for item in items:
         num = random.randint(0, 7) % 8
         col = s % (2, num + 90, item['durl'])
-        print '  ++ play:', col
+        # print '  ++ play:', col
         quiet = ' --really-quiet' if quiet else ''
         cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
             '--http-header-fields "User-Agent:%s" ' \
@@ -78,15 +85,23 @@ def play_do(items, quiet):
         else:
             pass
 
+def remove_downloaded_items(items):
+    N = len(items)
+    for i in range(N):
+        item = items.pop()
+        filepath = os.path.join(item['dir_'], item['subdir'], item['filename'])
+        if not os.path.exists(filepath):
+            items.appendleft(item)
+
 def download_run(item):
     filepath = os.path.join(item['dir_'], item['subdir'], item['filename'])
     # if os.path.exists(filepath):
         # return None
     num = random.randint(0, 7) % 8
     col = s % (1, num + 90, filepath)
-    print '  ++ download: %s' % col
+    # print '  ++ download: %s' % col
     cmd = ' '.join([
-        'wget', '-c', '-q',
+        'wget', '-c', '-q', '-T', '10',
         '-O', '%s.tmp' % filepath,
         '--user-agent', '"%s"' % headers['User-Agent'],
         '%s' % item['durl'].replace('http:', 'https:')
@@ -97,21 +112,17 @@ def download_run(item):
 def callback(filepath):
     os.rename('%s.tmp' % filepath, filepath)
 
-def remove_downloaded_items(items):
-    N = len(items)
-    for i in range(N):
-        item = items.pop()
-        filepath = os.path.join(item['dir_'], item['subdir'], item['filename'])
-        if not os.path.exists(filepath):
-            items.appendleft(item)
-
-class Downloader(Thread):
-    def __init__(self, queue):
-        Thread.__init__(self)
+class Downloader(threading.Thread):
+    def __init__(self, queue, lock):
+        threading.Thread.__init__(self)
         self.queue = queue
         self.daemon = True
+        self.lock = lock
 
     def run(self):
+        global UNCOMPLETION
+        global DOWNLOADS
+        global DOWNLOAD_ERRORS
         while True:
             item = self.queue.get()
             self.queue.task_done()
@@ -122,8 +133,15 @@ class Downloader(Thread):
                 continue
             status, filepath = status
             if status != 0:
-                print s % (1, 93, '[Error %s] at wget' % status), wget_es[status]
+                # print s % (1, 93, '[Error %s] at wget' % status), wget_es[status]
+                self.lock.acquire()
+                UNCOMPLETION += 1
+                DOWNLOAD_ERRORS += 1
+                self.lock.release()
             else:
+                self.lock.acquire()
+                DOWNLOADS += 1
+                self.lock.release()
                 callback(filepath)
 
 class TumblrAPI(object):
@@ -131,6 +149,7 @@ class TumblrAPI(object):
         api_url = '/'.join(['https://api.tumblr.com/v2/blog',
                            base_hostname, target, type])
         params['api_key'] = API_KEY
+        global NET_ERRORS
         while True:
             try:
                 res = ss.get(api_url, params=params, timeout=10)
@@ -139,7 +158,8 @@ class TumblrAPI(object):
             except KeyboardInterrupt:
                 sys.exit()
             except Exception as e:
-                print s % (1, 93, '[Error at requests]:'), e
+                NET_ERRORS += 1  # count errors
+                # print s % (1, 93, '[Error at requests]:'), e
                 time.sleep(5)
         if json_data['meta']['msg'].lower() != 'ok':
             raise Error(s % (1, 91, json_data['meta']['msg']))
@@ -259,40 +279,52 @@ class Tumblr(TumblrAPI):
     def init_infos(self, base_hostname, target_type, tag=''):
         self.infos = {'host': base_hostname}
         if not tag:
-            self.infos['dir_'] = os.path.join(os.getcwd(), self.infos['host'])
+            dir_ = os.path.join(os.getcwd(), self.infos['host'])
+            json_path = os.path.join(dir_, 'json.json')
 
-            if not os.path.exists(self.infos['dir_']):
+            if not os.path.exists(dir_):
                 if not self.args.play:
-                    os.makedirs(self.infos['dir_'])
-                    self.json_path = os.path.join(self.infos['dir_'], 'json.json')
+                    os.makedirs(dir_)
             else:
-                self.json_path = os.path.join(self.infos['dir_'], 'json.json')
-                if os.path.exists(self.json_path):
-                    self.offset = json.load(open(self.json_path))['offset'] - 60 \
+                if os.path.exists(json_path):
+                    self.offset = json.load(open(json_path))['offset'] - 60 \
                         if not self.args.update else self.args.offset
                     if self.offset < 0: self.offset = 0
         else:
-            self.infos['dir_'] = os.path.join(os.getcwd(), 'tumblr-%s' % tag)
+            dir_ = os.path.join(os.getcwd(), 'tumblr-%s' % tag)
+            json_path = os.path.join(dir_, 'json.json')
 
-            if not os.path.exists(self.infos['dir_']):
+            if not os.path.exists(dir_):
                 if not self.args.play:
-                    os.makedirs(self.infos['dir_'])
-                    self.json_path = os.path.join(self.infos['dir_'], 'json.json')
+                    os.makedirs(dir_)
                     self.offset = int(time.time())
             else:
-                self.json_path = os.path.join(self.infos['dir_'], 'json.json')
-                if os.path.exists(self.json_path):
-                    self.offset = json.load(open(self.json_path))['offset'] \
+                if os.path.exists(json_path):
+                    self.offset = json.load(open(json_path))['offset'] \
                         if not self.args.update else int(time.time())
 
-        if not os.path.exists(os.path.join(self.infos['dir_'], target_type)) \
-                and not self.args.play:
-            os.makedirs(os.path.join(self.infos['dir_'], target_type))
+        self.infos['dir_'] = dir_
+        self.json_path = json_path
+        subdir = os.path.join(dir_, target_type)
+        if not os.path.exists(subdir) and not self.args.play:
+            os.makedirs(subdir)
+
+        if not self.args.play:
+            global UNCOMPLETION
+            global COMPLETION
+            for fl in os.listdir(subdir):
+                if not fl.endswith('.tmp'):
+                    COMPLETION += 1
+                else:
+                    UNCOMPLETION += 1
 
         if self.args.offset:
             self.offset = self.args.offset
 
-        print s % (1, 92, '\n   ## begin'), 'offset = %s' % self.offset
+        print s % (1, 92, '## begin'), 'offset = %s' % self.offset
+        print s % (1, 97, 'INFO:\n') + \
+            'D = Downloads, R = Repair_Need\n' + \
+            'C = Completion, NE = Net_Errors, O = Offset'
 
     def download_photos_by_offset(self, base_hostname, post_id):
         self.init_infos(base_hostname, 'photos')
@@ -494,19 +526,43 @@ def boot_set(stop, end=False):
     with open(PID_PATH, 'a') as g:
         g.write('%s,' % os.getpid())
 
+def print_msg(tumblr, args):
+    global NET_ERRORS
+    global UNCOMPLETION
+    global COMPLETION
+    global DOWNLOADS
+    global DOWNLOAD_ERRORS
+
+    msg = "\r%s, %s, %s, %s, %s " % \
+            (
+                'D: ' + s % (1, 92, DOWNLOADS),
+                'R: ' + s % (1, 93, UNCOMPLETION \
+                    if not args.check \
+                    else UNCOMPLETION - DOWNLOAD_ERRORS - DOWNLOADS),
+                'C: ' + s % (1, 97, COMPLETION),
+                'NE: ' + s % (1, 91, NET_ERRORS),
+                'O: %s' % tumblr.offset
+            )
+    sys.stdout.write(msg)
+    sys.stdout.flush()
+
 def main(argv):
     args, xxx = args_handler(argv)
     boot_set(args.stop)
 
+    lock = threading.Lock()
     queue = Queue.Queue(maxsize=args.processes)
+    thrs = []
     for i in range(args.processes):
-        thr = Downloader(queue)
+        thr = Downloader(queue, lock)
         thr.start()
+        thrs.append(thr)
 
     for url in xxx:
         tumblr = Tumblr(args, url)
         not_add = 0
         while True:
+            print_msg(tumblr, args)
             items = tumblr.get_item_generator()
             if not items:
                 break
@@ -519,7 +575,7 @@ def main(argv):
                 if not items:
                     not_add += 1
                     if not_add > 5:
-                        print s % (1, 93, '[Warning]:'), \
+                        print s % (1, 93, '\n[Warning]:'), \
                             'There is nothing new to download in 5 loops.\n', \
                             'If you want to scan all resources, using --redownload\n'  \
                             'or running the script again to next 5 loops.'
@@ -539,6 +595,9 @@ def main(argv):
 
     for i in range(args.processes):
         queue.put(None)
+
+    for thr in thrs:
+        thr.join()
 
     boot_set(False, end=True)
 
