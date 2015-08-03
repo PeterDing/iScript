@@ -66,11 +66,20 @@ class Error(Exception):
     def __str__(self):
         return self.msg
 
+def play(urls, args):
+    for url in urls:
+        tumblr = Tumblr(args, url)
+        while True:
+            items = tumblr.get_item_generator()
+            if not items:
+                break
+            play_do(items, args.quiet)
+
 def play_do(items, quiet):
     for item in items:
         num = random.randint(0, 7) % 8
         col = s % (2, num + 90, item['durl'])
-        # print '  ++ play:', col
+        print '  ++ play:', col
         quiet = ' --really-quiet' if quiet else ''
         cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
             '--http-header-fields "User-Agent:%s" ' \
@@ -97,8 +106,8 @@ def download_run(item):
     filepath = os.path.join(item['dir_'], item['subdir'], item['filename'])
     # if os.path.exists(filepath):
         # return None
-    num = random.randint(0, 7) % 8
-    col = s % (1, num + 90, filepath)
+    # num = random.randint(0, 7) % 8
+    # col = s % (1, num + 90, filepath)
     # print '  ++ download: %s' % col
     cmd = ' '.join([
         'wget', '-c', '-q', '-T', '10',
@@ -550,6 +559,10 @@ def main(argv):
     args, xxx = args_handler(argv)
     boot_set(args.stop)
 
+    if args.play:
+        play(xxx, args)
+        boot_set(False, end=True)
+
     lock = threading.Lock()
     queue = Queue.Queue(maxsize=args.processes)
     thrs = []
@@ -584,11 +597,8 @@ def main(argv):
                 else:
                     not_add = 0
 
-            if not args.play:
-                for item in items:
-                    queue.put(item)
-            else:
-                play_do(items, args.quiet)
+            for item in items:
+                queue.put(item)
 
     while not queue.empty():
         time.sleep(2)
