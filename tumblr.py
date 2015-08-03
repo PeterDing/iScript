@@ -471,6 +471,8 @@ class Tumblr(TumblrAPI):
             return self.download_photos(base_hostname, post_id=post_id, tag=self.args.tag)
 
     def get_item_generator(self):
+        global OFFSET
+        OFFSET = self.offset
         items = self.make_items()
         for item in items:
             item['dir_'] = self.infos['dir_']
@@ -535,25 +537,28 @@ def boot_set(stop, end=False):
     with open(PID_PATH, 'a') as g:
         g.write('%s,' % os.getpid())
 
-def print_msg(tumblr, args):
+def print_msg(check):
     global NET_ERRORS
     global UNCOMPLETION
     global COMPLETION
     global DOWNLOADS
     global DOWNLOAD_ERRORS
+    global OFFSET
 
-    msg = "\r%s, %s, %s, %s, %s " % \
-            (
-                'D: ' + s % (1, 92, DOWNLOADS),
-                'R: ' + s % (1, 93, UNCOMPLETION \
-                    if not args.check \
-                    else UNCOMPLETION - DOWNLOAD_ERRORS - DOWNLOADS),
-                'C: ' + s % (1, 97, COMPLETION),
-                'NE: ' + s % (1, 91, NET_ERRORS),
-                'O: %s' % tumblr.offset
-            )
-    sys.stdout.write(msg)
-    sys.stdout.flush()
+    while True:
+        msg = "\r%s, %s, %s, %s, %s " % \
+                (
+                    'D: ' + s % (1, 92, DOWNLOADS),
+                    'R: ' + s % (1, 93, UNCOMPLETION \
+                        if not check \
+                        else UNCOMPLETION - DOWNLOAD_ERRORS - DOWNLOADS),
+                    'C: ' + s % (1, 97, COMPLETION),
+                    'NE: ' + s % (1, 91, NET_ERRORS),
+                    'O: %s' % OFFSET
+                )
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+        time.sleep(2)
 
 def main(argv):
     args, xxx = args_handler(argv)
@@ -571,11 +576,15 @@ def main(argv):
         thr.start()
         thrs.append(thr)
 
+    # massage thread
+    msg_thr = threading.Thread(target=print_msg, args=(args.check,))
+    msg_thr.setDaemon(True)
+    msg_thr.start()
+
     for url in xxx:
         tumblr = Tumblr(args, url)
         not_add = 0
         while True:
-            print_msg(tumblr, args)
             items = tumblr.get_item_generator()
             if not items:
                 break
@@ -608,6 +617,8 @@ def main(argv):
 
     for thr in thrs:
         thr.join()
+
+    msg_thr._Thread__stop()
 
     boot_set(False, end=True)
 
