@@ -111,9 +111,9 @@ def download_run(item):
     # print '  ++ download: %s' % col
     cmd = ' '.join([
         'wget', '-c', '-q', '-T', '10',
-        '-O', '%s.tmp' % filepath,
+        '-O', '"%s.tmp"' % filepath,
         '--user-agent', '"%s"' % headers['User-Agent'],
-        '%s' % item['durl'].replace('http:', 'https:')
+        '"%s"' % item['durl'].replace('http:', 'https:')
     ])
     status = os.system(cmd)
     return status, filepath
@@ -544,6 +544,8 @@ def print_msg(check):
     global DOWNLOADS
     global DOWNLOAD_ERRORS
     global OFFSET
+
+    time.sleep(2) # initial interval
 
     while True:
         msg = "\r%s, %s, %s, %s, %s " % \
