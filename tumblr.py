@@ -552,7 +552,7 @@ def print_msg(check):
                     'R: ' + s % (1, 93, UNCOMPLETION \
                         if not check \
                         else UNCOMPLETION - DOWNLOAD_ERRORS - DOWNLOADS),
-                    'C: ' + s % (1, 97, COMPLETION),
+                    'C: ' + s % (1, 97, COMPLETION + DOWNLOADS),
                     'NE: ' + s % (1, 91, NET_ERRORS),
                     'O: %s' % OFFSET
                 )
