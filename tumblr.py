@@ -515,7 +515,8 @@ def args_handler(argv):
 def boot_set(stop, end=False):
     # process end
     if end:
-        os.remove(PID_PATH)
+        if os.path.exists(PID_PATH):
+            os.remove(PID_PATH)
         return
 
     # exit, here
