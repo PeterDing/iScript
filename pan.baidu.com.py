@@ -293,7 +293,8 @@ class panbaiducom_HOME(object):
     def save_img(url, ext):
         path = os.path.join(os.path.expanduser('~'), 'vcode.%s' % ext)
         with open(path, 'w') as g:
-            data = urllib.urlopen(url).read()
+            res = ss.get(url)
+            data = res.content
             g.write(data)
         print "  ++ 验证码已保存至", s % (1, 97, path)
         input_code = raw_input(s % (2, 92, "  输入验证码: "))
@@ -349,16 +350,18 @@ class panbaiducom_HOME(object):
 
         # Construct post body
         data = {
-            "staticpage": "http://www.baidu.com/cache/user/html/v3Jump.html",
+            "staticpage": "https://www.baidu.com/cache/user/html/v3Jump.html",
             "charset": "UTF-8",
             "token": token,
-            "tpl": "pp",
+            "tpl": "mn",
             "subpro": "",
             "apiver": "v3",
             "tt": int(time.time()),
             "codestring": "",
             "safeflg": "0",
+            "u": "https://www.baidu.com/",
             "isPhone": "",
+            "detect": "1",
             "quick_user": "0",
             "logintype": "dialogLogin",
             "logLoginType": "pc_loginDialog",
@@ -368,11 +371,10 @@ class panbaiducom_HOME(object):
             "username": username,
             "password": password_encoded,
             "verifycode": "",
-            "mem_pass": "on",
             "rsakey": str(rsakey),
             "crypttype": "12",
-            "ppui_logintime": "40228",
-            "callback": "parent.bd__pcbs__uvwly2",
+            "ppui_logintime": "155983",
+            "callback": "parent.bd__pcbs__pld7nd",
         }
 
         while True:
@@ -384,7 +386,7 @@ class panbaiducom_HOME(object):
             # Callback for verify code if we need
             #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
             errno = re.search(r'err_no=(\d+)', r.content).group(1)
-            if errno == '0':
+            if errno == '0' or ss.cookies.get('BDUSS'):
                 break
             elif errno in ('257', '3', '6'):
                 print s % (1, 91, ' ! Error %s:' % errno), \
@@ -392,13 +394,13 @@ class panbaiducom_HOME(object):
                 t = re.search('codeString=(.+?)&', r.content)
                 codestring = t.group(1) if t else ""
                 vcurl = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-                verifycode = self.save_img(vcurl, 'jpg') if codestring != "" else ""
+                verifycode = self.save_img(vcurl, 'gif') if codestring != "" else ""
                 data['codestring'] = codestring
                 data['verifycode'] = verifycode
                 #self.save_cookies()
             else:
                 print s % (1, 91, ' ! Error %s:' % errno), \
-                    login_error_msg[errno]
+                    login_error_msg.get(errno, "unknow, please feedback to author")
                 sys.exit(1)
 
     def save_cookies(self, username=None, on=0, tocwd=False):
