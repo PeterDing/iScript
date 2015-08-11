@@ -15,11 +15,13 @@ import argparse
 import random
 import time
 import select
+import cPickle as pk
 
 API_KEY = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
 
 PID_PATH = '/tmp/tumblr.py.pid'
 
+# statistic parameters
 NET_ERRORS = 0
 UNCOMPLETION = 0
 DOWNLOAD_ERRORS = 0
@@ -65,6 +67,21 @@ class Error(Exception):
         self.msg = msg
     def __str__(self):
         return self.msg
+
+def reset_statistic_params():
+    global NET_ERRORS
+    global UNCOMPLETION
+    global DOWNLOAD_ERRORS
+    global DOWNLOADS
+    global COMPLETION
+    global OFFSET
+
+    NET_ERRORS = 0
+    UNCOMPLETION = 0
+    DOWNLOAD_ERRORS = 0
+    DOWNLOADS = 0
+    COMPLETION = 0
+    OFFSET = 0
 
 def play(urls, args):
     for url in urls:
@@ -513,30 +530,46 @@ def args_handler(argv):
     return args, xxx
 
 def boot_set(stop, end=False):
+    if not os.path.exists(PID_PATH):
+        has_pid_file = False
+        pids = set()
+    else:
+        has_pid_file = True
+        with open(PID_PATH) as f:
+            pids = pk.load(f)
+
     # process end
     if end:
-        if os.path.exists(PID_PATH):
-            os.remove(PID_PATH)
+        if pids:
+            if len(pids) == 1:
+                os.remove(PID_PATH)
+            else:
+                pids.remove(os.getpid())
+                if not pids:
+                    os.remove(PID_PATH)
+                    return
+
+                with open(PID_PATH, 'w') as g:
+                    pk.dump(pids, g)
         return
 
     # exit, here
     if stop:
-        if not os.path.exists(PID_PATH):
+        if not has_pid_file:
             sys.exit()
 
-        with open(PID_PATH, 'r') as f:
-            pids = f.read().strip(',').split(',')
-            for pid in pids:
-                if not os.path.exists('/proc/%s' % pid):
-                    continue
-                os.kill(int(pid), 15)
+        for pid in pids:
+            if not os.path.exists('/proc/%s' % pid):
+                continue
+            os.kill(int(pid), 15)
 
         os.remove(PID_PATH)
         sys.exit()
 
     # save pid
-    with open(PID_PATH, 'a') as g:
-        g.write('%s,' % os.getpid())
+    with open(PID_PATH, 'w') as g:
+        pids.add(os.getpid())
+        pk.dump(pids, g)
 
 def print_msg(check):
     global NET_ERRORS
@@ -585,6 +618,7 @@ def main(argv):
     msg_thr.start()
 
     for url in xxx:
+        reset_statistic_params()
         tumblr = Tumblr(args, url)
         not_add = 0
         while True:
