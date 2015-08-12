@@ -469,8 +469,8 @@ class Tumblr(TumblrAPI):
     def parse_urls(self, url):
         _mod = re.search(r'(http://|https://|)(?P<hostname>.+\.tumblr.com)', url)
         if not _mod:
-            print s % ('[Error]:'), 'url is illegal'
-            sys.exit(1)
+            print s % (1, 91, '[Error]:'), 'url is illegal.', '\n' + url
+            return lambda: []
         base_hostname = _mod.group('hostname')
         if self.args.check:
             return self.fix_photos(base_hostname)
