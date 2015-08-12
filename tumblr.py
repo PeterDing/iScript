@@ -469,7 +469,7 @@ class Tumblr(TumblrAPI):
     def parse_urls(self, url):
         _mod = re.search(r'(http://|https://|)(?P<hostname>.+\.tumblr.com)', url)
         if not _mod:
-            print s % (1, 91, '[Error]:'), 'url is illegal.', '\n' + url
+            print s % (1, 91, '[Error]:'), 'url is illegal.', '\n' + url.decode('utf8', 'ignore')
             return lambda: []
         base_hostname = _mod.group('hostname')
         if self.args.check:
