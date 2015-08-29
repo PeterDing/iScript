@@ -15,7 +15,7 @@ import argparse
 import random
 import time
 import select
-import cPickle as pk
+import signal
 
 API_KEY = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
 
@@ -347,7 +347,7 @@ class Tumblr(TumblrAPI):
         if self.args.offset:
             self.offset = self.args.offset
 
-        print s % (1, 92, '## begin'), 'offset = %s' % self.offset
+        print s % (1, 92, '## begin:'), 'offset = %s,' % self.offset, base_hostname
         print s % (1, 97, 'INFO:\n') + \
             'D = Downloads, R = Repair_Need\n' + \
             'C = Completion, NE = Net_Errors, O = Offset'
@@ -516,8 +516,6 @@ def args_handler(argv):
     p.add_argument('-t', '--tag', action='store',
                    default=None, type=str,
                    help='下载特定tag的图片, eg: -t beautiful')
-    p.add_argument('--stop', action='store_true',
-                   help='stop')
     p.add_argument('--update', action='store_true',
                    help='update new things')
     p.add_argument('--redownload', action='store_true',
@@ -528,48 +526,6 @@ def args_handler(argv):
 
     if args.redownload: args.update = True
     return args, xxx
-
-def boot_set(stop, end=False):
-    if not os.path.exists(PID_PATH):
-        has_pid_file = False
-        pids = set()
-    else:
-        has_pid_file = True
-        with open(PID_PATH) as f:
-            pids = pk.load(f)
-
-    # process end
-    if end:
-        if pids:
-            if len(pids) == 1:
-                os.remove(PID_PATH)
-            else:
-                pids.remove(os.getpid())
-                if not pids:
-                    os.remove(PID_PATH)
-                    return
-
-                with open(PID_PATH, 'w') as g:
-                    pk.dump(pids, g)
-        return
-
-    # exit, here
-    if stop:
-        if not has_pid_file:
-            sys.exit()
-
-        for pid in pids:
-            if not os.path.exists('/proc/%s' % pid):
-                continue
-            os.kill(int(pid), 15)
-
-        os.remove(PID_PATH)
-        sys.exit()
-
-    # save pid
-    with open(PID_PATH, 'w') as g:
-        pids.add(os.getpid())
-        pk.dump(pids, g)
 
 def print_msg(check):
     global NET_ERRORS
@@ -596,13 +552,35 @@ def print_msg(check):
         sys.stdout.flush()
         time.sleep(2)
 
+def sighandler(signum, frame):
+    print s % (1, 91, "  !! Signal:"), signum
+    #print s % (1, 91, "  !! Frame: %s" % frame)
+    sys.exit(1)
+
+def handle_signal():
+    signal.signal(signal.SIGBUS, sighandler)
+    signal.signal(signal.SIGHUP, sighandler)
+    # http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    signal.signal(signal.SIGQUIT, sighandler)
+    signal.signal(signal.SIGSYS, sighandler)
+
+    signal.signal(signal.SIGABRT, sighandler)
+    signal.signal(signal.SIGFPE, sighandler)
+    signal.signal(signal.SIGILL, sighandler)
+    signal.signal(signal.SIGINT, sighandler)
+    signal.signal(signal.SIGSEGV, sighandler)
+    signal.signal(signal.SIGTERM, sighandler)
+
 def main(argv):
+    # Only main thread can capture signal,
+    # all child threads not be affected
+    # whether they are daemonic or not.
+    handle_signal()
     args, xxx = args_handler(argv)
-    boot_set(args.stop)
 
     if args.play:
         play(xxx, args)
-        boot_set(False, end=True)
 
     lock = threading.Lock()
     queue = Queue.Queue(maxsize=args.processes)
@@ -656,8 +634,6 @@ def main(argv):
         thr.join()
 
     msg_thr._Thread__stop()
-
-    boot_set(False, end=True)
 
 if __name__ == '__main__':
     argv = sys.argv
