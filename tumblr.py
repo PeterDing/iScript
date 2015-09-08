@@ -553,7 +553,7 @@ def print_msg(check):
         time.sleep(2)
 
 def sighandler(signum, frame):
-    print s % (1, 91, "  !! Signal:"), signum
+    print s % (1, 91, "\n  !! Signal:"), signum
     #print s % (1, 91, "  !! Frame: %s" % frame)
     sys.exit(1)
 
