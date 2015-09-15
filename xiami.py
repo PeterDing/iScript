@@ -133,14 +133,13 @@ class xiami(object):
     def init(self):
         if os.path.exists(cookie_file):
             try:
-                t = json.loads(open(cookie_file).read())
-                ss.cookies.update(t.get('cookies', t))
+                cookies = json.load(open(cookie_file))
+                ss.cookies.update(cookies.get('cookies', cookies))
                 if not self.check_login():
                     print s % (1, 91, '  !! cookie is invalid, please login\n')
                     sys.exit(1)
             except:
-                g = open(cookie_file, 'w')
-                g.close()
+                open(cookie_file, 'w').close()
                 print s % (1, 97, '  please login')
                 sys.exit(1)
         else:
@@ -153,11 +152,18 @@ class xiami(object):
         r = ss.get(url)
         if r.content:
             #print s % (1, 92, '  -- check_login success\n')
-            self.save_cookies()
+            # self.save_cookies()
             return True
         else:
             print s % (1, 91, '  -- login fail, please check email and password\n')
             return False
+
+    # manually, add cookies
+    # you must know how to get the cookie
+    def add_member_auth(self, member_auth):
+        member_auth = member_auth.rstrip(';')
+        self.save_cookies(member_auth)
+        ss.cookies.update({'member_auth': member_auth})
 
     def login(self, email, password):
         print s % (1, 97, '\n  -- login')
@@ -175,7 +181,7 @@ class xiami(object):
 
         for i in xrange(2):
             res = ss.post(url, data=data)
-            if res.cookies.get('member_auth'):
+            if ss.cookies.get('member_auth'):
                 self.save_cookies()
                 return True
             else:
@@ -274,14 +280,12 @@ class xiami(object):
         validate = raw_input(s % (2, 92, '  请输入验证码: '))
         return validate
 
-    def save_cookies(self):
+    def save_cookies(self, member_auth=None):
+        if not member_auth:
+            member_auth = ss.cookies.get_dict()['member_auth']
         with open(cookie_file, 'w') as g:
-            c = {
-                'cookies': {
-                    'member_auth': ss.cookies.get_dict()['member_auth']
-                }
-            }
-            g.write(json.dumps(c, indent=4, sort_keys=True))
+            cookies = { 'cookies': { 'member_auth': member_auth } }
+            json.dump(cookies, g)
 
     def get_durl(self, id_):
         while True:
@@ -1079,14 +1083,23 @@ def main(argv):
     comd = argv[1]
     xxx = args.xxx
 
-    if comd == 'login' or comd == 'g' \
-        or comd == 'logintaobao' or comd == 'gt':
+    if comd == 'login' or comd == 'g':
+        # or comd == 'logintaobao' or comd == 'gt':
+        # taobao has updated login algorithms which is hard to hack
+        # so remove it.
         if len(xxx) < 1:
             email = raw_input(s % (1, 97, '  username: ') \
                 if comd == 'logintaobao' or comd == 'gt' \
                 else s % (1, 97, '     email: '))
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx) == 1:
+            # for add_member_auth
+            if '@' not in xxx[0]:
+                x = xiami()
+                x.add_member_auth(xxx[0])
+                x.check_login()
+                return
+
             email = xxx[0]
             password = getpass(s % (1, 97, '  password: '))
         elif len(xxx) == 2:
@@ -1095,10 +1108,7 @@ def main(argv):
         else:
             print s % (1, 91,
                        '  login\n  login email\n  \
-                       login email password\n  \
-                       logintaobao\n  \
-                       logintaobao username\n  \
-                       logintaobao username password')
+                       login email password')
 
         x = xiami()
         if comd == 'logintaobao' or comd == 'gt':

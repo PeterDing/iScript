@@ -78,9 +78,11 @@ xiami.py 是一个虾米音乐的命令行(CLI)客户端。提供登录、下载
 
 初次使用需要登录 xm login  (原xiami账号)
 
-**支持淘宝账户**    xm logintaobao
+~~**支持淘宝账户**    xm logintaobao~~
 
-**对于淘宝账户，登录后只保存有关虾米的cookies，删除了有关淘宝的cookies**
+~~**对于淘宝账户，登录后只保存有关虾米的cookies，删除了有关淘宝的cookies**~~
+
+**淘宝登录加密算法无法破解，需要手动获取cookies (方法见下 手动添加cookie登录)**
 
 **vip账户**支持高品质音乐的下载和播放。
 
@@ -102,12 +104,6 @@ g
 login
 login username
 login username password
-
-# 淘宝账号登录
-gt
-logintaobao
-logintaobao username
-logintaobao username password
 
 signout                      # 退出登录
 
@@ -138,6 +134,11 @@ xm g
 xm login
 xm login username
 xm login username password
+
+# 手动添加cookie登录
+1. 用浏览器登录后，按F12，然后访问 http://xiami.com/vip
+2. 选择‘网络’或network，找到 xiami.com/vip，在其中找到 Cookie: memthod_auth=value
+3. value填入 xm g value，再执行。
 
 # 退出登录
 xm signout
