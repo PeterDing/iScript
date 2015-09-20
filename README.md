@@ -1246,7 +1246,7 @@ python2-requests (https://github.com/kennethreitz/requests)
 支持连续下载，下载进度储存在下载文件夹内的 json.json。
 
 **正确退出程序使用 Ctrl-C**  
-**下载更新用 tumblr --update URL, 或 删除 json.json**  
+**下载 更新的图片或其他 用 tumblr --update URL, 或 删除 json.json**  
 
 #### 参数:
 
