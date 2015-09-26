@@ -8,8 +8,7 @@ import sys
 import re
 import json
 import collections
-import Queue
-import threading
+import multiprocessing
 import requests
 import argparse
 import random
@@ -22,12 +21,12 @@ API_KEY = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
 PID_PATH = '/tmp/tumblr.py.pid'
 
 # statistic parameters
-NET_ERRORS = 0
-UNCOMPLETION = 0
-DOWNLOAD_ERRORS = 0
-DOWNLOADS = 0
-COMPLETION = 0
-OFFSET = 0
+NET_ERRORS = multiprocessing.Value('i', 0)
+UNCOMPLETION = multiprocessing.Value('i', 0)
+DOWNLOAD_ERRORS = multiprocessing.Value('i', 0)
+DOWNLOADS = multiprocessing.Value('i', 0)
+COMPLETION = multiprocessing.Value('i', 0)
+OFFSET = multiprocessing.Value('i', 0)
 
 ############################################################
 # wget exit status
@@ -69,19 +68,12 @@ class Error(Exception):
         return self.msg
 
 def reset_statistic_params():
-    global NET_ERRORS
-    global UNCOMPLETION
-    global DOWNLOAD_ERRORS
-    global DOWNLOADS
-    global COMPLETION
-    global OFFSET
-
-    NET_ERRORS = 0
-    UNCOMPLETION = 0
-    DOWNLOAD_ERRORS = 0
-    DOWNLOADS = 0
-    COMPLETION = 0
-    OFFSET = 0
+    NET_ERRORS.value = 0
+    UNCOMPLETION.value = 0
+    DOWNLOAD_ERRORS.value = 0
+    DOWNLOADS.value = 0
+    COMPLETION.value = 0
+    OFFSET.value = 0
 
 def play(urls, args):
     for url in urls:
@@ -138,20 +130,16 @@ def download_run(item):
 def callback(filepath):
     os.rename('%s.tmp' % filepath, filepath)
 
-class Downloader(threading.Thread):
+class Downloader(multiprocessing.Process):
     def __init__(self, queue, lock):
-        threading.Thread.__init__(self)
+        super(Downloader, self).__init__()
         self.queue = queue
         self.daemon = True
         self.lock = lock
 
     def run(self):
-        global UNCOMPLETION
-        global DOWNLOADS
-        global DOWNLOAD_ERRORS
         while True:
             item = self.queue.get()
-            self.queue.task_done()
             if not item:
                 break
             status = download_run(item)
@@ -161,12 +149,12 @@ class Downloader(threading.Thread):
             if status != 0:
                 # print s % (1, 93, '[Error %s] at wget' % status), wget_es[status]
                 self.lock.acquire()
-                UNCOMPLETION += 1
-                DOWNLOAD_ERRORS += 1
+                UNCOMPLETION.value += 1
+                DOWNLOAD_ERRORS.value += 1
                 self.lock.release()
             else:
                 self.lock.acquire()
-                DOWNLOADS += 1
+                DOWNLOADS.value += 1
                 self.lock.release()
                 callback(filepath)
 
@@ -175,7 +163,6 @@ class TumblrAPI(object):
         api_url = '/'.join(['https://api.tumblr.com/v2/blog',
                            base_hostname, target, type])
         params['api_key'] = API_KEY
-        global NET_ERRORS
         while True:
             try:
                 res = ss.get(api_url, params=params, timeout=10)
@@ -184,7 +171,7 @@ class TumblrAPI(object):
             except KeyboardInterrupt:
                 sys.exit()
             except Exception as e:
-                NET_ERRORS += 1  # count errors
+                NET_ERRORS.value += 1  # count errors
                 # print s % (1, 93, '[Error at requests]:'), e
                 time.sleep(5)
         if json_data['meta']['msg'].lower() != 'ok':
@@ -336,13 +323,11 @@ class Tumblr(TumblrAPI):
             os.makedirs(subdir)
 
         if not self.args.play:
-            global UNCOMPLETION
-            global COMPLETION
             for fl in os.listdir(subdir):
                 if not fl.endswith('.tmp'):
-                    COMPLETION += 1
+                    COMPLETION.value += 1
                 else:
-                    UNCOMPLETION += 1
+                    UNCOMPLETION.value += 1
 
         if self.args.offset:
             self.offset = self.args.offset
@@ -488,8 +473,7 @@ class Tumblr(TumblrAPI):
             return self.download_photos(base_hostname, post_id=post_id, tag=self.args.tag)
 
     def get_item_generator(self):
-        global OFFSET
-        OFFSET = self.offset
+        OFFSET.value = self.offset
         items = self.make_items()
         for item in items:
             item['dir_'] = self.infos['dir_']
@@ -520,7 +504,6 @@ def args_handler(argv):
                    help='update new things')
     p.add_argument('--redownload', action='store_true',
                    help='redownload all things')
-    #global args
     args = p.parse_args(argv[1:])
     xxx = args.xxx
 
@@ -528,34 +511,27 @@ def args_handler(argv):
     return args, xxx
 
 def print_msg(check):
-    global NET_ERRORS
-    global UNCOMPLETION
-    global COMPLETION
-    global DOWNLOADS
-    global DOWNLOAD_ERRORS
-    global OFFSET
-
     time.sleep(2) # initial interval
 
     while True:
         msg = "\r%s, %s, %s, %s, %s " % \
                 (
-                    'D: ' + s % (1, 92, DOWNLOADS),
-                    'R: ' + s % (1, 93, UNCOMPLETION \
+                    'D: ' + s % (1, 92, DOWNLOADS.value),
+                    'R: ' + s % (1, 93, UNCOMPLETION.value \
                         if not check \
-                        else UNCOMPLETION - DOWNLOAD_ERRORS - DOWNLOADS),
-                    'C: ' + s % (1, 97, COMPLETION + DOWNLOADS),
-                    'NE: ' + s % (1, 91, NET_ERRORS),
-                    'O: %s' % OFFSET
+                        else UNCOMPLETION.value - DOWNLOAD_ERRORS.value - DOWNLOADS.value),
+                    'C: ' + s % (1, 97, COMPLETION.value + DOWNLOADS.value),
+                    'NE: ' + s % (1, 91, NET_ERRORS.value),
+                    'O: %s' % OFFSET.value
                 )
         sys.stdout.write(msg)
         sys.stdout.flush()
         time.sleep(2)
 
 def sighandler(signum, frame):
-    print s % (1, 91, "\n  !! Signal:"), signum
-    #print s % (1, 91, "  !! Frame: %s" % frame)
-    sys.exit(1)
+    # print s % (1, 91, "\n  !! Signal:"), signum
+    # print s % (1, 91, "  !! Frame: %s" % frame)
+    sys.exit()
 
 def handle_signal():
     signal.signal(signal.SIGBUS, sighandler)
@@ -573,17 +549,14 @@ def handle_signal():
     signal.signal(signal.SIGTERM, sighandler)
 
 def main(argv):
-    # Only main thread can capture signal,
-    # all child threads not be affected
-    # whether they are daemonic or not.
     handle_signal()
     args, xxx = args_handler(argv)
 
     if args.play:
         play(xxx, args)
 
-    lock = threading.Lock()
-    queue = Queue.Queue(maxsize=args.processes)
+    lock = multiprocessing.Lock()
+    queue = multiprocessing.Queue(maxsize=args.processes)
     thrs = []
     for i in range(args.processes):
         thr = Downloader(queue, lock)
@@ -591,8 +564,8 @@ def main(argv):
         thrs.append(thr)
 
     # massage thread
-    msg_thr = threading.Thread(target=print_msg, args=(args.check,))
-    msg_thr.setDaemon(True)
+    msg_thr = multiprocessing.Process(target=print_msg, args=(args.check,))
+    msg_thr.daemon = True
     msg_thr.start()
 
     for url in xxx:
@@ -633,7 +606,7 @@ def main(argv):
     for thr in thrs:
         thr.join()
 
-    msg_thr._Thread__stop()
+    msg_thr.terminate()
 
 if __name__ == '__main__':
     argv = sys.argv
