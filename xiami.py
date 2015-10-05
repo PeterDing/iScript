@@ -885,17 +885,16 @@ class xiami(object):
             self.download_song()
 
     def display_infos(self, i, nn, n):
-        print '\n  ----------------'
-        print '  >>', n, '/', nn
-        print '  >>', s % (2, 94, i['file_name'])
-        print '  >>', s % (2, 95, i['album_name'])
-        print '  >>', 'http://www.xiami.com/song/%s' % i['song_id']
-        print '  >>', 'http://www.xiami.com/album/%s' % i['album_id']
+        print n, '/', nn
+        print s % (2, 94, i['file_name'])
+        print s % (2, 95, i['album_name'])
+        print 'http://www.xiami.com/song/%s' % i['song_id']
+        print 'http://www.xiami.com/album/%s' % i['album_id']
         if i['durl_is_H'] == 'h':
-            print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'High')
+            print s % (1, 97, 'MP3-Quality:'), s % (1, 92, 'High')
         else:
-            print '  >>', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
-        print ''
+            print s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
+        print '—' * int(os.popen('tput cols').read())
 
     def get_mp3_quality(self, durl):
         if 'm3.file.xiami.com' in durl or 'm6.file.xiami.com' in durl:
