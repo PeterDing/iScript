@@ -2447,19 +2447,20 @@ class panbaiducom_HOME(object):
     }
 
     def _task_display(self, infos):
+        cross_line = '—' * int(os.popen('tput cols').read())
         template = '%s %s\n' \
                    '%s %s\n' \
                    '%s %s\n' \
                    '%s %s\n' \
                    '%s %s\n' \
                    '%s %s\n' \
-                   '------------------------------\n' \
-                   % (s % (2, 97, '     id:'), s % (1, 97, "%s"), \
-                      s % (1, 97, ' status:'), s % (2, "%s", "%s"), \
-                      s % (1, 97, '   done:'), s % (3, 93, "%s"), \
-                      s % (2, 97, '   name:'), "%s", \
-                      s % (2, 97, '   path:'), "%s", \
-                      s % (2, 97, ' source:'), "%s")
+                   '%s\n' \
+                   % (s % (2, 97, '    id:'), s % (1, 97, "%s"), \
+                      s % (1, 97, 'status:'), s % (1, "%s", "%s"), \
+                      s % (1, 97, '  done:'), s % (2, 93, "%s"), \
+                      s % (2, 97, '  name:'), "%s", \
+                      s % (2, 97, '  path:'), "%s", \
+                      s % (2, 97, 'source:'), "%s", cross_line)
 
         for i in infos:
             if i['result'] == 0:
