@@ -2782,16 +2782,16 @@ class panbaiducom(object):
             t = t.replace('\\\\', '!@#$%^'*10)
             t = t.replace('\\', '')
             t = t.replace('!@#$%^'*10, '\\')
-            info['fileinfo'] = t
+            info['fileinfo']  = t
             info['timestamp'] = re.search(r'timestamp="(\d+)"', cm).group(1)
-            info['sign'] = re.search(r'downloadsign="(.+?)"', cm).group(1)
+            info['sign']      = re.search(r'downloadsign="(.+?)"', cm).group(1)
         else:
-            info['uk']       = re.search(r'yunData\.MYUK = "(\d+)"', cm).group(1)
-            info['shareid']  = re.search(r'yunData\.SHARE_ID = "(\d+)"', cm).group(1)
-            info['bdstoken'] = re.search(r'yunData\.MYBDSTOKEN = "(.*?)"', cm).group(1)
-            info['fileinfo'] = re.search(r'yunData.FILEINFO = (.+)', cm).group(1)[:-2]
+            info['uk']        = re.search(r'yunData\.MYUK = "(\d+)"', cm).group(1)
+            info['shareid']   = re.search(r'yunData\.SHARE_ID = "(\d+)"', cm).group(1)
+            info['bdstoken']  = re.search(r'yunData\.MYBDSTOKEN = "(.*?)"', cm).group(1)
+            info['fileinfo']  = re.search(r'yunData.FILEINFO = (.+)', cm).group(1)[:-2]
             info['timestamp'] = re.search(r'yunData.TIMESTAMP = "(.+?)"', cm).group(1)
-            info['sign'] = re.search(r'yunData.SIGN = "(.+?)"', cm).group(1)
+            info['sign']      = re.search(r'yunData.SIGN = "(.+?)"', cm).group(1)
 
         return info
 
@@ -3115,6 +3115,9 @@ def handle_command(comd, xxx):
             print s % (1, 91, '  !! 参数错误\n download path1 .. url1 ..\n' \
                 '  d url1 url2 ..')
             sys.exit(1)
+
+        # login session
+        panbaiducom_HOME().init()
 
         if comd == 'p' or comd == 'play': args.play = True
 
