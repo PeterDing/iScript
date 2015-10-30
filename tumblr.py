@@ -140,6 +140,7 @@ class Downloader(multiprocessing.Process):
     def run(self):
         while True:
             item = self.queue.get()
+            self.queue.task_done()
             if not item:
                 break
             status = download_run(item)
@@ -556,7 +557,7 @@ def main(argv):
         play(xxx, args)
 
     lock = multiprocessing.Lock()
-    queue = multiprocessing.Queue(maxsize=args.processes)
+    queue = multiprocessing.JoinableQueue(maxsize=args.processes)
     thrs = []
     for i in range(args.processes):
         thr = Downloader(queue, lock)
@@ -602,6 +603,8 @@ def main(argv):
 
     for i in range(args.processes):
         queue.put(None)
+
+    queue.join()
 
     for thr in thrs:
         thr.join()
