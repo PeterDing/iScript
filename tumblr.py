@@ -10,6 +10,7 @@ import json
 import collections
 import multiprocessing
 import requests
+requests.packages.urllib3.disable_warnings()
 import argparse
 import random
 import time
