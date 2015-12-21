@@ -394,7 +394,7 @@ class panbaiducom_HOME(object):
                 t = re.search('codeString=(.+?)&', r.content)
                 codestring = t.group(1) if t else ""
                 vcurl = 'https://passport.baidu.com/cgi-bin/genimage?'+codestring
-                verifycode = self.save_img(vcurl, 'gif') if codestring != "" else ""
+                verifycode = self.save_img(vcurl, 'jpg') if codestring != "" else ""
                 data['codestring'] = codestring
                 data['verifycode'] = verifycode
                 #self.save_cookies()
