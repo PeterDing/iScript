@@ -283,7 +283,10 @@ class panbaiducom_HOME(object):
                 sys.exit(1)
 
             if not self.check_login():
-                print s % (1, 91, '  !! cookie is invalid, please login\n'), u[0]
+                print s % (1, 91, '  !! cookie is invalid, please login.'), u[0]
+                del j[u[0]]
+                with open(cookie_file, 'w') as g:
+                    pk.dump(j, g)
                 sys.exit(1)
         else:
             print s % (1, 97, '  no account, please login')
@@ -3048,7 +3051,7 @@ def handle_command(comd, xxx):
                 if comd == 'userdelete' or comd == 'ud':
                     if u != 'ALL':
                         if accounts[u]['on'] and len(accounts) > 1:
-                            print s % (1, 91, '  !! %s is online. To delete the account, firstly changing another account' % u)
+                            print s % (1, 91, '  !! %s is online. To delete the account, firstly switching to other account' % u)
                             sys.exit()
                         del accounts[u]
                     else:
