@@ -9,6 +9,7 @@ import re
 import argparse
 import random
 import select
+import urllib2
 
 ############################################################
 # wget exit status
@@ -79,7 +80,7 @@ class nrop19(object):
                         'name': '%s.mp4' % name,
                         'file': os.path.join(os.getcwd(), '%s.mp4' % name),
                         'dir_': os.getcwd(),
-                        'dlink': dlink
+                        'dlink': urllib2.unquote(dlink)
                     }
                     if not args.get_url:
                         self.download(infos)
