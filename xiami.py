@@ -11,6 +11,7 @@ import json
 import argparse
 import requests
 import urllib
+import hashlib
 import select
 from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
@@ -177,10 +178,27 @@ class xiami(object):
             'LoginButton': '登录'
         }
 
+        hds = {
+            'Origin': 'http://www.xiami.com',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'en-US,en;q=0.8',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'max-age=1',
+            'Referer': 'http://www.xiami.com/web/login',
+            'Connection': 'keep-alive',
+        }
+
+        cookies = {
+            '_xiamitoken': hashlib.md5(str(time.time())).hexdigest()
+        }
+
         url = 'https://login.xiami.com/web/login'
 
         for i in xrange(2):
-            res = ss.post(url, data=data)
+            res = ss.post(url, headers=hds, data=data, cookies=cookies)
             if ss.cookies.get('member_auth'):
                 self.save_cookies()
                 return True
