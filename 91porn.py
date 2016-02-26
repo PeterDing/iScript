@@ -74,13 +74,14 @@ class nrop19(object):
                 if r.ok:
                     dlink = re.search(
                         r'file=(http.+?)&', r.content).group(1)
+                    dlink = urllib2.unquote(dlink)
                     name = re.search(
                         r'viewkey=([\d\w]+)', self.url).group(1)
                     infos = {
                         'name': '%s.mp4' % name,
                         'file': os.path.join(os.getcwd(), '%s.mp4' % name),
                         'dir_': os.getcwd(),
-                        'dlink': urllib2.unquote(dlink)
+                        'dlink': dlink,
                     }
                     if not args.get_url:
                         self.download(infos)
