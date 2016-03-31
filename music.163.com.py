@@ -27,7 +27,7 @@ url_playlist = "http://music.163.com/api/playlist/detail?id=%s&ids=%s"
 url_dj = "http://music.163.com/api/dj/program/detail?id=%s&ids=%s"
 url_artist_albums = "http://music.163.com\
     /api/artist/albums/%s?offset=0&limit=1000"
-url_artist_top_50_songs = "http://music.163.com/artist/%s"
+url_artist_top_50_songs = "http://music.163.com/artist?id=%s"
 # }}}
 ############################################################
 
@@ -338,7 +338,7 @@ class neteaseMusic(object):
         html = ss.get(
             url_artist_top_50_songs % self.artist_id).content
         text = re.search(
-            r'g_hotsongs = (.+?);</script>', html).group(1)
+            r'<textarea style="display:none;">(.+?)</textarea>', html).group(1)
         j = json.loads(text)
         songids = [i['id'] for i in j]
         d = modificate_text(
