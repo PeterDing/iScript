@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+w#!/usr/bin/env python2
 # vim: set fileencoding=utf8
 
 import os
@@ -1282,17 +1282,18 @@ class panbaiducom_HOME(object):
 
                 elif m == '_upload_one_file':
                     #time.sleep(2)
-                    result = self._upload_one_file(lpath, rpath)
-                    if result == ENoError:
-                        self.upload_datas[lpath]['is_over'] = True
-                        self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_datas(upload_datas_path, self.upload_datas)
-                        print s % (1, 92, '\n  |-- success.\n')
-                        break
-                    else:
-                        print s % (1, 91, '\n  !! Error at _upload_one_file:'), result
-                        break
-                        #sys.exit(1)
+                    while True:
+                        result = self._upload_one_file(lpath, rpath)
+                        if result == ENoError:
+                            self.upload_datas[lpath]['is_over'] = True
+                            self.upload_datas[lpath]['remotepaths'].update([rpath])
+                            self.save_datas(upload_datas_path, self.upload_datas)
+                            print s % (1, 92, '\n  |-- success.\n')
+                            break
+                        else:
+                            print s % (1, 91, '\n  !! Error at _upload_one_file:'), result
+                            #sys.exit(1)
+                    break
 
                 elif m == '_rapidupload_file':
                     #time.sleep(2)
