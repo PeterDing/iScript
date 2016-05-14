@@ -1,4 +1,4 @@
-w#!/usr/bin/env python2
+#!/usr/bin/env python2
 # vim: set fileencoding=utf8
 
 import os
@@ -1053,7 +1053,7 @@ class panbaiducom_HOME(object):
             "method": "upload",
             "app_id": "250528",
             "ondup": self.ondup,
-            "dir": rpath,
+            "path": rpath + "/",
             "BDUSS": ss.cookies['BDUSS'],
         }
 
@@ -1062,19 +1062,17 @@ class panbaiducom_HOME(object):
             file = b'__' + bytes(DefaultSliceSize) + b'__' + fl
             file = cStringIO.StringIO(file)
             if 'np' not in args.type_:
-                p['filename'] = 'encrypted_' + os.path.basename(lpath)
+                p['path'] += 'encrypted_' + os.path.basename(lpath)
             else:
-                p['filename'] = os.path.basename(lpath)
+                p['path'] = os.path.basename(lpath)
         else:
             file = open(lpath, 'rb')
-            p['filename'] = os.path.basename(lpath)
+            p['path'] += os.path.basename(lpath)
 
-        files = {'file': ('file', file, '')}
-        data = MultipartEncoder(files)
-        theaders = headers
-        theaders['Content-Type'] = data.content_type
+        ss.headers.update({'Content-Type': None})
+        files = {'file': ('file', file)}
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
+        r = ss.post(url, params=p, files=files, verify=VERIFY, headers=dict([item for item in headers.items() if item[0] != "Content-Type"]))
         if r.ok:
             t = self.__current_file_size
             print_process_bar(t, t, t, start_time, pre='     ')
