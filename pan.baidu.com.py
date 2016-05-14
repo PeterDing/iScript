@@ -996,7 +996,7 @@ class panbaiducom_HOME(object):
                     elif js['errno'] == 0:
                         if dlink:
                             js = fast_pcs_server(js)
-                        j['info'].append(js['info'])
+                        j['info'] += js['info']
                     else:
                         return False
                 except Exception:
