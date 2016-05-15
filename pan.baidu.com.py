@@ -4,6 +4,7 @@
 import os
 import sys
 import requests
+from requests.adapters import TimeoutSauce
 requests.packages.urllib3.disable_warnings() # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
 from requests_toolbelt import MultipartEncoder
 import urllib
@@ -120,6 +121,14 @@ headers = {
 
 ss = requests.session()
 ss.headers.update(headers)
+
+class panTimeout(TimeoutSauce):
+    def __init__(self, *args, **kwargs):
+        connect = kwargs.get('connect', 10)
+        read = kwargs.get('read', connect)
+        super(panTimeout, self).__init__(connect=connect, read=read)
+
+ss.adapters.TimeoutSauce = panTimeout
 
 def import_shadowsocks():
     try:
@@ -1173,161 +1182,166 @@ class panbaiducom_HOME(object):
             return '_upload_one_file'
 
     def _upload_file(self, lpath, rpath):
-        print s % (1, 94, '  ++ uploading:'), lpath
-
-        __current_file_size = os.path.getsize(lpath)
-        if __current_file_size == 0:
-            print s % (1, 91, '  |-- file is empty, missing.')
-            return
-
-        self.__current_file_size = __current_file_size
-        upload_function = self._get_upload_function()
-
-        if self.upload_datas.has_key(lpath):
-            if __current_file_size != self.upload_datas[lpath]['size']:
-                self.upload_datas[lpath]['is_over'] = False
-                self.upload_datas[lpath]['size'] = __current_file_size
-            self.upload_datas[lpath]['upload_function'] = upload_function
-        else:
-            self.upload_datas[lpath] = {
-                'is_over': False,
-                'upload_function': upload_function,
-                'size': __current_file_size,
-                'remotepaths': set()
-            }
-
-        if self.toEncrypt:
-            self._init_cipherer(toencrypt=True)
-            self.upload_datas[lpath]['is_over'] = False
-            #self.upload_datas[lpath]['remotepaths'] = set()
-            self.upload_datas[lpath]['slice_md5s'] = []
-
-        if 'e' in args.type_:
-            if 'ec' in args.type_ and not 'np' in args.type_:
-                path = os.path.join(rpath, 'encrypted_' + os.path.basename(lpath))
-            else:
-                path = os.path.join(rpath, os.path.basename(lpath))
-            meta = self._meta([path])
-            if meta:
-                self.upload_datas[lpath]['is_over'] = True
-                self.upload_datas[lpath]['remotepaths'].update([rpath])
-                #self.save_datas(upload_datas_path, self.upload_datas)
-                print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
-                return
-            else:
-                self.upload_datas[lpath]['is_over'] = False
-                pass
-
-        if args.mode == 'o':
-            self.upload_datas[lpath]['is_over'] = False
-            self.upload_datas[lpath]['slice_md5s'] = []
-
         while True:
-            if not self.upload_datas[lpath]['is_over']:
-                m = self.upload_datas[lpath]['upload_function']
-                if m == '_upload_file_slices':
-                    #time.sleep(2)
-                    print '  |-- upload_function:', s % (1, 97, '_upload_file_slices')
-                    pieces, slice = self._get_pieces_slice()
-                    f = open(lpath, 'rb')
-                    current_piece_point = len(self.upload_datas[lpath]['slice_md5s'])
-                    f.seek(current_piece_point * slice)
-                    start_time = time.time()
-                    print_process_bar(
-                        f.tell(), __current_file_size, 0, start_time, \
-                        pre='     ', msg='%s/%s' % (str(current_piece_point), \
-                                                    str(pieces))
-                    )
-                    for piece in xrange(current_piece_point, pieces):
-                        self.__slice_block = f.read(slice)
-                        if self.__slice_block:
-                            while True:
-                                result = self._upload_slice(piece=piece, slice=slice)
-                                if result == ENoError:
-                                    break
-                                else:
-                                    print s % (1, 91, '\n  |-- slice_md5 does\'n match, retry.')
-                                    break
+            try:
+                print s % (1, 94, '  ++ uploading:'), lpath
 
-                            if result != ENoError: break
+                __current_file_size = os.path.getsize(lpath)
+                if __current_file_size == 0:
+                    print s % (1, 91, '  |-- file is empty, missing.')
+                    return
 
-                            self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
-                            self.save_datas(upload_datas_path, self.upload_datas)
-                            start_time = print_process_bar(
-                                f.tell(), __current_file_size, slice, start_time, \
-                                pre='     ', msg='%s/%s' % (str(piece+1), \
-                                                            str(pieces))
-                            )
-                    f.close()
+                self.__current_file_size = __current_file_size
+                upload_function = self._get_upload_function()
 
-                    if result != ENoError:
-                        self.upload_datas[lpath]['slice_md5s'] = []
-                        #continue
-                        break
-
-                    result = self._combine_file(lpath, rpath)
-                    if result == ENoError:
-                        self.upload_datas[lpath]['is_over'] = True
-                        self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.upload_datas[lpath]['slice_md5s'] = []
-                        self.save_datas(upload_datas_path, self.upload_datas)
-                        print s % (1, 92, '\n  |-- success.\n')
-                        break
-                    else:
-                        print s % (1, 91, '\n  !! Error at _combine_file:'), result
-                        break
-                        #sys.exit(1)
-
-                elif m == '_upload_one_file':
-                    #time.sleep(2)
-                    while True:
-                        result = self._upload_one_file(lpath, rpath)
-                        if result == ENoError:
-                            self.upload_datas[lpath]['is_over'] = True
-                            self.upload_datas[lpath]['remotepaths'].update([rpath])
-                            self.save_datas(upload_datas_path, self.upload_datas)
-                            print s % (1, 92, '\n  |-- success.\n')
-                            break
-                        else:
-                            print s % (1, 91, '\n  !! Error at _upload_one_file:'), result
-                            #sys.exit(1)
-                    break
-
-                elif m == '_rapidupload_file':
-                    #time.sleep(2)
-                    result = self._rapidupload_file(lpath, rpath)
-                    if result == ENoError:
-                        self.upload_datas[lpath]['is_over'] = True
-                        self.upload_datas[lpath]['remotepaths'].update([rpath])
-                        self.save_datas(upload_datas_path, self.upload_datas)
-                        print s % (1, 92, '  |-- RapidUpload: Success.\n')
-                        break
-                    else:
-                        if 'r' in args.type_:   # only rapidupload
-                            print s % (1, 91, '  |-- can\'t be RapidUploaded\n')
-                            break
-                        print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
-                            'now trying normal uploading.')
-                        upload_function = self._get_upload_function(rapidupload_is_fail=True)
-                        self.upload_datas[lpath]['upload_function'] = upload_function
-                        if upload_function == '_upload_file_slices':
-                            if not self.upload_datas[lpath].has_key('slice_md5s'):
-                                self.upload_datas[lpath]['slice_md5s'] = []
-
+                if self.upload_datas.has_key(lpath):
+                    if __current_file_size != self.upload_datas[lpath]['size']:
+                        self.upload_datas[lpath]['is_over'] = False
+                        self.upload_datas[lpath]['size'] = __current_file_size
+                    self.upload_datas[lpath]['upload_function'] = upload_function
                 else:
-                    print s % (1, 91, '  !! Error: size of file is too big.')
-                    break
+                    self.upload_datas[lpath] = {
+                        'is_over': False,
+                        'upload_function': upload_function,
+                        'size': __current_file_size,
+                        'remotepaths': set()
+                    }
 
-            else:
-                if args.mode == 'c':
-                    if rpath in self.upload_datas[lpath]['remotepaths']:
-                        print s % (1, 92, '  |-- file was uploaded.\n')
-                        break
+                if self.toEncrypt:
+                    self._init_cipherer(toencrypt=True)
+                    self.upload_datas[lpath]['is_over'] = False
+                    #self.upload_datas[lpath]['remotepaths'] = set()
+                    self.upload_datas[lpath]['slice_md5s'] = []
+
+                if 'e' in args.type_:
+                    if 'ec' in args.type_ and not 'np' in args.type_:
+                        path = os.path.join(rpath, 'encrypted_' + os.path.basename(lpath))
+                    else:
+                        path = os.path.join(rpath, os.path.basename(lpath))
+                    meta = self._meta([path])
+                    if meta:
+                        self.upload_datas[lpath]['is_over'] = True
+                        self.upload_datas[lpath]['remotepaths'].update([rpath])
+                        #self.save_datas(upload_datas_path, self.upload_datas)
+                        print s % (1, 93, '  |-- file exists at pan.baidu.com, not upload\n')
+                        return
                     else:
                         self.upload_datas[lpath]['is_over'] = False
-                elif args.mode == 'o':
-                    print s % (1, 93, '  |-- reupload.')
+                        pass
+
+                if args.mode == 'o':
                     self.upload_datas[lpath]['is_over'] = False
+                    self.upload_datas[lpath]['slice_md5s'] = []
+
+                while True:
+                    if not self.upload_datas[lpath]['is_over']:
+                        m = self.upload_datas[lpath]['upload_function']
+                        if m == '_upload_file_slices':
+                            #time.sleep(2)
+                            print '  |-- upload_function:', s % (1, 97, '_upload_file_slices')
+                            pieces, slice = self._get_pieces_slice()
+                            f = open(lpath, 'rb')
+                            current_piece_point = len(self.upload_datas[lpath]['slice_md5s'])
+                            f.seek(current_piece_point * slice)
+                            start_time = time.time()
+                            print_process_bar(
+                                f.tell(), __current_file_size, 0, start_time, \
+                                pre='     ', msg='%s/%s' % (str(current_piece_point), \
+                                                            str(pieces))
+                            )
+                            for piece in xrange(current_piece_point, pieces):
+                                self.__slice_block = f.read(slice)
+                                if self.__slice_block:
+                                    while True:
+                                        result = self._upload_slice(piece=piece, slice=slice)
+                                        if result == ENoError:
+                                            break
+                                        else:
+                                            print s % (1, 91, '\n  |-- slice_md5 does\'n match, retry.')
+                                            break
+
+                                    if result != ENoError: break
+
+                                    self.upload_datas[lpath]['slice_md5s'].append(self.__slice_md5)
+                                    self.save_datas(upload_datas_path, self.upload_datas)
+                                    start_time = print_process_bar(
+                                        f.tell(), __current_file_size, slice, start_time, \
+                                        pre='     ', msg='%s/%s' % (str(piece+1), \
+                                                                    str(pieces))
+                                    )
+                            f.close()
+
+                            if result != ENoError:
+                                self.upload_datas[lpath]['slice_md5s'] = []
+                                #continue
+                                break
+
+                            result = self._combine_file(lpath, rpath)
+                            if result == ENoError:
+                                self.upload_datas[lpath]['is_over'] = True
+                                self.upload_datas[lpath]['remotepaths'].update([rpath])
+                                self.upload_datas[lpath]['slice_md5s'] = []
+                                self.save_datas(upload_datas_path, self.upload_datas)
+                                print s % (1, 92, '\n  |-- success.\n')
+                                break
+                            else:
+                                print s % (1, 91, '\n  !! Error at _combine_file:'), result
+                                break
+                                #sys.exit(1)
+
+                        elif m == '_upload_one_file':
+                            #time.sleep(2)
+                            while True:
+                                result = self._upload_one_file(lpath, rpath)
+                                if result == ENoError:
+                                    self.upload_datas[lpath]['is_over'] = True
+                                    self.upload_datas[lpath]['remotepaths'].update([rpath])
+                                    self.save_datas(upload_datas_path, self.upload_datas)
+                                    print s % (1, 92, '\n  |-- success.\n')
+                                    break
+                                else:
+                                    print s % (1, 91, '\n  !! Error at _upload_one_file:'), result
+                                    #sys.exit(1)
+                            break
+
+                        elif m == '_rapidupload_file':
+                            #time.sleep(2)
+                            result = self._rapidupload_file(lpath, rpath)
+                            if result == ENoError:
+                                self.upload_datas[lpath]['is_over'] = True
+                                self.upload_datas[lpath]['remotepaths'].update([rpath])
+                                self.save_datas(upload_datas_path, self.upload_datas)
+                                print s % (1, 92, '  |-- RapidUpload: Success.\n')
+                                break
+                            else:
+                                if 'r' in args.type_:   # only rapidupload
+                                    print s % (1, 91, '  |-- can\'t be RapidUploaded\n')
+                                    break
+                                print s % (1, 93, '  |-- can\'t be RapidUploaded, ' \
+                                    'now trying normal uploading.')
+                                upload_function = self._get_upload_function(rapidupload_is_fail=True)
+                                self.upload_datas[lpath]['upload_function'] = upload_function
+                                if upload_function == '_upload_file_slices':
+                                    if not self.upload_datas[lpath].has_key('slice_md5s'):
+                                        self.upload_datas[lpath]['slice_md5s'] = []
+
+                        else:
+                            print s % (1, 91, '  !! Error: size of file is too big.')
+                            break
+
+                    else:
+                        if args.mode == 'c':
+                            if rpath in self.upload_datas[lpath]['remotepaths']:
+                                print s % (1, 92, '  |-- file was uploaded.\n')
+                                break
+                            else:
+                                self.upload_datas[lpath]['is_over'] = False
+                        elif args.mode == 'o':
+                            print s % (1, 93, '  |-- reupload.')
+                            self.upload_datas[lpath]['is_over'] = False
+                break
+            except requests.exceptions.Timeout: continue
+            except requests.exceptions.ConnectionError: continue
 
     def _upload_dir(self, lpath, rpath):
         base_dir = os.path.split(lpath)[0]
