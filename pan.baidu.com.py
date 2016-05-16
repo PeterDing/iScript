@@ -4,9 +4,7 @@
 import os
 import sys
 import requests
-from requests.adapters import TimeoutSauce
 requests.packages.urllib3.disable_warnings() # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
-from requests_toolbelt import MultipartEncoder
 import urllib
 import json
 import cPickle as pk
@@ -1126,11 +1124,9 @@ class panbaiducom_HOME(object):
 
         fl = cStringIO.StringIO(__slice_block)
         files = {'file': ('file', fl, '')}
-        data = MultipartEncoder(files)
-        theaders = headers
-        theaders['Content-Type'] = data.content_type
+        ss.headers.update({'Content-Type': None})
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders, timeout=panTimeout)
+        r = ss.post(url, params=p, files=files, verify=VERIFY, headers=dict([item for item in headers.items() if item[0] != "Content-Type"]), timeout=panTimeout)
         j = r.json()
         if self.__slice_md5 == j.get('md5'):
             return ENoError
