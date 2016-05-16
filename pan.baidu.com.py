@@ -122,13 +122,7 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
-class panTimeout(TimeoutSauce):
-    def __init__(self, *args, **kwargs):
-        connect = kwargs.get('connect', 10)
-        read = kwargs.get('read', connect)
-        super(panTimeout, self).__init__(connect=connect, read=read)
-
-ss.adapters.TimeoutSauce = panTimeout
+panTimeout = 5
 
 def import_shadowsocks():
     try:
@@ -305,7 +299,7 @@ class panbaiducom_HOME(object):
     def save_img(url, ext):
         path = os.path.join(os.path.expanduser('~'), 'vcode.%s' % ext)
         with open(path, 'w') as g:
-            res = ss.get(url)
+            res = ss.get(url, timeout=panTimeout)
             data = res.content
             g.write(data)
         print "  ++ 验证码已保存至", s % (1, 97, path)
@@ -315,7 +309,7 @@ class panbaiducom_HOME(object):
     def check_login(self):
         #print s % (1, 97, '\n  -- check_login')
         url = 'http://pan.baidu.com/api/quota'
-        j = ss.get(url).json()
+        j = ss.get(url, timeout=panTimeout).json()
         if j['errno'] != 0:
             print s % (1, 91, '  -- check_login fail\n')
             return False
@@ -353,7 +347,7 @@ class panbaiducom_HOME(object):
 
         # get publickey
         url = 'https://passport.baidu.com/v2/getpublickey?token=%s' % token
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         j = json.loads(r.content.replace('\'', '"'))
         pubkey = j['pubkey']
         key = rsa.PublicKey.load_pkcs1_openssl_pem(pubkey)
@@ -393,7 +387,7 @@ class panbaiducom_HOME(object):
             # Post!
             # XXX : do not handle errors
             url = 'https://passport.baidu.com/v2/api/?login'
-            r = ss.post(url, data=data)
+            r = ss.post(url, data=data, timeout=panTimeout)
 
             # Callback for verify code if we need
             #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
@@ -580,7 +574,7 @@ class panbaiducom_HOME(object):
 
     def _get_quota(self):
         url = 'http://pan.baidu.com/api/quota'
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         j = r.json()
         if j['errno'] != 0:
             print s % (1, 92, '  !! Error at _get_quota')
@@ -612,7 +606,7 @@ class panbaiducom_HOME(object):
 
         infos = []
         while True:
-            r = ss.get(url, params=p, headers=theaders)
+            r = ss.get(url, params=p, headers=theaders, timeout=panTimeout)
             j = r.json()
             if j['errno'] != 0:
                 print s % (1, 91, '  error: _get_file_list'), '--', j
@@ -630,7 +624,7 @@ class panbaiducom_HOME(object):
 
     def _get_dsign(self):
         url = 'http://pan.baidu.com/disk/home'
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         html = r.content
         sign1 = re.search(r'sign1 = \'(.+?)\';', html).group(1)
         sign3 = re.search(r'sign3 = \'(.+?)\';', html).group(1)
@@ -717,7 +711,7 @@ class panbaiducom_HOME(object):
             }
 
             url = 'http://pan.baidu.com/api/download'
-            r = ss.post(url, params=params, data=data)
+            r = ss.post(url, params=params, data=data, timeout=panTimeout)
             j = r.json()
             if j['errno'] == 0:
                 dlink = j['dlink'][0]['dlink'].encode('utf8')
@@ -747,7 +741,7 @@ class panbaiducom_HOME(object):
 
         url = "https://pcs.baidu.com/rest/2.0/pcs/file"
 
-        r = ss.get(url, params=p, verify=VERIFY)
+        r = ss.get(url, params=p, verify=VERIFY, timeout=panTimeout)
         m3u8 = r.content
         if '#EXTM3U' not in m3u8[:7]:
             return None
@@ -971,7 +965,7 @@ class panbaiducom_HOME(object):
             "method": "post"
         }
         url = 'http://pan.baidu.com/api/create'
-        r = ss.post(url, params=p, data=data)
+        r = ss.post(url, params=p, data=data, timeout=panTimeout)
         j = r.json()
         if j['errno'] != 0:
             print s % (1, 91, '  !! Error at _make_dir'), j
@@ -996,7 +990,7 @@ class panbaiducom_HOME(object):
             if fl:
                 data = {'target': json.dumps(fl)}
                 try:
-                    r = ss.post(url, params=p, data=data)
+                    r = ss.post(url, params=p, data=data, timeout=panTimeout)
                     js = r.json()
                     if js['errno'] == 0 and i == 0:
                         if dlink:
@@ -1049,7 +1043,7 @@ class panbaiducom_HOME(object):
             "ondup" : self.ondup
         }
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, timeout=panTimeout)
         if r.ok:
             return ENoError
         else:
@@ -1081,7 +1075,7 @@ class panbaiducom_HOME(object):
         ss.headers.update({'Content-Type': None})
         files = {'file': ('file', file)}
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, files=files, verify=VERIFY, headers=dict([item for item in headers.items() if item[0] != "Content-Type"]))
+        r = ss.post(url, params=p, files=files, verify=VERIFY, headers=dict([item for item in headers.items() if item[0] != "Content-Type"]), timeout=panTimeout)
         if r.ok:
             t = self.__current_file_size
             print_process_bar(t, t, t, start_time, pre='     ')
@@ -1108,7 +1102,7 @@ class panbaiducom_HOME(object):
             )
         }
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, timeout=panTimeout)
         if r.ok:
             return ENoError
         else:
@@ -1136,7 +1130,7 @@ class panbaiducom_HOME(object):
         theaders = headers
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders, timeout=panTimeout)
         j = r.json()
         if self.__slice_md5 == j.get('md5'):
             return ENoError
@@ -1447,7 +1441,7 @@ class panbaiducom_HOME(object):
             )
 
         url = 'http://pan.baidu.com/share/transfer'
-        r = ss.post(url, params=p, data=data, headers=theaders)
+        r = ss.post(url, params=p, data=data, headers=theaders, timeout=panTimeout)
         j = r.json()
         #if j['errno'] == 0:
             #return ENoError
@@ -1473,7 +1467,7 @@ class panbaiducom_HOME(object):
             "bdstoken": self._get_bdstoken()
         }
         url = 'http://pan.baidu.com/share/list'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j['errno'] != 0:
             print s % (1, 91, '  !! Error at _get_share_list')
@@ -1487,7 +1481,7 @@ class panbaiducom_HOME(object):
         return j['list']
 
     def _get_share_infos(self, url, remotepath, infos):
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         html = r.content
 
         info = panbaiducom.get_web_fileinfo(html, url)
@@ -1553,7 +1547,7 @@ class panbaiducom_HOME(object):
     @staticmethod
     def _secret_or_not(url):
         ss.headers['Referer'] = 'http://pan.baidu.com'
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         if 'init' in r.url:
             if not args.secret:
                 secret = raw_input(s % (2, 92, "  请输入提取密码: "))
@@ -1564,7 +1558,7 @@ class panbaiducom_HOME(object):
                 r.url.replace('init', 'verify'), \
                 int(time.time())
             )
-            r = ss.post(url, data=data)
+            r = ss.post(url, data=data, timeout=panTimeout)
             if r.json()['errno']:
                 print s % (2, 91, "  !! 提取密码错误\n")
                 sys.exit(1)
@@ -1592,7 +1586,7 @@ class panbaiducom_HOME(object):
             + "bdstoken=%s" % self._get_bdstoken()
 
         url = 'http://pan.baidu.com/inbox/object/transfer?' + p
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         j = r.json()
         if j['errno'] == 0:
             return ENoError
@@ -1628,7 +1622,7 @@ class panbaiducom_HOME(object):
         if info.get('last_time'): p.update({"last_time": ""})
 
         url = 'http://pan.baidu.com/inbox/object/unpanfileinfo'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j['errno'] != 0:
             print s % (1, 91, '  !! Error at _get_share_inbox_list')
@@ -1641,7 +1635,7 @@ class panbaiducom_HOME(object):
         return j['list']
 
     def _get_share_inbox_infos(self, url, remotepath, infos):
-        r = ss.get(url)
+        r = ss.get(url, timeout=panTimeout)
         html = r.content
 
         self.founder_uk = re.search(r'FileUtils.founder_uk=(\d+)', html).group(1)
@@ -1657,7 +1651,7 @@ class panbaiducom_HOME(object):
             "bdstoken": self._get_bdstoken(),
         }
         url = 'http://pan.baidu.com/inbox/object/unpanfileinfo'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j['errno'] == 0:
             for x in xrange(len(j['list'])):
@@ -1711,7 +1705,7 @@ class panbaiducom_HOME(object):
 
         if args.recursive: p['recursion'] = 1
         url = 'http://pan.baidu.com/api/search'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j['errno'] == 0:
             return j['list']
@@ -1984,7 +1978,7 @@ class panbaiducom_HOME(object):
             "bdstoken": self._get_bdstoken(),
         }
         url = 'http://pan.baidu.com/api/filemanager'
-        r = ss.post(url, params=p, data=data)
+        r = ss.post(url, params=p, data=data, timeout=panTimeout)
         j = r.json()
         if j['errno'] == 0:
             print s % (1, 92, '  ++ success.')
@@ -2264,7 +2258,7 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.post(url, params=p)
+        r = ss.post(url, params=p, timeout=panTimeout)
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_torrent_info:'), j['error_msg']
@@ -2288,7 +2282,7 @@ class panbaiducom_HOME(object):
             "type": 4,
         }
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.post(url, params=p, data=data)
+        r = ss.post(url, params=p, data=data, timeout=panTimeout)
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_magnet_info:'), j['error_msg']
@@ -2366,7 +2360,7 @@ class panbaiducom_HOME(object):
 
         apiurl = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
         while True:
-            r = ss.post(apiurl, params=p, data=data)
+            r = ss.post(apiurl, params=p, data=data, timeout=panTimeout)
             j = r.json()
             if j.get('error_code') == -19:
                 if data.get('vcode'):
@@ -2406,7 +2400,7 @@ class panbaiducom_HOME(object):
         }
         apiurl = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
         while True:
-            r = ss.post(apiurl, params=p, data=data)
+            r = ss.post(apiurl, params=p, data=data, timeout=panTimeout)
             j = r.json()
             if j.get('error_code') == -19:
                 if data.get('vcode'):
@@ -2516,7 +2510,7 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j.get('errno'):
             print s % (1, 91, '  !! Error at _query_task:'), j
@@ -2571,7 +2565,7 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _query_task:'), j
@@ -2604,8 +2598,8 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        ss.get(url, params=p)
-        #r = ss.get(url, params=p)
+        ss.get(url, params=p, timeout=panTimeout)
+        #r = ss.get(url, params=p, timeout=panTimeout)
         #j = r.json()
         #if j.get('total'):
             #print s % (1, 92, '  ++ success.'), 'total:', j['total']
@@ -2625,7 +2619,7 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.get(url, params=p)
+        r = ss.get(url, params=p, timeout=panTimeout)
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error:'), j['error_msg'], 'id: %s' % jobid
@@ -2701,7 +2695,7 @@ class panbaiducom_HOME(object):
             }
 
         url = 'http://pan.baidu.com/share/set'
-        r = ss.post(url, params=params, data=data)
+        r = ss.post(url, params=params, data=data, timeout=panTimeout)
         j = r.json()
 
         if j['errno'] != 0:
@@ -2812,7 +2806,7 @@ class panbaiducom(object):
         return info
 
     def get_params(self, path):
-        r = ss.get(path)
+        r = ss.get(path, timeout=panTimeout)
         html = r.content
 
         info = self.get_web_fileinfo(html, path)
@@ -2852,7 +2846,7 @@ class panbaiducom(object):
         data = 'fid_list=["%s"]' % self.infos['fs_id']
 
         while True:
-            r = ss.post(url, data=data, params=self.params)
+            r = ss.post(url, data=data, params=self.params, timeout=panTimeout)
             j = r.json()
             if not j['errno']:
                 dlink = fast_pcs_server(j['dlink'].encode('utf8'))
@@ -2869,7 +2863,7 @@ class panbaiducom(object):
 
     def get_infos2(self, path):
         while True:
-            r = ss.get(path)
+            r = ss.get(path, timeout=panTimeout)
             j = r.content.replace('\\', '')
             name = re.search(r'server_filename":"(.+?)"', j).group(1)
             dlink = re.search(r'dlink":"(.+?)"', j)
@@ -2902,7 +2896,7 @@ class panbaiducom(object):
 
     def do4(self, paths):
         for path in paths:
-            r = ss.get(path, allow_redirects=False)
+            r = ss.get(path, allow_redirects=False, timeout=panTimeout)
             t = re.search(r'fin=(.+?)(&|$)', r.headers['location']).group(1)
             name = urllib.unquote_plus(t)
             self.infos = {
