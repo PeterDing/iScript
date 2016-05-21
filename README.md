@@ -2,6 +2,7 @@
 
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
+
 > ***windows用户可在babun (https://github.com/babun/babun) 下运行。***
 
         |         |         |
@@ -21,7 +22,6 @@
 *[L]* | [91porn.py](#91porn.py)                                         | 下载或播放91porn |
 *[L]* | [ThunderLixianExporter.user.js](#ThunderLixianExporter.user.js) | A fork of https://github.com/binux/ThunderLixianExporter - 增加了mpv和mplayer的导出。 |
     | 待续                                                            |         |
-
 ---
 
 ---
@@ -193,9 +193,12 @@ xm s http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
 > http://kanoha.org/2011/08/30/xiami-absolute-address/
 
+
 > http://www.blackglory.me/xiami-vip-audition-with-no-quality-difference-between-downloading/
 
+
 > https://gist.github.com/lepture/1014329
+
 
 > 淘宝登录代码: https://github.com/ly0/xiami-tools
 
@@ -747,7 +750,9 @@ ls、重命名、移动、删除、复制、使用正则表达式进行文件操
 
 > https://gist.github.com/HououinRedflag/6191023
 
+
 > https://github.com/banbanchs/pan-baidu-download/blob/master/bddown_core.py
+
 
 > https://github.com/houtianze/bypy
 
@@ -875,6 +880,7 @@ bt c magnet_link -t be64
 
 > http://blog.chinaunix.net/uid-28450123-id-4051635.html
 
+
 > http://en.wikipedia.org/wiki/Torrent_file
 
 ---
@@ -971,6 +977,8 @@ pan115 -p url
 
 <a name="yunpan.360.cn.py"></a>
 ### yunpan.360.cn.py - 360网盘的下载
+
+**！！！<u>脚本已不再维护</u>！！！**
 
 #### 1. 依赖
 
@@ -1157,12 +1165,17 @@ nm -p url
 
 > https://github.com/yanunon/NeteaseCloudMusic/wiki/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90API%E5%88%86%E6%9E%90
 
+
 > http://s3.music.126.net/s/2/core.js
 
 ---
 
 <a name="flv_cmd.py"></a>
 ### flv_cmd.py - 基于在线服务的视频解析 client - 支持下载、播放
+
+**！！！<u>脚本已不再维护</u>！！！**
+
+**请使用 youtube-dl or you-get**
 
 #### 1. 依赖
 
@@ -1212,7 +1225,9 @@ fl url -p
 
 > https://github.com/soimort/you-get
 
+
 > https://github.com/iambus/youku-lixian
+
 
 > https://github.com/rg3/youtube-dl
 
