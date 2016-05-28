@@ -3,6 +3,7 @@
 
 import os
 import sys
+import functools
 import requests
 requests.packages.urllib3.disable_warnings() # disable urllib3's warnings https://urllib3.readthedocs.org/en/latest/security.html#insecurerequestwarning
 from requests_toolbelt import MultipartEncoder
@@ -108,14 +109,13 @@ upload_datas_path = os.path.join(os.path.expanduser('~'), '.bp.pickle')
 save_share_path = os.path.join(os.path.expanduser('~'), '.bp.ss.pickle')
 
 headers = {
-    "Accept":"text/html,application/xhtml+xml,application/xml; " \
-        "q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Encoding":"text/html",
+    "Accept": "application/json, text/javascript, text/html, */*; q=0.01",
+    "Accept-Encoding":"gzip, deflate, sdch",
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
-    "Content-Type":"application/x-www-form-urlencoded",
-    "Referer":"http://www.baidu.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " \
-        "(KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36"
+    "Referer":"http://pan.baidu.com/disk/home",
+    "X-Requested-With": "XMLHttpRequest",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
+    "Connection": "keep-alive",
 }
 
 ss = requests.session()
@@ -217,11 +217,14 @@ def print_process_bar(point, total, slice_size,
     sys.stdout.flush()
     return now
 
+
 class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
         self.ondup = 'overwrite'
         self.accounts = self._check_cookie_file()
+        self.dsign = None
+        self.timestamp = None
 
         self.highlights = []
         if any([args.tails, args.heads, args.includes]):
@@ -304,10 +307,7 @@ class panbaiducom_HOME(object):
         return input_code
 
     def check_login(self):
-        #print s % (1, 97, '\n  -- check_login')
-        url = 'http://pan.baidu.com/api/quota'
-        j = ss.get(url).json()
-        if j['errno'] != 0:
+        if not ss.cookies.get('BDUSS'):
             print s % (1, 91, '  -- check_login fail\n')
             return False
         else:
@@ -354,10 +354,10 @@ class panbaiducom_HOME(object):
         # Construct post body
         data = {
             "staticpage": "https://www.baidu.com/cache/user/html/v3Jump.html",
-            "charset": "UTF-8",
+            "charset": "utf-8",
             "token": token,
-            "tpl": "mn",
-            "subpro": "",
+            "tpl": "netdisk",
+            "subpro": "netdisk_web",
             "apiver": "v3",
             "tt": int(time.time()),
             "codestring": "",
@@ -366,18 +366,19 @@ class panbaiducom_HOME(object):
             "isPhone": "",
             "detect": "1",
             "quick_user": "0",
-            "logintype": "dialogLogin",
-            "logLoginType": "pc_loginDialog",
+            "logintype": "basicLogin",
+            "logLoginType": "pc_loginBasic",
             "idc": "",
             "loginmerge": "true",
             "splogin": "rate",
             "username": username,
             "password": password_encoded,
+            "mem_pass": "on",
             "verifycode": "",
             "rsakey": str(rsakey),
             "crypttype": "12",
-            "ppui_logintime": "155983",
-            "callback": "parent.bd__pcbs__pld7nd",
+            "ppui_logintime": "32221",
+            "callback": "parent.bd__pcbs__ahhlgk",
         }
 
         while True:
@@ -389,7 +390,8 @@ class panbaiducom_HOME(object):
             # Callback for verify code if we need
             #codestring = r.content[r.content.index('(')+1:r.content.index(')')]
             errno = re.search(r'err_no=(\d+)', r.content).group(1)
-            if errno == '0' or ss.cookies.get('BDUSS'):
+            if ss.cookies.get('BDUSS'):
+                ss.get("http://pan.baidu.com/disk/home")
                 break
             elif errno in ('257', '3', '6'):
                 print s % (1, 91, ' ! Error %s:' % errno), \
@@ -570,7 +572,9 @@ class panbaiducom_HOME(object):
             return url
 
     def _get_quota(self):
-        url = 'http://pan.baidu.com/api/quota'
+        url = 'http://pan.baidu.com/api/quota?checkexpire=1&checkfree=1&bdstoken={}&channel=chunlei&web=1&app_id=250528&clienttype=0'.format(self._get_bdstoken())
+
+        ss.get('http://pan.baidu.com/disk/home')
         r = ss.get(url)
         j = r.json()
         if j['errno'] != 0:
@@ -623,9 +627,10 @@ class panbaiducom_HOME(object):
         url = 'http://pan.baidu.com/disk/home'
         r = ss.get(url)
         html = r.content
-        sign1 = re.search(r'sign1 = \'(.+?)\';', html).group(1)
-        sign3 = re.search(r'sign3 = \'(.+?)\';', html).group(1)
-        timestamp = re.search(r'timestamp = \'(.+?)\';', html).group(1)
+
+        sign1 = re.search(r'"sign1":"(.+?)"', html).group(1)
+        sign3 = re.search(r'"sign3":"(.+?)"', html).group(1)
+        timestamp = re.search(r'"timestamp":(\d+)', html).group(1)
 
         # following javascript code from http://pan.baidu.com/disk/home
         #yunData.sign2 = function s(j, r) {
@@ -688,36 +693,32 @@ class panbaiducom_HOME(object):
         self.dsign = sign2(sign3, sign1)
         self.timestamp = timestamp
 
-    def _get_dlink(self, i):
-        if not hasattr(self, 'dsign'):
-            self._get_dsign()
+    def _get_dlink(self, fs_id):
+        self._get_dsign()
 
-        while True:
-            params = {
-                "channel": "chunlei",
-                "clienttype": 0,
-                "web": 1,
-                #"bdstoken": self._get_bdstoken()
-            }
+        params = {
+            "channel": "chunlei",
+            "clienttype": 0,
+            "app_id": "250528",
+            "web": 1,
+            "bdstoken": self._get_bdstoken(),
+            "sign": self.dsign,
+            "timestamp": self.timestamp,
+            "fidlist": '[{}]'.format(fs_id),
+            "type": "dlink",
+        }
 
-            data = {
-                "sign": self.dsign,
-                "timestamp": self.timestamp,
-                "fidlist": "[%s]" % i['fs_id'],
-                "type": "dlink"
-            }
+        url = 'http://pan.baidu.com/api/download'
+        r = ss.get(url, params=params)
+        j = r.json()
+        if j['errno'] == 0:
+            dlink = j['dlink'][0]['dlink'].encode('utf8')
+            # dlink = re.sub(r'prisign=.+?(&|$)', r'prisign=unknow\1', dlink)
+            # dlink = dlink.replace('chkbd=0', 'chkbd=1')
+            # dlink = dlink.replace('chkv=0', 'chkv=1')
+            dlink = fast_pcs_server(dlink)
+            return dlink
 
-            url = 'http://pan.baidu.com/api/download'
-            r = ss.post(url, params=params, data=data)
-            j = r.json()
-            if j['errno'] == 0:
-                dlink = j['dlink'][0]['dlink'].encode('utf8')
-                dlink = re.sub(r'prisign=.+?(&|$)', r'prisign=unknow\1', dlink)
-                dlink = dlink.replace('chkbd=0', 'chkbd=1')
-                dlink = dlink.replace('chkv=0', 'chkv=1')
-                return dlink
-            else:
-                self._get_dsign()
 
     def _get_dlink2(self, i):
         j = self._meta([i['path'].encode('utf8')], dlink=1)
@@ -752,7 +753,7 @@ class panbaiducom_HOME(object):
             base_dir = '' if os.path.split(path)[0] == '/' \
                 else os.path.split(path)[0]
 
-            meta = self._meta([path], dlink=1)
+            meta = self._meta([path], dlink=0)
             if meta:
                 if meta['info'][0]['isdir']:
                     dir_loop = [path]
@@ -794,8 +795,7 @@ class panbaiducom_HOME(object):
                                 t = t[1:] if t[0] == '/' else t
                                 t =  os.path.join(os.getcwd(), t)
 
-                                if not i.has_key('dlink'):
-                                    i['dlink'] = self._get_dlink2(i)
+                                i['dlink'] = self._get_dlink(i['fs_id'])
 
                                 infos = {
                                     'file': t,
@@ -822,10 +822,10 @@ class panbaiducom_HOME(object):
                         'file': t,
                         'path': meta['info'][0]['path'].encode('utf8'),
                         'dir_': os.path.split(t)[0],
-                        #'dlink': self._get_dlink(meta['info'][0]),
+                        'dlink': self._get_dlink(meta['info'][0]['fs_id']),
                         'm3u8': self._get_m3u8(meta['info'][0]) \
                             if 'm3' in args.type_ else None,
-                        'dlink': meta['info'][0]['dlink'].encode('utf8'),
+                        # 'dlink': meta['info'][0]['dlink'].encode('utf8'),
                         'name': meta['info'][0]['server_filename'].encode('utf8'),
                         'size': meta['info'][0]['size'],
                     }
@@ -861,6 +861,8 @@ class panbaiducom_HOME(object):
             print s % (1, 93, '  !! 百度8秒 !!')
             return
 
+        cookie = 'Cookie: ' + '; '.join([
+            k + '=' + v for k, v in ss.cookies.get_dict().items()])
         if args.aria2c:
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
@@ -871,22 +873,21 @@ class panbaiducom_HOME(object):
             cmd = 'aria2c -c -k 1M%s%s%s ' \
                 '-o "%s.tmp" -d "%s" ' \
                 '--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
+                '--header "%s" ' \
                 '"%s"' \
                 % (quiet, taria2c, tlimit, infos['name'],
-                    infos['dir_'], infos['dlink'])
+                    infos['dir_'], cookie, infos['dlink'])
         else:
-            cookie = 'Cookie: ' + '; '.join([
-                k + '=' + v for k, v in ss.cookies.get_dict().items()])
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
             cmd = 'wget -c%s%s ' \
                 '-O "%s.tmp" ' \
-                '--user-agent "%s" ' \
+                '--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
                 '--header "Referer:http://pan.baidu.com/disk/home" ' \
                 '--header "%s" ' \
                 '"%s"' \
                 % (quiet, tlimit, infos['file'],
-                   headers['User-Agent'], cookie, infos['dlink'])
+                   cookie, infos['dlink'])
 
         status = os.system(cmd)
         exit = True
@@ -933,9 +934,9 @@ class panbaiducom_HOME(object):
             k + '=' + v for k, v in ss.cookies.get_dict().items()])
         quiet = ' --really-quiet' if args.quiet else ''
         cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
-            '--http-header-fields "User-Agent:%s" ' \
             '--http-header-fields "%s" ' \
-            '--http-header-fields "Referer:http://pan.baidu.com/disk/home" "%s"' \
+            '--http-header-fields "%s" ' \
+            '"%s"' \
             % (quiet, headers['User-Agent'], cookie, infos['dlink'])
 
         os.system(cmd)
@@ -977,8 +978,10 @@ class panbaiducom_HOME(object):
             "method": "filemetas",
             "dlink": dlink,
             "blocks": 0,  # 0 or 1
-            #"bdstoken": self._get_bdstoken()
+            "bdstoken": self._get_bdstoken()
         }
+
+        ss.get('http://pan.baidu.com/disk/home')
         url = 'http://pan.baidu.com/api/filemetas'
         i = 0
         j = {}
@@ -1685,17 +1688,27 @@ class panbaiducom_HOME(object):
     #######################################################################
     # for finding files
 
-    def _search(self, keyword, directory):
+    def _search(self, keyword, directory, page=1, num=10000):
+
         p = {
-            "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
-            "key": keyword,
-            "dir": directory if directory else "",
-            #"timeStamp": "0.15937364846467972",
-            #"bdstoken": self._get_bdstoken(),
+            'recursion': '0',
+            'order': 'time',
+            'desc': '1',
+            'showempty': '1',
+            'web': '0',
+            'page': page,
+            'dir': directory,
+            'num': num,
+            'key': keyword,
+            't': str(random.random()),
+            'bdstoken': self._get_bdstoken(),
+            'channel': 'chunlei',
+            'web': '1',
+            'app_id': '250528',
+            'clienttype': '0',
         }
 
+        ss.get('http://pan.baidu.com/disk/home')
         if args.recursive: p['recursion'] = 1
         url = 'http://pan.baidu.com/api/search'
         r = ss.get(url, params=p)
