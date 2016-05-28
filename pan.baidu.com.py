@@ -1688,10 +1688,10 @@ class panbaiducom_HOME(object):
     #######################################################################
     # for finding files
 
-    def _search(self, keyword, directory, page=1, num=10000):
+    def _search(self, keyword, directory, page=1, num=1000):
 
         p = {
-            'recursion': '0',
+            'recursion': 0,
             'order': 'time',
             'desc': '1',
             'showempty': '1',
@@ -1708,9 +1708,9 @@ class panbaiducom_HOME(object):
             'clienttype': '0',
         }
 
-        ss.get('http://pan.baidu.com/disk/home')
         if args.recursive: p['recursion'] = 1
         url = 'http://pan.baidu.com/api/search'
+        ss.get('http://pan.baidu.com/disk/home')
         r = ss.get(url, params=p)
         j = r.json()
         if j['errno'] == 0:
