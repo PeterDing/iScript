@@ -251,6 +251,8 @@ class panbaiducom_HOME(object):
             else:
                 return response
 
+        self.save_cookies()
+
         print s % (1, 91, ' ! [{}] Server error'.format(action))
         sys.exit()
 
@@ -640,7 +642,7 @@ class panbaiducom_HOME(object):
             "desc": 1,   ## reversely
             "order": order, ## sort by name, or size, time
             "_": int(time.time()*1000),
-            "bdstoken": self._get_bdstoken(),
+            # "bdstoken": self._get_bdstoken(),
         }
         if not desc: del p['desc']
         url = 'http://pan.baidu.com/api/list'
@@ -1028,12 +1030,12 @@ class panbaiducom_HOME(object):
     def _meta(self, file_list, dlink=0):
 
         p = {
-            "channel": "chunlei",
-            "app_id": "250528",
+            # "channel": "chunlei",
+            # "app_id": "250528",
             "method": "filemetas",
             "dlink": dlink,
             "blocks": 0,  # 0 or 1
-            "bdstoken": self._get_bdstoken()
+            # "bdstoken": self._get_bdstoken()
         }
 
         # ss.get('http://pan.baidu.com/disk/home')
@@ -3522,6 +3524,8 @@ def handle_command(comd, xxx):
         # x.save_cookies(on=1, tocwd=True)
     # elif 'px' in locals():
         # px.save_cookies(on=1, tocwd=True)
+
+
 
 def main(argv):
     handle_signal()
