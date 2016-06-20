@@ -575,7 +575,7 @@ class xiami(object):
                           for i in t]
 
             # find count of songs that be played.
-            t = re.findall(r'<td class="song_hot">(.*?)<', c)
+            t = re.findall(r'class="song_hot_bar"><span style="width:(\d+)', c)
             song_played = [int(i) if i.isdigit() else 0 for i in t]
 
             if len(tracks) != len(song_ids) != len(song_names):

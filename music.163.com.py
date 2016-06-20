@@ -122,6 +122,7 @@ class neteaseMusic(object):
                 durl = u'http://m2.music.126.net/%s/%s.mp3' \
                     % (edfsId, dfsId)
                 return durl, q[0]
+        return None, None
 
     def get_cover(self, info):
         if info['album_name'] == self.cover_id:
@@ -364,12 +365,14 @@ class neteaseMusic(object):
         print '  >>', s % (2, 92, 'http://music.163.com/song/%s' \
                            % i['song_id'])
         print '  >>', s % (2, 97, 'MP3-Quality'), ':', \
-            s % (1, 92, q[i['mp3_quality']])
+            s % (1, 92, str(q.get(i['mp3_quality'])))
         print ''
 
     def play(self, amount_songs, n=None):
         for i in self.song_infos:
             self.display_infos(i)
+            if not i['durl']:
+                continue
             cmd = 'mpv --really-quiet --audio-display no %s' % i['durl']
             os.system(cmd)
             timeout = 1
@@ -401,7 +404,7 @@ class neteaseMusic(object):
                     continue
             if not args.undownload:
                 q = {'h': 'High', 'm': 'Middle', 'l': 'Low'}
-                mp3_quality = q[i['mp3_quality']]
+                mp3_quality = str(q.get(i['mp3_quality']))
                 if n == None:
                     print(u'\n  ++ 正在下载: #%s/%s# %s\n' \
                           u'  ++ mp3_quality: %s' \
@@ -412,6 +415,9 @@ class neteaseMusic(object):
                           u'  ++ mp3_quality: %s' \
                         % (n, amount_songs, col,
                            s % (1, 91, mp3_quality)))
+                if not i['durl']:
+                    continue
+
                 file_name_for_wget = file_name.replace('`', '\`')
                 cmd = 'wget -c -nv -U "%s" -O "%s.tmp" %s' \
                     % (headers['User-Agent'], file_name_for_wget, i['durl'])

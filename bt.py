@@ -235,6 +235,7 @@ class Bt(object):
                     dd = bencode.bdecode(string)
                 except Exception as e:
                     print s % (1, 91, '  !! torrent is wrong:'), e
+                    return None
                 info = bencode.bencode(dd['info'])
                 hh = sha1(info).hexdigest()
                 print '# %s' % tpath
