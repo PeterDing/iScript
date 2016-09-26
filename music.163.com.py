@@ -119,7 +119,7 @@ class neteaseMusic(object):
             if i[q]:
                 dfsId = str(i[q]['dfsId'])
                 edfsId = encrypted_id(dfsId)
-                durl = u'http://m2.music.126.net/%s/%s.mp3' \
+                durl = u'http://p1.music.126.net/%s/%s.mp3' \
                     % (edfsId, dfsId)
                 return durl, q[0]
         return None, None
