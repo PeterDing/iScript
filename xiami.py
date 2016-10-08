@@ -586,7 +586,11 @@ class xiami(object):
             for i in xrange(len(tracks)):
                 song_info = {}
                 song_info['song_id'] = song_ids[i]
-                song_info['song_played'] = song_played[i]
+                if len(song_played) > i:
+                    song_info['song_played'] = song_played[i]
+                else:
+                    song_info['song_played'] = 0
+
                 song_info['album_id'] = album_id
                 song_info['song_url'] = u'http://www.xiami.com/song/' \
                                         + song_ids[i]
@@ -1063,7 +1067,14 @@ class xiami(object):
                     'http://www.xiami.com/song/' + song_id
                 result = self._save_do(song_id, 3, tags)
 
+            elif '/u/' in url:
+                user_id = re.search(r'/u/(\d+)', url).group(1)
+                print s % (1, 97, u'\n  ++ save user:'), \
+                    'http://www.xiami.com/u/' + user_id
+                result = self._save_do(user_id, 1, tags)
+
             else:
+                result = -1
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
             if result == 0:
