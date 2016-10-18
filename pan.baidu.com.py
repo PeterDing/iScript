@@ -1467,36 +1467,34 @@ class panbaiducom_HOME(object):
                 j = {'errno': 'file has exist'}
                 return j
 
-        theaders = headers
-        theaders.update(
-            {
-                'Referer': 'http://pan.baidu.com/share/link?shareid=%s&uk=%s' \
-            % (self.shareid, self.uk)
-            }
-        )
-
-        p = {
-            "app_id": 250528,
-            "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
-            "ondup": "overwrite",
-            "async": 1,
-            "from": self.uk,
-            "shareid": self.shareid,
-            "bdstoken": self._get_bdstoken()
-        }
-        data = "path=" \
-            + urllib.quote_plus(info['remotepath'].encode('utf8')) \
-            + '&' \
-            + "filelist=" \
-            + urllib.quote_plus(
-                '["%s"]' % info['path'].encode('utf8')
+        data = ('filelist=' \
+                + urllib.quote_plus('["%s"]' % info['path'].encode('utf8')) \
+                + '&path=' \
+                + urllib.quote_plus(info['remotepath'].encode('utf8'))
             )
 
-        url = 'http://pan.baidu.com/share/transfer'
-        r = ss.post(url, params=p, data=data, headers=theaders)
+        url = ('https://pan.baidu.com/share/transfer?'
+               'shareid={}&from={}&bdstoken={}&channel=chunlei'
+               '&clienttype=0&web=1&app_id=250528'.format(
+                   self.shareid,
+                   self.uk,
+                   self._get_bdstoken()))
+
+        theaders = {
+            'Cookie': ' '.join(['{}={};'.format(k, v) for k, v in ss.cookies.get_dict().items()]),
+            'Origin': 'https://pan.baidu.com',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Accept': '*/*',
+            'Referer': 'https://pan.baidu.com/',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Connection': 'keep-alive',
+        }
+        r = ss.post(url, data=data, headers=theaders)
         j = r.json()
+
         #if j['errno'] == 0:
             #return ENoError
         #else:
@@ -1536,6 +1534,7 @@ class panbaiducom_HOME(object):
 
     def _get_share_infos(self, url, remotepath, infos):
         r = ss.get(url)
+        ss.cookies.update(r.cookies.get_dict())
         html = r.content
 
         info = panbaiducom.get_web_fileinfo(html, url)
@@ -1543,8 +1542,7 @@ class panbaiducom_HOME(object):
         self.shareid = info['shareid']
         self.bdstoken = info['bdstoken']
 
-        fileinfo = info['fileinfo']
-        j = json.loads(fileinfo)
+        j = info['file_list']['list']
         isdirs = [x['isdir'] for x in j]
         paths = [x['path'] for x in j]
         z = zip(isdirs, paths)
@@ -2025,6 +2023,7 @@ class panbaiducom_HOME(object):
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1,
+            "async": "2",
             "opera": opera,
             "bdstoken": self._get_bdstoken(),
         }
@@ -2847,12 +2846,8 @@ class panbaiducom(object):
             info['timestamp'] = re.search(r'timestamp="(\d+)"', cm).group(1)
             info['sign']      = re.search(r'downloadsign="(.+?)"', cm).group(1)
         else:
-            info['uk']        = re.search(r'yunData\.MYUK = "(\d+)"', cm).group(1)
-            info['shareid']   = re.search(r'yunData\.SHARE_ID = "(\d+)"', cm).group(1)
-            info['bdstoken']  = re.search(r'yunData\.MYBDSTOKEN = "(.*?)"', cm).group(1)
-            info['fileinfo']  = re.search(r'yunData.FILEINFO = (.+)', cm).group(1)[:-2]
-            info['timestamp'] = re.search(r'yunData.TIMESTAMP = "(.+?)"', cm).group(1)
-            info['sign']      = re.search(r'yunData.SIGN = "(.+?)"', cm).group(1)
+            info_str = re.search(r'yunData.setData\((.+?)\);', cm).group(1)
+            info = json.loads(info_str)
 
         return info
 
@@ -2861,27 +2856,24 @@ class panbaiducom(object):
         html = r.content
 
         info = self.get_web_fileinfo(html, path)
-        uk = info['uk']
-        shareid = info['shareid']
-        timestamp = info['timestamp']
-        sign = info['sign']
+        self.uk = str(info['uk'])
+        self.shareid = str(info['shareid'])
+        self.timestamp = str(info['timestamp'])
+        self.sign = info['sign']
+        self.bdstoken = info['bdstoken']
 
         self.params = {
-            #"bdstoken": bdstoken,
-            "uk": uk,
-            "shareid": shareid,
-            "timestamp": timestamp,
-            "sign": sign,
-            "channel": "chunlei",
-            "clienttype": 0,
-            "web": 1,
+            "bdstoken": self.bdstoken,
+            "uk": self.uk,
+            "shareid": self.shareid,
+            "timestamp": self.timestamp,
+            "sign": self.sign,
             "channel": "chunlei",
             "clienttype": 0,
             "web": 1
         }
 
-        fileinfo = info['fileinfo']
-        j = json.loads(fileinfo)
+        j = info['file_list']['list']
 
         self.infos.update({
             'name': j[0]['server_filename'].encode('utf8'),
@@ -2893,14 +2885,22 @@ class panbaiducom(object):
             })
 
     def get_infos(self):
-        url = 'http://pan.baidu.com/share/download'
-        data = 'fid_list=["%s"]' % self.infos['fs_id']
+        url = ('https://pan.baidu.com/api/sharedownload?'
+               'sign={}&timestamp={}&bdstoken={}'
+               '&channel=chunlei&clienttype=0&web=1').format(
+                   self.sign, self.timestamp, self.bdstoken)
+
+        data = ('encrypt=0&product=share'
+                + '&uk=' + self.uk
+                + '&primaryid=' + self.shareid
+                + '&fid_list=' + urllib.quote_plus('["%s"]' % self.infos['fs_id'])
+               )
 
         while True:
-            r = ss.post(url, data=data, params=self.params)
+            r = ss.post(url, data=data)
             j = r.json()
             if not j['errno']:
-                dlink = fast_pcs_server(j['dlink'].encode('utf8'))
+                dlink = fast_pcs_server(j['list']['dlink'].encode('utf8'))
                 self.infos['dlink'] = dlink
                 if args.play:
                     panbaiducom_HOME._play_do(self.infos)
