@@ -1454,7 +1454,7 @@ class panbaiducom_HOME(object):
     ##################################################################
     # for saving shares
 
-    def _share_transfer(self, info):
+    def _share_transfer(self, surl, info):
         meta = self._meta([info['remotepath'].encode('utf8')])
         if not meta:
             self._make_dir(info['remotepath'].encode('utf8'))
@@ -1481,14 +1481,14 @@ class panbaiducom_HOME(object):
                    self._get_bdstoken()))
 
         theaders = {
-            'Cookie': ' '.join(['{}={};'.format(k, v) for k, v in ss.cookies.get_dict().items()]),
+            'Cookie': '; '.join(['{}={}'.format(k, v) for k, v in ss.cookies.get_dict().items()]),
             'Origin': 'https://pan.baidu.com',
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Accept': '*/*',
-            'Referer': 'https://pan.baidu.com/',
+            'Referer': surl,
             'X-Requested-With': 'XMLHttpRequest',
             'Connection': 'keep-alive',
         }
@@ -1574,7 +1574,7 @@ class panbaiducom_HOME(object):
             while True:
                 print s % (1, 97, '  ++ transfer:'), info['path']
 
-                result = self._share_transfer(info)
+                result = self._share_transfer(url, info)
                 if result['errno'] == 0:
                     break
                 elif result['errno'] == 12 or result['errno'] == -33:
@@ -1599,18 +1599,35 @@ class panbaiducom_HOME(object):
     @staticmethod
     def _secret_or_not(url):
         ss.headers['Referer'] = 'http://pan.baidu.com'
-        r = ss.get(url)
+        r = ss.get(url, headers=headers)
+        if r.status_code != 200 and r.status_code != 302:
+            print('cookies', ss.cookies.get_dict())
+            ss.headers['Cookie'] = ';'.join(['{}={}'.format(k, v) for k, v in ss.cookies.get_dict().items()])
+            r = ss.get(url, headers=headers, cookies=r.cookies)
+
         if 'init' in r.url:
             if not args.secret:
                 secret = raw_input(s % (2, 92, "  请输入提取密码: "))
             else:
                 secret = args.secret
-            data = 'pwd=%s' % secret
-            url = "%s&t=%d" % (
-                r.url.replace('init', 'verify'), \
-                int(time.time())
+            data = 'pwd=%s&vcode=&vcode_str=' % secret
+            query = 'bdstoken=null&channel=chunlei&clienttype=0&web=1&app_id=250528'
+            url = "%s&t=%d&%s" % (
+                r.url.replace('init', 'verify'),
+                int(time.time()*1000),
+                query
             )
-            r = ss.post(url, data=data)
+            theaders = {
+                'Accept-Encoding': 'gzip, deflate',
+                'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'Accept': '*/*',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cookie': 'BAIDUID=0F38C66B2C9AC2FC887BD3FEB059F5AC:FG=1; PANWEB=1',
+                'Connection': 'keep-alive',
+            }
+            r = ss.post(url, data=data, headers=theaders)
             if r.json()['errno']:
                 print s % (2, 91, "  !! 提取密码错误\n")
                 sys.exit(1)
@@ -3242,6 +3259,7 @@ def handle_command(comd, xxx):
             )
         else:
             infos = None
+
         if '/inbox/' in xxx[0]:
             url = xxx[0]
             x.save_inbox_share(url, remotepath, infos=infos)
