@@ -419,22 +419,22 @@ class xiami(object):
     def url_parser(self, urls):
         for url in urls:
             if '/collect/' in url:
-                self.collect_id = re.search(r'/collect/(\d+)', url).group(1)
+                self.collect_id = re.search(r'/collect/(\w+)', url).group(1)
                 #print(s % (2, 92, u'\n  -- 正在分析精选集信息 ...'))
                 self.download_collect()
 
             elif '/album/' in url:
-                self.album_id = re.search(r'/album/(\d+)', url).group(1)
+                self.album_id = re.search(r'/album/(\w+)', url).group(1)
                 #print(s % (2, 92, u'\n  -- 正在分析专辑信息 ...'))
                 self.download_album()
 
             elif '/artist/' in url or 'i.xiami.com' in url:
                 def get_artist_id(url):
                     html = ss.get(url).text
-                    artist_id = re.search(r'artist_id = \'(\d+)\'', html).group(1)
+                    artist_id = re.search(r'artist_id = \'(\w+)\'', html).group(1)
                     return artist_id
 
-                self.artist_id = re.search(r'/artist/(\d+)', url).group(1) \
+                self.artist_id = re.search(r'/artist/(\w+)', url).group(1) \
                     if '/artist/' in url else get_artist_id(url)
                 code = raw_input('  >> a  # 艺术家所有专辑.\n' \
                     '  >> r  # 艺术家 radio\n' \
@@ -451,12 +451,12 @@ class xiami(object):
                     print(s % (1, 92, u'  --> Over'))
 
             elif '/song/' in url:
-                self.song_id = re.search(r'/song/(\d+)', url).group(1)
+                self.song_id = re.search(r'/song/(\w+)', url).group(1)
                 #print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
                 self.download_song()
 
             elif '/u/' in url:
-                self.user_id = re.search(r'/u/(\d+)', url).group(1)
+                self.user_id = re.search(r'/u/(\w+)', url).group(1)
                 code = raw_input('  >> m   # 该用户歌曲库.\n' \
                     '  >> c   # 最近在听\n' \
                     '  >> s   # 分享的音乐\n'
@@ -513,7 +513,7 @@ class xiami(object):
                 self.hack_luoo(url)
 
             elif 'sid=' in url:
-                _mod = re.search(r'sid=([\d+,]+\d)', url)
+                _mod = re.search(r'sid=([\w+,]+\w)', url)
                 if _mod:
                     song_ids = _mod.group(1).split(',')
                     self.download_songs(song_ids)
@@ -529,7 +529,7 @@ class xiami(object):
         t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
         album_name = modificate_text(t)
 
-        t = re.search(r'"/artist/\d+.+?>(.+?)<', html1).group(1)
+        t = re.search(r'"/artist/\w+.+?>(.+?)<', html1).group(1)
         artist_name = modificate_text(t)
 
         t = re.findall(u'(\d+)年(\d+)月(\d+)', html1)
@@ -569,10 +569,11 @@ class xiami(object):
             z = len(str(len(tracks)))
 
             # find all song_ids and song_names
-            t = re.findall(r'<a href="/song/(\d+)" .+?>(.+?)</', c)
-            song_ids = [i[0] for i in t]
-            song_names = [modificate_text(i[1]) \
-                          for i in t]
+            t = re.findall(r'<a href="/song/(\w+)".+?>(.+?)</', c)
+            song_names = [i[1] for i in t]
+            song_ids = re.findall(r'value="(\d+)" name="recommendids"', c)
+            # song_names = [modificate_text(i[1]) \
+                          # for i in t]
 
             # find count of songs that be played.
             t = re.findall(r'class="song_hot_bar"><span style="width:(\d+)', c)
@@ -636,11 +637,14 @@ class xiami(object):
     def get_song(self, song_id):
         html = ss.get(url_song % song_id).text
         html = html.split('<div id="wall"')[0]
-        t = re.search(r'album/(\d+)', html)
+        t = re.search(r'href="/album/(.+?)" title="', html)
         if t:
             album_id = t.group(1)
         else:
             return []
+
+        if not song_id.isdigit():
+            song_id = re.search(r'/song/(\d+)', html).group(1)
         songs = self.get_songs(album_id, song_id=song_id)
         return songs
 
@@ -679,7 +683,7 @@ class xiami(object):
         d = collect_name
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        song_ids = re.findall('/song/(\d+)" title', html)
+        song_ids = re.findall('/song/(\w+)" title', html)
         amount_songs = unicode(len(song_ids))
         song_ids = song_ids[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
@@ -698,7 +702,7 @@ class xiami(object):
         while True:
             html = ss.get(
                 url_artist_albums % (self.artist_id, str(ii))).text
-            t = re.findall(r'/album/(\d+)"', html)
+            t = re.findall(r'/album/(\w+)"', html)
             if album_ids == t: break
             album_ids = t
             if album_ids:
@@ -716,7 +720,7 @@ class xiami(object):
         html = ss.get(url_artist_top_song % self.artist_id).text
         song_ids = re.findall(r'/song/(.+?)" title', html)
         artist_name = re.search(
-            r'<p><a href="/artist/\d+">(.+?)<', html).group(1)
+            r'<p><a href="/artist/\w+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - top 20')
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
@@ -734,7 +738,7 @@ class xiami(object):
     def download_artist_radio(self):
         html = ss.get(url_artist_top_song % self.artist_id).text
         artist_name = re.search(
-            r'<p><a href="/artist/\d+">(.+?)<', html).group(1)
+            r'<p><a href="/artist/\w+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - radio')
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
