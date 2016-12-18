@@ -741,7 +741,9 @@ class panbaiducom_HOME(object):
 
     def _get_dlink(self, path):
         dlink = ('http://c.pcs.baidu.com/rest/2.0/pcs/file?method=download'
-               '&app_id=250528&path={}').format(urllib.quote(path))
+                 '&app_id=250528&path={}&ver=2.0&clienttype=1').format(
+                   urllib.quote(path))
+
         dlink = fast_pcs_server(dlink)
         return dlink
 
@@ -919,20 +921,25 @@ class panbaiducom_HOME(object):
 
         cookie = 'Cookie: ' + '; '.join([
             k + '=' + v for k, v in ss.cookies.get_dict().items()])
-        if args.aria2c:
+        user_agent  = "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia"
+        # user_agent  = "netdisk;7.15.1;HUAWEI+G750-T01;android-android;4.2.2"
+        # user_agent = headers['User-Agent']
+
+        if args.aget_s:
             quiet = ' --quiet=true' if args.quiet else ''
-            taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
-            tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
                 #'--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
                 #'--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
                 #'--header "Referer:http://pan.baidu.com/disk/home " ' \
-            cmd = 'aria2c -c -k 1M%s%s%s ' \
-                '-o "%s.tmp" -d "%s" ' \
-                '--user-agent "%s" ' \
-                '--header "%s" ' \
+            cmd = 'aget -k %s -s %s ' \
+                '-o "%s.tmp" ' \
+                '-H "User-Agent: %s" ' \
+                '-H "Content-Type: application/x-www-form-urlencoded" ' \
+                '-H "Connection: Keep-Alive" ' \
+                '-H "Accept-Encoding: gzip" ' \
+                '-H "%s" ' \
                 '"%s"' \
-                % (quiet, taria2c, tlimit, infos['name'],
-                    infos['dir_'], headers['User-Agent'], cookie, infos['dlink'])
+                % (args.aget_k, args.aget_s, infos['file'],
+                   user_agent, cookie, infos['dlink'])
         else:
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
@@ -948,9 +955,9 @@ class panbaiducom_HOME(object):
         status = os.system(cmd)
         exit = True
         if 'ie' in args.type_:
-            if status == 2 and not args.aria2c:
+            if status == 2 and not args.aget_s:
                 pass
-            elif status == (7 << 8) and args.aria2c:
+            elif status == (7 << 8) and args.aget_s:
                 pass
             else:
                 exit = False
@@ -2917,7 +2924,7 @@ class panbaiducom(object):
             r = ss.post(url, data=data)
             j = r.json()
             if not j['errno']:
-                dlink = fast_pcs_server(j['list']['dlink'].encode('utf8'))
+                dlink = fast_pcs_server(j['list'][0]['dlink'].encode('utf8'))
                 self.infos['dlink'] = dlink
                 if args.play:
                     panbaiducom_HOME._play_do(self.infos)
@@ -3008,8 +3015,10 @@ def handle_args(argv):
     p = argparse.ArgumentParser(description='about pan.baidu.com.' \
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', help='命令对象.')
-    p.add_argument('-a', '--aria2c', action='store', default=None, \
-        type=int, help='aria2c分段下载数量')
+    p.add_argument('-a', '--aget_s', action='store', default=None, \
+        type=int, help='aget 分段下载数量')
+    p.add_argument('-k', '--aget_k', action='store', default='200K', \
+        type=str, help='aget 分段大小')
     p.add_argument('-p', '--play', action='store_true', help='play with mpv')
     p.add_argument('-v', '--view', action='count', help='view details')
     p.add_argument('-V', '--VERIFY', action='store_true', help='verify')
