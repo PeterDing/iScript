@@ -214,6 +214,8 @@ wget
 
 aria2  (~ 1.18)
 
+aget # 需要 python >= 3.5, 安装 pip3 install aget
+
 python2-rsa
 
 python2-pyasn1
@@ -253,6 +255,8 @@ pan.baidu.com.py 是一个百度网盘的命令行客户端。
 他人分享的网盘连接，只支持单个的下载。
 
 下载工具默认为wget, 可用参数-a num选用aria2
+
+**支持用 aget 加速下载, 用法见下**
 
 下载的文件，保存在当前目录下。
 
@@ -435,7 +439,11 @@ jca 或 jobclearall                      # 清除 *全部任务*
 #### 参数:
 
 ```
--a num, --aria2c num                aria2c分段下载数量: eg: -a 10
+-a num, --aria2c num                aria2c 分段下载数量: eg: -a 10
+-g num, --aget_s num                aget 分段下载数量: eg: -g 100
+-k num, --aget_k size               aget 分段大小: eg: -k 200K
+                                                       -k 1M
+                                                       -k 2M
 -p, --play                          play with mpv
 -P password, --passwd password      分享密码，加密密码
 -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
@@ -567,10 +575,16 @@ bp d 'http://pan.baidu.com/share/link?shareid=1622654699&uk=1026372002&fid=21126
 # 下载别人加密分享的*单个文件*，密码参数-s
 bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej
 
-# 用aria2下载
+# 用aria2 下载
 bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej -a 5
 bp d /movie/her.mkv -a 4
 bp d url -s [secret] -a 10
+
+# 用 aget 下载
+bp d http://pan.baidu.com/s/1i3FVlw5 -s vuej -g 100
+bp d /movie/her.mkv -g 100 -k 200K
+bp d url -s [secret] -g 100 -k 100K
+如果下载速度很慢，可以试试加大 -g, 减小 -k, -k 一般在 100K ~ 300K 之间合适
 
 # 下载并解码
 ## 默认加密方法为 aes-256-cfb
