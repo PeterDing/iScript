@@ -940,6 +940,18 @@ class panbaiducom_HOME(object):
                 '"%s"' \
                 % (args.aget_k, args.aget_s, infos['file'],
                    user_agent, cookie, infos['dlink'])
+        elif args.aria2c:
+            quiet = ' --quiet=true' if args.quiet else ''
+            taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
+            tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
+            cmd = 'aria2c -c -k 1M%s%s%s ' \
+                '-o "%s.tmp" -d "%s" ' \
+                '--user-agent "%s" ' \
+                '--header "%s" ' \
+                '"%s"' \
+                % (quiet, taria2c, tlimit, infos['name'],
+                   infos['dir_'], headers['User-Agent'],
+                   cookie, infos['dlink'])
         else:
             quiet = ' -q' if args.quiet else ''
             tlimit = ' --limit-rate %s' % args.limit if args.limit else ''
@@ -955,9 +967,9 @@ class panbaiducom_HOME(object):
         status = os.system(cmd)
         exit = True
         if 'ie' in args.type_:
-            if status == 2 and not args.aget_s:
+            if status == 2 and not args.aria2c:
                 pass
-            elif status == (7 << 8) and args.aget_s:
+            elif status == (7 << 8) and args.aria2c:
                 pass
             else:
                 exit = False
@@ -2987,6 +2999,11 @@ class panbaiducom(object):
                 panbaiducom_HOME._download_do(self.infos)
             break
 
+def assert_download_tools():
+    for tool in ('wget', 'aget', 'aria2c'):
+        if ' ' in os.popen('which %s' % tool).read():
+            print s % (1, 91, '  !!! aria2 is not installed')
+
 def sighandler(signum, frame):
     print s % (1, 91, "  !! Signal:"), signum
     if args.comd in ('u', 'upload'):
@@ -3015,7 +3032,9 @@ def handle_args(argv):
     p = argparse.ArgumentParser(description='about pan.baidu.com.' \
         ' 用法见 https://github.com/PeterDing/iScript')
     p.add_argument('xxx', type=str, nargs='*', help='命令对象.')
-    p.add_argument('-a', '--aget_s', action='store', default=None, \
+    p.add_argument('-a', '--aria2c', action='store', default=None, \
+        type=int, help='aria2c 分段下载数量')
+    p.add_argument('-g', '--aget_s', action='store', default=None, \
         type=int, help='aget 分段下载数量')
     p.add_argument('-k', '--aget_k', action='store', default='200K', \
         type=str, help='aget 分段大小')
@@ -3206,7 +3225,10 @@ def handle_command(comd, xxx):
         # login session
         panbaiducom_HOME().init()
 
-        if comd == 'p' or comd == 'play': args.play = True
+        if comd == 'p' or comd == 'play':
+            args.play = True
+        else:
+            assert_download_tools()
 
         enter_password()
 
