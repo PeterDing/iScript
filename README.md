@@ -1,5 +1,7 @@
 ## iScript
 
+[![Join the chat at https://gitter.im/PeterDing/iScript](https://badges.gitter.im/PeterDing/iScript.svg)](https://gitter.im/PeterDing/iScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > *[L]* *[W]* *[LW]* 分别表示，在linux, windows, linux和windows 下通过测试。
 
 
