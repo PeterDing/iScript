@@ -740,7 +740,7 @@ class panbaiducom_HOME(object):
         self.timestamp = timestamp
 
     def _get_dlink(self, path):
-        dlink = ('http://c.pcs.baidu.com/rest/2.0/pcs/file?method=download'
+        dlink = ('http://d.pcs.baidu.com/rest/2.0/pcs/file?method=download'
                  '&app_id=250528&path={}&ver=2.0&clienttype=1').format(
                    urllib.quote(path))
 
