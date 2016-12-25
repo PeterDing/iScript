@@ -170,7 +170,7 @@ def fast_pcs_server(j):
         return j
 
     do = lambda dlink: \
-        re.sub(r'://[^/]+?/', '://www.baidupcs.com/', dlink)
+        re.sub(r'://[^/]+?/', '://c.pcs.baidu.com/', dlink)
         #re.sub(r'://[^/]+?/', '://c.pcs.baidu.com/', dlink)
 
     if isinstance(j, dict) and j.get('info') and len(j['info']) > 0:
