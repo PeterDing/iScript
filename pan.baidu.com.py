@@ -944,7 +944,7 @@ class panbaiducom_HOME(object):
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
             tlimit = ' --max-download-limit %s' % args.limit if args.limit else ''
-            cmd = 'aria2c -c -k 1M%s%s%s ' \
+            cmd = 'aria2c -c%s%s%s ' \
                 '-o "%s.tmp" -d "%s" ' \
                 '--user-agent "%s" ' \
                 '--header "%s" ' \
