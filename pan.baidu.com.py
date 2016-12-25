@@ -3569,10 +3569,10 @@ def handle_command(comd, xxx):
     else:
         print s % (2, 91, '  !! 命令错误\n')
 
-    # if 'x' in locals():
-        # x.save_cookies(on=1, tocwd=True)
-    # elif 'px' in locals():
-        # px.save_cookies(on=1, tocwd=True)
+    if 'x' in locals():
+        x.save_cookies(on=1, tocwd=True)
+    elif 'px' in globals():
+        px.save_cookies(on=1, tocwd=True)
 
 
 
