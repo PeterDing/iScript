@@ -647,23 +647,23 @@ class panbaiducom_HOME(object):
         if not desc: del p['desc']
         url = 'http://pan.baidu.com/api/list'
 
-        infos = []
+        path_list = []
         while True:
-            # r = ss.get(url, params=p, headers=theaders)
             r = ss.get(url, params=p)
             j = r.json()
             if j['errno'] != 0:
                 print s % (1, 91, '  error: _get_file_list'), '--', j
                 sys.exit(1)
             else:
-                infos += j['list']
+                path_ls = j['list']
+                path_list += path_ls
 
             if not all: return j
 
-            if len(infos) == num:
+            if len(path_ls) == num:
                 p['page'] += 1
             else:
-                j['list'] = infos
+                j['list'] = path_list
                 return j
 
     def _get_dsign(self):
