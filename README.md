@@ -512,9 +512,11 @@ bp login username password
 
 #### cookie 登录:
 
-1.  用 chrome 登录 pan.baidu.com  
-2.  在登录后的页面打开 chrome 开发者工具(怎么打开自行google)，选择 `Network` ，然后刷新页面。在刷新后的 `Network` 的 `Name` 列表中选中 `list?dir=…` 开头的一项，然后在右侧找到 `Cookie:` ，复制 `Cookie:` 后面的所有内容。  
-3.  用 `pan.baidu.com.py` 登录，`password / cookie:` 处粘贴上面复制的内容。（粘贴后是看不见的）。  
+1.  打开 chrome 隐身模式窗口  
+2.  在隐身模式窗口登录 pan.baidu.com  
+3.  在登录后的页面打开 chrome 开发者工具(怎么打开自行google)，选择 `Network` ，然后刷新页面。在刷新后的 `Network` 的 `Name` 列表中选中 `list?dir=…` 开头的一项，然后在右侧找到 `Cookie:` ，复制 `Cookie:` 后面的所有内容。  
+4.  用 `pan.baidu.com.py` 登录，`password / cookie:` 处粘贴上面复制的内容。（粘贴后是看不见的）。  
+5.  不要退出 pan.baidu.com，只是关闭隐身模式窗口就可以。  
 
 > 如果使用 cookie 登录，`username` 可以是任意的东西。
 
