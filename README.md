@@ -218,19 +218,14 @@ aria2  (~ 1.18)
 
 aget # 需要 python >= 3.5, 安装 pip3 install aget
 
-python2-rsa
-
-python2-pyasn1
-
-python2-requests (https://github.com/kennethreitz/requests)
-
-requests-toolbelt (https://github.com/sigmavirus24/requests-toolbelt)
+pip2 install rsa pyasn1 requests requests-toolbelt
 
 mpv (http://mpv.io)
 
 # 可选依赖
 shadowsocks  # 用于加密上传。
              # 用 python2 的 pip 安装
+pip2 install shadowsocks
 
 # 除了用pip安装包，还可以手动:
 https://github.com/PeterDing/iScript/wiki/%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3pan.baidu.com.py%E4%BE%9D%E8%B5%96%E5%8C%85
@@ -247,6 +242,8 @@ pan.baidu.com.py 是一个百度网盘的命令行客户端。
 初次使用需要登录 bp login
 
 **支持多帐号登录**
+
+**支持cookie登录**
 
 **支持加密上传**, 需要 shadowsocks
 
@@ -294,6 +291,7 @@ g
 login
 login username
 login username password
+login username cookie
 
 # 删除帐号
 userdelete 或 ud
@@ -511,6 +509,14 @@ bp login username password
 # 多帐号登录
 # 一直用 bp login 即可
 ```
+
+#### cookie 登录:
+
+1.  用 chrome 登录 pan.baidu.com  
+2.  在登录后的页面打开 chrome 开发者工具(怎么打开自行google)，选择 `Network` ，然后刷新页面。在刷新后的 `Network` 的 `Name` 列表中选中 `list?dir=…` 开头的一项，然后在右侧找到 `Cookie` ，复制 `Cookie` 后面的所有内容。  
+3.  用 `pan.baidu.com.py` 登录，`password / cookie:` 处粘贴上面复制的内容。（粘贴后是看不见的）。  
+
+> 如果使用 cookie 登录，`username` 可以是任意的东西。
 
 #### 删除帐号:
 

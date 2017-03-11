@@ -218,6 +218,18 @@ def print_process_bar(point, total, slice_size,
     return now
 
 
+def is_cookie(cookie):
+    return 'BDUSS=' in cookie and 'PANPSC=' in cookie and len(cookie) > 150
+
+
+def parse_cookies(cookie):
+    cookies = {}
+    for c in cookie.split('; '):
+        k, v = c.split('=', 1)
+        cookies[k] = v
+    return cookies
+
+
 class panbaiducom_HOME(object):
     def __init__(self):
         self._download_do = self._play_do if args.play else self._download_do
@@ -322,19 +334,25 @@ class panbaiducom_HOME(object):
         return input_code
 
     def check_login(self):
-        html_string = self._request('GET', 'http://pan.baidu.com/disk/home', 'check_login').content
+        # html_string = self._request('GET', 'http://pan.baidu.com/', 'check_login').content
+        info = self._meta(['/'])
 
-        if '"loginstate":1' not in html_string:
+        if info and info['errno'] == 0:
+            return True
+        else:
             print s % (1, 91, '  -- check_login fail\n')
             return False
-        else:
             #print s % (1, 92, '  -- check_login success\n')
             #self.get_dsign()
             #self.save_cookies()
-            return True
 
     def login(self, username, password):
         print s % (1, 97, '\n  -- login')
+
+        if is_cookie(password):
+            cookies = parse_cookies(password)
+            ss.cookies.update(cookies)
+            return
 
         # error_message: at _check_account_exception from
         # https://github.com/ly0/baidupcsapi/blob/master/baidupcsapi/api.py
@@ -3110,11 +3128,11 @@ def handle_command(comd, xxx):
         xh = panbaiducom_HOME()
 
         if len(xxx) < 1:
-            username = raw_input(s % (1, 97, '  username: '))
-            password = getpass(s % (1, 97, '  password: '))
+            username = raw_input(s % (1, 97, ' username: '))
+            password = getpass(s % (1, 97, ' password / cookie: '))
         elif len(xxx) == 1:
             username = xxx[0]
-            password = getpass(s % (1, 97, '  password: '))
+            password = getpass(s % (1, 97, '  password / cookie: '))
         elif len(xxx) == 2:
             username = xxx[0]
             password = xxx[1]
