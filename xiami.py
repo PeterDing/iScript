@@ -679,11 +679,11 @@ class xiami(object):
     def download_collect(self):
         html = ss.get(url_collect % self.collect_id).text
         html = html.split('<div id="wall"')[0]
-        collect_name = re.search(r'<h2>(.+?)<', html).group(1)
+        collect_name = re.search(r'<title>(.+?)<', html).group(1)
         d = collect_name
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        song_ids = re.findall('/song/(\w+)" title', html)
+        song_ids = re.findall(r'/song/(\w+)"\s+title', html)
         amount_songs = unicode(len(song_ids))
         song_ids = song_ids[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
