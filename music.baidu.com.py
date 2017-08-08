@@ -85,13 +85,10 @@ class baidu_music(object):
 
         self.download = self.play if args.play else self.download
 
-    def get_songidlist(self, id_):
-        html = self.opener.open(self.template_album % id_).read()
+    def get_songidlist(self, song_id):
+        html = self.opener.open(self.template_album % song_id).read()
         songidlist = re.findall(r'/song/(\d+)', html)
-        api_json = self.opener.open(self.template_api % ','.join(songidlist)).read()
-        api_json = json.loads(api_json)
-        infos = api_json['data']['songList']
-        return infos
+        return songidlist
 
     def get_cover(self, url):
         i = 1
@@ -122,53 +119,40 @@ class baidu_music(object):
         elif '/song/' in self.url:
             self.song_id = re.search(r'/song/(\d+)', self.url).group(1)
             #print(s % (2, 92, u'\n  -- 正在分析歌曲信息 ...'))
-            self.get_song_infos()
+            self.get_song_infos(self.song_id)
         else:
             print(s % (2, 91, u'   请正确输入baidu网址.'))
+        self.download()
 
-    def get_song_infos(self):
-        api_json = self.opener.open(self.template_api % self.song_id).read()
+    def get_song_infos(self, song_id, track_number=''):
+        api_json = self.opener.open(self.template_api % song_id).read()
         j = json.loads(api_json)
         song_info = {}
         song_info['song_id'] = unicode(j['data']['songList'][0]['songId'])
-        song_info['track'] = u''
+        song_info['track'] = unicode(track_number)
         song_info['song_url'] = u'http://music.baidu.com/song/' + song_info['song_id']
         song_info['song_name'] = modificate_text(j['data']['songList'][0]['songName']).strip()
         song_info['album_name'] = modificate_text(j['data']['songList'][0]['albumName']).strip()
         song_info['artist_name'] = modificate_text(j['data']['songList'][0]['artistName']).strip()
         song_info['album_pic_url'] = j['data']['songList'][0]['songPicRadio']
+        song_info['file_name'] = song_info['artist_name'] + ' - ' + song_info['song_name']
+        if song_info['track']:
+            song_info['file_name'] = song_info['track'].zfill(2) + '.' + song_info['file_name']
         if args.flac:
-            song_info['file_name'] = song_info['song_name'] + ' - ' + song_info['artist_name'] + '.flac'
+            song_info['file_name'] = song_info['file_name'] + '.flac'
         else:
-            song_info['file_name'] = song_info['song_name'] + ' - ' + song_info['artist_name'] + '.mp3'
+            song_info['file_name'] = song_info['file_name'] + '.mp3'
         song_info['durl'] = j['data']['songList'][0]['songLink']
         self.song_infos.append(song_info)
-        self.download()
 
     def get_album_infos(self):
         songidlist = self.get_songidlist(self.album_id)
-        z = z_index(songidlist)
-        ii = 1
+        track_number = 1
         for i in songidlist:
-            song_info = {}
-            song_info['song_id'] = unicode(i['songId'])
-            song_info['song_url'] = u'http://music.baidu.com/song/' + song_info['song_id']
-            song_info['track'] = unicode(ii)
-            song_info['song_name'] = modificate_text(i['songName']).strip()
-            song_info['artist_name'] = modificate_text(i['artistName']).strip()
-            song_info['album_pic_url'] = i['songPicRadio']
-            if args.flac:
-                song_info['file_name'] = song_info['track'].zfill(z) + '.' + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.flac'
-            else:
-                song_info['file_name'] = song_info['track'].zfill(z) + '.' + song_info['song_name'] + ' - ' + song_info['artist_name'] + '.mp3'
-            song_info['album_name'] = modificate_text(i['albumName']).strip() \
-                if i['albumName'] else modificate_text(self.song_infos[0]['album_name'])
-            song_info['durl'] = i['songLink']
-            self.song_infos.append(song_info)
-            ii += 1
-        d = modificate_text(self.song_infos[0]['album_name'] + ' - ' + self.song_infos[0]['artist_name'])
+            self.get_song_infos(i, track_number)
+            track_number += 1
+        d = modificate_text(self.song_infos[0]['artist_name'] + ' - ' + self.song_infos[0]['album_name'])
         self.dir_ = os.path.join(os.getcwd().decode('utf8'), d)
-        self.download()
 
     def display_infos(self, i):
         print '\n  ----------------'
@@ -203,6 +187,7 @@ class baidu_music(object):
             file_name = os.path.join(dir_, t)
             if os.path.exists(file_name):  ## if file exists, no get_durl
                 ii += 1
+                print(u'\n 文件已存在~')
                 continue
             file_name_for_wget = file_name.replace('`', '\`')
             if 'zhangmenshiting.baidu.com' in i['durl'] or \
