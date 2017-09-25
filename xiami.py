@@ -661,7 +661,6 @@ class xiami(object):
             songs = self.get_song(self.song_id)
             self.download(songs)
 
-
     def download_album(self):
         songs = self.get_songs(self.album_id)
         song = songs[0]
@@ -946,10 +945,14 @@ class xiami(object):
             cmd = 'mpv --really-quiet ' \
                 '--cache 8146 ' \
                 '--user-agent "%s" ' \
-                '--http-header-fields="Referer:http://img.xiami.com' \
-                '/static/swf/seiya/1.4/player.swf?v=%s" ' \
+                '--http-header-fields "Referer: http://img.xiami.com' \
+                '/static/swf/seiya/1.4/player.swf?v=%s",' \
+                '"Cookie: member_auth=%s" ' \
                 '"%s"' \
-                % (headers['User-Agent'], int(time.time()*1000), durl)
+                % (headers['User-Agent'],
+                   int(time.time()*1000),
+                   ss.cookies.get('member_auth'),
+                   durl)
             os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -1008,9 +1011,13 @@ class xiami(object):
                     '-U "%s" ' \
                     '--header "Referer:http://img.xiami.com' \
                     '/static/swf/seiya/1.4/player.swf?v=%s" ' \
+                    '--header "Cookie: member_auth=%s" ' \
                     '-O "%s.tmp" %s' \
-                    % (quiet, headers['User-Agent'], int(time.time()*1000),
-                       file_name_for_wget, durl)
+                    % (quiet, headers['User-Agent'],
+                       int(time.time()*1000),
+                       ss.cookies.get('member_auth'),
+                       file_name_for_wget,
+                       durl)
                 cmd = cmd.encode('utf8')
                 status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
