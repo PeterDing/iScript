@@ -923,7 +923,10 @@ class xiami(object):
         print '—' * int(os.popen('tput cols').read())
 
     def get_mp3_quality(self, durl):
-        if 'm3.file.xiami.com' in durl or 'm6.file.xiami.com' in durl or '_h.mp3' in durl:
+        if 'm3.file.xiami.com' in durl \
+                or 'm6.file.xiami.com' in durl \
+                or '_h.mp3' in durl \
+                or 'm320.xiami.net' in durl:
             return 'h'
         else:
             return 'l'
