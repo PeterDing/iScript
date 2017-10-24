@@ -18,7 +18,7 @@ from HTMLParser import HTMLParser
 
 url_song = "http://www.xiami.com/song/%s"
 url_album = "http://www.xiami.com/album/%s"
-url_collect = "http://www.xiami.com/collect/%s"
+url_collect = "http://www.xiami.com/collect/ajax-get-list"
 url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
 url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
@@ -676,13 +676,28 @@ class xiami(object):
         self.download(songs, amount_songs, args.from_)
 
     def download_collect(self):
-        html = ss.get(url_collect % self.collect_id).text
+        page = 1
+        song_ids = []
+        while True:
+            params = {
+                'id': self.collect_id,
+                'p': page,
+                'limit': 50,
+            }
+            infos = ss.get(url_collect, params=params).json()
+            for info in infos['result']['data']:
+                song_ids.append(str(info['song_id']))
+
+            if infos['result']['total_page'] == page:
+                break
+            page += 1
+
+        html = ss.get('http://www.xiami.com/collect/%s' % self.collect_id).text
         html = html.split('<div id="wall"')[0]
         collect_name = re.search(r'<title>(.+?)<', html).group(1)
         d = collect_name
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
-        song_ids = re.findall(r'/song/(\w+)"\s+title', html)
         amount_songs = unicode(len(song_ids))
         song_ids = song_ids[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
@@ -894,8 +909,8 @@ class xiami(object):
             return None
         cn = r.content
         songs_info = re.findall(r'<p class="name">(.+?)</p>\s+'
-                                r'<p class="artist">Artist: (.+?)</p>\s+'
-                                r'<p class="album">Album: (.+?)</p>', cn)
+                                r'<p class="artist">(?:Artist:|艺人：)(.+?)</p>\s+'
+                                r'<p class="album">(?:Album:|专辑：)(.+?)</p>', cn)
 
         # search song at xiami
         for info in songs_info:
