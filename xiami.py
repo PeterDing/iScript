@@ -457,9 +457,12 @@ class xiami(object):
 
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\w+)', url).group(1)
-                code = raw_input('  >> m   # 该用户歌曲库.\n' \
+                code = raw_input(
+                    '  >> m   # 该用户歌曲库.\n' \
                     '  >> c   # 最近在听\n' \
                     '  >> s   # 分享的音乐\n'
+                    '  >> r   # 歌曲试听排行 - 一周\n'
+                    '  >> rt  # 歌曲试听排行 - 全部 \n'
                     '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑",\
                                  "喜欢的艺人","收藏的精选集"\n'
                     '  >> rc  # 虾米猜:基于试听行为所建立的个性电台\n  >> ')
@@ -472,6 +475,12 @@ class xiami(object):
                     url_shares = 'http://www.xiami.com' \
                         '/space/feed/u/%s/type/3/page/%s' % (self.user_id, '%s')
                     self.download_user_shares(url_shares)
+                elif code == 'r':
+                    url = 'http://www.xiami.com/space/charts/u/%s/c/song/t/week' % self.user_id
+                    self.download_ranking_songs(url, 'week')
+                elif code == 'rt':
+                    url = 'http://www.xiami.com/space/charts/u/%s/c/song/t/all' % self.user_id
+                    self.download_ranking_songs(url, 'all')
                 elif code == 'rm':
                     #print(s % (2, 92, u'\n  -- 正在分析该用户的虾米推荐 ...'))
                     url_rndsongs = url_radio_my
@@ -806,6 +815,25 @@ class xiami(object):
                     self.song_id = re.search(r'\d+', share).group()
                     self.download_song()
             if not shares: break
+            page += 1
+
+    def download_ranking_songs(self, url, tp):
+        d = modificate_text(u'%s 的试听排行 - %s' % (self.user_id, tp))
+        dir_ = os.path.join(os.getcwdu(), d)
+        self.dir_ = modificate_file_name_for_wget(dir_)
+        page = 1
+        n = 1
+        while True:
+            html = ss.get(url + '/page/' + str(page)).text
+            song_ids = re.findall(r"play\('(\d+)'", html)
+            if not song_ids:
+                break
+            for song_id in song_ids:
+                songs = self.get_song(song_id)
+                self.download(songs, n=n)
+                self.html = ''
+                self.disc_description_archives = {}
+                n += 1
             page += 1
 
     def download_user_radio(self, url_rndsongs):
