@@ -240,6 +240,8 @@ pan.baidu.com.py 是一个百度网盘的命令行客户端。
 
 **支持多帐号登录**
 
+**现在只支持[用cookie登录](#cookie_login)**
+
 **支持cookie登录**
 
 **支持加密上传**, 需要 shadowsocks
@@ -507,6 +509,7 @@ bp login username password
 # 一直用 bp login 即可
 ```
 
+<a name="cookie_login"></a>
 #### cookie 登录:
 
 1.  打开 chrome 隐身模式窗口  
