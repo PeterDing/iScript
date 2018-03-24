@@ -1224,7 +1224,7 @@ class panbaiducom_HOME(object):
         fl = cStringIO.StringIO(__slice_block)
         files = {'file': ('file', fl, '')}
         data = MultipartEncoder(files)
-        theaders = headers
+        theaders = dict(headers)
         theaders['Content-Type'] = data.content_type
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
         r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
@@ -2362,7 +2362,7 @@ class panbaiducom_HOME(object):
         }
 
         url = 'http://pan.baidu.com/rest/2.0/services/cloud_dl'
-        r = ss.post(url, params=p)
+        r = ss.get(url, params=p)
         j = r.json()
         if j.get('error_code'):
             print s % (1, 91, '  !! Error at _get_torrent_info:'), j['error_msg']
@@ -3313,7 +3313,7 @@ def handle_command(comd, xxx):
             url = xxx[0]
             x.save_inbox_share(url, remotepath, infos=infos)
         else:
-            url = re.search(r'(http://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
+            url = re.search(r'(https?://.+?.baidu.com/.+?)(#|$)', xxx[0]).group(1)
             url = url.replace('wap/link', 'share/link')
             x._secret_or_not(url)
             x.save_share(url, remotepath, infos=infos)
