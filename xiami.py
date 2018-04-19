@@ -458,13 +458,13 @@ class xiami(object):
             elif '/u/' in url:
                 self.user_id = re.search(r'/u/(\w+)', url).group(1)
                 code = raw_input(
-                    '  >> m   # 该用户歌曲库.\n' \
-                    '  >> c   # 最近在听\n' \
+                    '  >> m   # 该用户歌曲库.\n'
+                    '  >> c   # 最近在听\n'
                     '  >> s   # 分享的音乐\n'
                     '  >> r   # 歌曲试听排行 - 一周\n'
                     '  >> rt  # 歌曲试听排行 - 全部 \n'
-                    '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑",\
-                                 "喜欢的艺人","收藏的精选集"\n'
+                    '  >> rm  # 私人电台:来源于"收藏的歌曲","收藏的专辑",'
+                    '           "喜欢的艺人","收藏的精选集"\n'
                     '  >> rc  # 虾米猜:基于试听行为所建立的个性电台\n  >> ')
                 if code == 'm':
                     #print(s % (2, 92, u'\n  -- 正在分析用户歌曲库信息 ...'))
@@ -558,11 +558,8 @@ class xiami(object):
             t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
             album_description = t
 
-        #t = re.search(r'href="(.+?)" id="albumCover"', html1).group(1)
-        t = re.search(r'id="albumCover".+?"(http://.+?)" ', html1).group(1)
-        #tt = t.rfind('.')
-        #t = '%s_4%s' % (t[:tt], t[tt:])
-        t = t.replace('_2.', '_4.')
+        t = re.search(r'pic:\'//(pic\.xiami\.net.+?)\'', html).group(1) # issue133
+        t = 'http://' + t
         album_pic_url = t
 
         songs = []
