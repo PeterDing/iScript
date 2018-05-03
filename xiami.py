@@ -558,7 +558,7 @@ class xiami(object):
             t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
             album_description = t
 
-        t = re.search(r'pic:\'//(pic\.xiami\.net.+?)\'', html).group(1) # issue133
+        t = re.search(r'//(pic\.xiami\.net.+?)"', html).group(1) # issue133
         t = 'http://' + t
         album_pic_url = t
 
