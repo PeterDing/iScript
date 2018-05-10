@@ -135,9 +135,9 @@ xm login username
 xm login username password
 
 # 手动添加cookie登录
-1. 用浏览器登录后，按F12，然后访问 http://xiami.com/vip
-2. 选择‘网络’或network，找到 xiami.com/vip，在其中找到 Cookie: memthod_auth=value
-3. value填入 xm g value，再执行。
+1. 用浏览器登录后，按F12，然后访问 https://www.xiami.com/album/123456
+2. 选择‘网络’或network，找到 123456，在其中找到 Cookie: xxx
+3. 然后在终端运行 xm g "xxx"
 
 # 退出登录
 xm signout
