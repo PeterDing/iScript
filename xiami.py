@@ -116,7 +116,7 @@ def z_index(song_infos):
 class xiami(object):
     def __init__(self):
         self.dir_ = os.getcwdu()
-        self.template_record = 'http://www.xiami.com/count/playrecord?sid=%s'
+        self.template_record = 'https://www.xiami.com/count/playrecord?sid={song_id}&ishq=1&t={time}&object_id={song_id}&object_name=default&start_point=120&_xiamitoken={token}'
 
         self.collect_id = ''
         self.album_id = ''
@@ -150,7 +150,7 @@ class xiami(object):
     def check_login(self):
         #print s % (1, 97, '\n  -- check_login')
         url = 'http://www.xiami.com/task/signin'
-        r = ss.get(url)
+        r = self._request(url)
         if r.content:
             #print s % (1, 92, '  -- check_login success\n')
             # self.save_cookies()
@@ -159,12 +159,32 @@ class xiami(object):
             print s % (1, 91, '  -- login fail, please check email and password\n')
             return False
 
+    def _request(self, url, headers=None, data=None, method='GET', timeout=30, retry=2):
+        for _ in range(retry):
+            try:
+                headers = headers or ss.headers
+                resp = ss.request(method, url, headers=headers, data=data, timeout=timeout)
+            except Exception, err:
+                continue
+
+            if not resp.ok:
+                raise Exception("response is not ok, status_code = %s" % resp.status_code)
+
+            # save cookies
+            self.save_cookies()
+
+            return resp
+        raise err
+
     # manually, add cookies
     # you must know how to get the cookie
-    def add_member_auth(self, member_auth):
-        member_auth = member_auth.rstrip(';')
-        self.save_cookies(member_auth)
-        ss.cookies.update({'member_auth': member_auth})
+    def add_cookies(self, cookies):
+        _cookies = {}
+        for item in cookies.strip('; ').split('; '):
+            k, v = item.split('=', 1)
+            _cookies[k] = v
+        self.save_cookies(_cookies)
+        ss.cookies.update(_cookies)
 
     def login(self, email, password):
         print s % (1, 97, '\n  -- login')
@@ -189,18 +209,14 @@ class xiami(object):
             'Cache-Control': 'max-age=1',
             'Referer': 'http://www.xiami.com/web/login',
             'Connection': 'keep-alive',
-        }
-
-        cookies = {
             '_xiamitoken': hashlib.md5(str(time.time())).hexdigest()
         }
 
         url = 'https://login.xiami.com/web/login'
 
         for i in xrange(2):
-            res = ss.post(url, headers=hds, data=data, cookies=cookies)
+            res = self._request(url, headers=hds, data=data)
             if ss.cookies.get('member_auth'):
-                self.save_cookies()
                 return True
             else:
                 if 'checkcode' not in res.content:
@@ -263,7 +279,7 @@ class xiami(object):
                 if err_msg == u'请输入验证码' or err_msg == u'验证码错误，请重新输入':
                     captcha_url = 'http://pin.aliyun.com/get_img?' \
                         'identity=passport.alipay.com&sessionID=%s' % data['cid']
-                    tr = ss.get(captcha_url, headers=theaders)
+                    tr = self._request(captcha_url, headers=theaders)
                     path = os.path.join(os.path.expanduser('~'), 'vcode.jpg')
                     with open(path, 'w') as g:
                         img = tr.content
@@ -280,7 +296,7 @@ class xiami(object):
 
             url = 'http://www.xiami.com/accounts/back?st=%s' \
                 % j['content']['data']['st']
-            ss.get(url, headers=theaders)
+            self._request(url, headers=theaders)
 
             self.save_cookies()
             return
@@ -292,17 +308,16 @@ class xiami(object):
         url = re.search(r'src="(http.+checkcode.+?)"', cn).group(1)
         path = os.path.join(os.path.expanduser('~'), 'vcode.png')
         with open(path, 'w') as g:
-            data = ss.get(url).content
+            data = self._request(url).content
             g.write(data)
         print "  ++ 验证码已经保存至", s % (2, 91, path)
         validate = raw_input(s % (2, 92, '  请输入验证码: '))
         return validate
 
-    def save_cookies(self, member_auth=None):
-        if not member_auth:
-            member_auth = ss.cookies.get_dict()['member_auth']
+    def save_cookies(self, cookies=None):
+        if not cookies:
+            cookies = ss.cookies.get_dict()
         with open(cookie_file, 'w') as g:
-            cookies = { 'cookies': { 'member_auth': member_auth } }
             json.dump(cookies, g)
 
     def get_durl(self, id_):
@@ -310,11 +325,11 @@ class xiami(object):
             try:
                 if not args.low:
                     url = 'http://www.xiami.com/song/gethqsong/sid/%s'
-                    j = ss.get(url % id_).json()
+                    j = self._request(url % id_).json()
                     t = j['location']
                 else:
                     url = 'http://www.xiami.com/song/playlist/id/%s'
-                    cn = ss.get(url % id_).text
+                    cn = self._request(url % id_).text
                     t = re.search(r'location>(.+?)</location', cn).group(1)
                 if not t: return None
                 row = t[0]
@@ -325,8 +340,13 @@ class xiami(object):
                 print s % (1, 91, '  |-- Error, get_durl --'), e
                 time.sleep(5)
 
-    def record(self, id_):
-        ss.get(self.template_record % id_)
+    # FIXME, this request alway returns 405
+    def record(self, song_id, album_id):
+        return
+        #  token = ss.cookies.get('_xiamitoken', '')
+        #  t = int(time.time() * 1000)
+        #  self._request(self.template_record.format(
+            #  song_id=song_id, album_id=album_id, token=token, time=t))
 
     def get_cover(self, info):
         if info['album_name'] == self.cover_id:
@@ -336,7 +356,7 @@ class xiami(object):
             while True:
                 url = info['album_pic_url']
                 try:
-                    self.cover_data = ss.get(url).content
+                    self.cover_data = self._request(url).content
                     if self.cover_data[:5] != '<?xml':
                         return self.cover_data
                 except Exception as e:
@@ -371,11 +391,11 @@ class xiami(object):
                 return data
 
         url = 'http://www.xiami.com/song/playlist/id/%s' % info['song_id']
-        xml = ss.get(url).content
+        xml = self._request(url).content
         t = re.search('<lyric>(http.+?)</lyric>', xml)
         if not t: return None
         lyric_url = t.group(1)
-        data = ss.get(lyric_url).content.replace('\r\n', '\n')
+        data = self._request(lyric_url).content.replace('\r\n', '\n')
         data = lyric_parser(data)
         if data:
             return data.decode('utf8', 'ignore')
@@ -384,7 +404,7 @@ class xiami(object):
 
     def get_disc_description(self, album_url, info):
         if not self.html:
-            self.html = ss.get(album_url).text
+            self.html = self._request(album_url).text
             t = re.findall(re_disc_description, self.html)
             t = dict([(a, modificate_text(parser.unescape(b))) \
                       for a, b in t])
@@ -430,7 +450,7 @@ class xiami(object):
 
             elif '/artist/' in url or 'i.xiami.com' in url:
                 def get_artist_id(url):
-                    html = ss.get(url).text
+                    html = self._request(url).text
                     artist_id = re.search(r'artist_id = \'(\w+)\'', html).group(1)
                     return artist_id
 
@@ -531,7 +551,7 @@ class xiami(object):
                 print(s % (2, 91, u'   请正确输入虾米网址.'))
 
     def get_songs(self, album_id, song_id=None):
-        html = ss.get(url_album % album_id).text
+        html = self._request(url_album % album_id).text
         html = html.split('<div id="wall"')[0]
         html1, html2 = html.split('<div id="album_acts')
 
@@ -641,7 +661,7 @@ class xiami(object):
         return songs
 
     def get_song(self, song_id):
-        html = ss.get(url_song % song_id).text
+        html = self._request(url_song % song_id).text
         html = html.split('<div id="wall"')[0]
         t = re.search(r'href="/album/(.+?)" title="', html)
         if t:
@@ -690,7 +710,7 @@ class xiami(object):
                 'p': page,
                 'limit': 50,
             }
-            infos = ss.get(url_collect, params=params).json()
+            infos = self._request(url_collect, params=params).json()
             for info in infos['result']['data']:
                 song_ids.append(str(info['song_id']))
 
@@ -698,7 +718,7 @@ class xiami(object):
                 break
             page += 1
 
-        html = ss.get('http://www.xiami.com/collect/%s' % self.collect_id).text
+        html = self._request('http://www.xiami.com/collect/%s' % self.collect_id).text
         html = html.split('<div id="wall"')[0]
         collect_name = re.search(r'<title>(.+?)<', html).group(1)
         d = collect_name
@@ -720,7 +740,7 @@ class xiami(object):
         ii = 1
         album_ids = []
         while True:
-            html = ss.get(
+            html = self._request(
                 url_artist_albums % (self.artist_id, str(ii))).text
             t = re.findall(r'/album/(\w+)"', html)
             if album_ids == t: break
@@ -737,7 +757,7 @@ class xiami(object):
             ii += 1
 
     def download_artist_top_20_songs(self):
-        html = ss.get(url_artist_top_song % self.artist_id).text
+        html = self._request(url_artist_top_song % self.artist_id).text
         song_ids = re.findall(r'/song/(.+?)" title', html)
         artist_name = re.search(
             r'<p><a href="/artist/\w+">(.+?)<', html).group(1)
@@ -756,7 +776,7 @@ class xiami(object):
             n += 1
 
     def download_artist_radio(self):
-        html = ss.get(url_artist_top_song % self.artist_id).text
+        html = self._request(url_artist_top_song % self.artist_id).text
         artist_name = re.search(
             r'<p><a href="/artist/\w+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - radio')
@@ -767,7 +787,7 @@ class xiami(object):
             % self.artist_id
         n = 1
         while True:
-            xml = ss.get(url_artist_radio).text
+            xml = self._request(url_artist_radio).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -783,7 +803,7 @@ class xiami(object):
         ii = 1
         n = 1
         while True:
-            html = ss.get(url % (self.user_id, str(ii))).text
+            html = self._request(url % (self.user_id, str(ii))).text
             song_ids = re.findall(r'/song/(.+?)"', html)
             if song_ids:
                 for i in song_ids:
@@ -802,7 +822,7 @@ class xiami(object):
         self.dir_ = modificate_file_name_for_wget(dir_)
         page = 1
         while True:
-            html = ss.get(url_shares % page).text
+            html = self._request(url_shares % page).text
             shares = re.findall(r'play.*\(\'\d+\'\)', html)
             for share in shares:
                 if 'album' in share:
@@ -821,7 +841,7 @@ class xiami(object):
         page = 1
         n = 1
         while True:
-            html = ss.get(url + '/page/' + str(page)).text
+            html = self._request(url + '/page/' + str(page)).text
             song_ids = re.findall(r"play\('(\d+)'", html)
             if not song_ids:
                 break
@@ -839,7 +859,7 @@ class xiami(object):
         self.dir_ = modificate_file_name_for_wget(dir_)
         n = 1
         while True:
-            xml = ss.get(url_rndsongs % self.user_id).text
+            xml = self._request(url_rndsongs % self.user_id).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -849,14 +869,14 @@ class xiami(object):
                 n += 1
 
     def download_chart(self, type_):
-        html = ss.get('http://www.xiami.com/chart/index/c/%s' \
+        html = self._request('http://www.xiami.com/chart/index/c/%s' \
                       % self.chart_id).text
         title = re.search(r'<title>(.+?)</title>', html).group(1)
         d = modificate_text(title)
         dir_ = os.path.join(os.getcwdu(), d)
         self.dir_ = modificate_file_name_for_wget(dir_)
 
-        html = ss.get(
+        html = self._request(
             'http://www.xiami.com/chart/data?c=%s&limit=200&type=%s' \
             % (self.chart_id, type_)).text
         song_ids = re.findall(r'/song/(\d+)', html)
@@ -869,7 +889,7 @@ class xiami(object):
             n += 1
 
     def download_genre(self, url_genre):
-        html = ss.get(url_genre % (self.genre_id, 1)).text
+        html = self._request(url_genre % (self.genre_id, 1)).text
         if '/gid/' in url_genre:
             t = re.search(
                 r'/genre/detail/gid/%s".+?title="(.+?)"' \
@@ -893,11 +913,11 @@ class xiami(object):
                 self.html = ''
                 self.disc_description_archives = {}
                 n += 1
-            html = ss.get(url_genre % (self.chart_id, page)).text
+            html = self._request(url_genre % (self.chart_id, page)).text
             page += 1
 
     def download_genre_radio(self, url_genre):
-        html = ss.get(url_genre % (self.genre_id, 1)).text
+        html = self._request(url_genre % (self.genre_id, 1)).text
         if '/gid/' in url_genre:
             t = re.search(
                 r'/genre/detail/gid/%s".+?title="(.+?)"' \
@@ -916,7 +936,7 @@ class xiami(object):
 
         n = 1
         while True:
-            xml = ss.get(url_genre_radio).text
+            xml = self._request(url_genre_radio).text
             song_ids = re.findall(r'<song_id>(\d+)', xml)
             for i in song_ids:
                 songs = self.get_song(i)
@@ -941,7 +961,7 @@ class xiami(object):
         for info in songs_info:
             url = 'http://www.xiami.com/web/search-songs?key=%s' \
                 % urllib.quote(' '.join(info))
-            r = ss.get(url)
+            r = self._request(url)
             j = r.json()
             if not r.ok or not j:
                 print s % (1, 93, '  !! no find:'), ' - '.join(info)
@@ -974,13 +994,15 @@ class xiami(object):
     def play(self, songs, nn=u'1', n=1):
         if args.play == 2:
             songs = sorted(songs, key=lambda k: k['song_played'], reverse=True)
+
         for i in songs:
-            self.record(i['song_id'])
+            self.record(i['song_id'], i['album_id'])
             durl = self.get_durl(i['song_id'])
             if not durl:
                 print s % (2, 91, '  !! Error: can\'t get durl'), i['song_name']
                 continue
 
+            cookies = '; '.join(['%s=%s' % (k, v) for k, v in ss.cookies.items()])
             mp3_quality = self.get_mp3_quality(durl)
             i['durl_is_H'] = mp3_quality
             self.display_infos(i, nn, n, durl)
@@ -990,12 +1012,9 @@ class xiami(object):
                 '--user-agent "%s" ' \
                 '--http-header-fields "Referer: http://img.xiami.com' \
                 '/static/swf/seiya/1.4/player.swf?v=%s",' \
-                '"Cookie: member_auth=%s" ' \
+                '"Cookie: %s" ' \
                 '"%s"' \
-                % (headers['User-Agent'],
-                   int(time.time()*1000),
-                   ss.cookies.get('member_auth'),
-                   durl)
+                % (headers['User-Agent'], int(time.time()*1000), cookies, durl)
             os.system(cmd)
             timeout = 1
             ii, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -1010,6 +1029,7 @@ class xiami(object):
         if dir_ != cwd:
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
+
 
         ii = 1
         for i in songs:
@@ -1048,6 +1068,7 @@ class xiami(object):
                 else:
                     print '  |--', s % (1, 97, 'MP3-Quality:'), s % (1, 91, 'Low')
 
+                cookies = '; '.join(['%s=%s' % (k, v) for k, v in ss.cookies.items()])
                 file_name_for_wget = file_name.replace('`', '\`')
                 quiet = ' -q' if args.quiet else ' -nv'
                 cmd = 'wget -c%s ' \
@@ -1056,11 +1077,7 @@ class xiami(object):
                     '/static/swf/seiya/1.4/player.swf?v=%s" ' \
                     '--header "Cookie: member_auth=%s" ' \
                     '-O "%s.tmp" %s' \
-                    % (quiet, headers['User-Agent'],
-                       int(time.time()*1000),
-                       ss.cookies.get('member_auth'),
-                       file_name_for_wget,
-                       durl)
+                    % (quiet, headers['User-Agent'], int(time.time()*1000), cookies, file_name_for_wget, durl)
                 cmd = cmd.encode('utf8')
                 status = os.system(cmd)
                 if status != 0:     # other http-errors, such as 302.
@@ -1088,7 +1105,7 @@ class xiami(object):
             "_xiamitoken": ss.cookies['_xiamitoken'],
         }
         url = 'http://www.xiami.com/ajax/addtag'
-        r = ss.post(url, data=data)
+        r = self._request(url, data=data, method='POST')
         j = r.json()
         if j['status'] == 'ok':
             return 0
@@ -1174,30 +1191,26 @@ def main(argv):
             email = raw_input(s % (1, 97, '  username: ') \
                 if comd == 'logintaobao' or comd == 'gt' \
                 else s % (1, 97, '     email: '))
-            password = getpass(s % (1, 97, '  password: '))
+            cookies = getpass(s % (1, 97, '  cookies: '))
         elif len(xxx) == 1:
             # for add_member_auth
-            if '@' not in xxx[0]:
-                x = xiami()
-                x.add_member_auth(xxx[0])
-                x.check_login()
-                return
-
-            email = xxx[0]
-            password = getpass(s % (1, 97, '  password: '))
+            if '; ' in xxx[0]:
+                email = None
+                cookies = xxx[0]
+            else:
+                email = xxx[0]
+                cookies = getpass(s % (1, 97, '  cookies: '))
         elif len(xxx) == 2:
             email = xxx[0]
-            password = xxx[1]
+            cookies = xxx[1]
         else:
-            print s % (1, 91,
-                       '  login\n  login email\n  \
-                       login email password')
+            msg = ('login: \n'
+                   'login cookies')
+            print s % (1, 91, msg)
+            return
 
         x = xiami()
-        if comd == 'logintaobao' or comd == 'gt':
-            x.login_taobao(email, password)
-        else:
-            x.login(email, password)
+        x.add_cookies(cookies)
         is_signin = x.check_login()
         if is_signin:
             print s % (1, 92, '  ++ login succeeds.')
