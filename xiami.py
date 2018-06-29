@@ -130,6 +130,7 @@ class xiami(object):
         self.disc_description_archives = {}
 
         self.download = self.play if args.play else self.download
+        self._is_play = bool(args.play)
 
     def init(self):
         if os.path.exists(cookie_file):
@@ -159,11 +160,11 @@ class xiami(object):
             print s % (1, 91, '  -- login fail, please check email and password\n')
             return False
 
-    def _request(self, url, headers=None, data=None, method='GET', timeout=30, retry=2):
+    def _request(self, url, headers=None, params=None, data=None, method='GET', timeout=30, retry=2):
         for _ in range(retry):
             try:
                 headers = headers or ss.headers
-                resp = ss.request(method, url, headers=headers, data=data, timeout=timeout)
+                resp = ss.request(method, url, headers=headers, params=params, data=data, timeout=timeout)
             except Exception, err:
                 continue
 
@@ -625,7 +626,7 @@ class xiami(object):
                 song_info['cd_serial'] = disc
                 song_info['year'] = year
                 song_info['album_pic_url'] = album_pic_url
-                song_info['song_name'] = song_names[i]
+                song_info['song_name'] = modificate_text(song_names[i])
                 song_info['album_name'] = album_name
                 song_info['artist_name'] = artist_name
                 song_info['z'] = z
