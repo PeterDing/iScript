@@ -15,6 +15,7 @@ import hashlib
 import select
 from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
+from google import google
 
 url_song = "http://www.xiami.com/song/%s"
 url_album = "http://www.xiami.com/album/%s"
@@ -960,15 +961,19 @@ class xiami(object):
 
         # search song at xiami
         for info in songs_info:
-            url = 'http://www.xiami.com/web/search-songs?key=%s' \
-                % urllib.quote(' '.join(info))
-            r = self._request(url)
-            j = r.json()
-            if not r.ok or not j:
+            keywords = 'site:xiami.com '+''.join(info)
+            results = google.search(keywords, 1)
+            is_song = 'xiami.com/song/'
+            good = False
+            for result in results:
+                link = str(result.link)
+                if is_song in link:
+                    self.song_id = link[link.find(is_song)+len(is_song):]
+                    self.download_song()
+                    good = True
+                    break
+            if not good:
                 print s % (1, 93, '  !! no find:'), ' - '.join(info)
-                continue
-            self.song_id = j[0]['id']
-            self.download_song()
 
     def display_infos(self, i, nn, n, durl):
         print n, '/', nn
