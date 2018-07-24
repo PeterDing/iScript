@@ -5,8 +5,10 @@ import re
 import sys
 from getpass import getpass
 import os
+import copy
 import random
 import time
+import datetime
 import json
 import argparse
 import requests
@@ -113,6 +115,314 @@ def z_index(song_infos):
 
 ########################################################
 
+class Song(object):
+
+    def __init__(self):
+        self.__sure()
+        self.track = 0
+        self.year = 0
+        self.cd_serial = 0
+        self.disc_description = ''
+
+        # z = len(str(album_size))
+        self.z = 1
+
+    def __sure(self):
+        __dict__ = self.__dict__
+        if '__keys' not in __dict__:
+            __dict__['__keys'] = {}
+
+    def __getattr__(self, name):
+        __dict__ = self.__dict__
+        return __dict__['__keys'].get(name)
+
+    def __setattr__(self, name, value):
+        __dict__ = self.__dict__
+        __dict__['__keys'][name] = value
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+    def feed(self, **kwargs):
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
+
+class XiamiH5API(object):
+
+    URL = 'http://api.xiami.com/web'
+    PARAMS = {
+        'v': '2.0',
+        'app_key': '1',
+    }
+
+    def __init__(self):
+        self.cookies = {
+            'user_from': '2',
+            'XMPLAYER_addSongsToggler': '0',
+            'XMPLAYER_isOpen': '0',
+            '_xiamitoken': hashlib.md5(str(time.time())).hexdigest()
+        }
+        self.sess = requests.session()
+        self.sess.cookies.update(self.cookies)
+
+    def _request(self, url, method='GET', **kwargs):
+        try:
+            resp = self.sess.request(method, url, **kwargs)
+        except Exception, err:
+            print 'Error:', err
+            sys.exit()
+
+        return resp
+
+    def _make_params(self, **kwargs):
+        params = copy.deepcopy(self.PARAMS)
+        params.update(kwargs)
+        return params
+
+    def song(self, song_id):
+        params = self._make_params(id=song_id, r='song/detail')
+        url = self.URL
+        resp = self._request(url, params=params, headers=headers)
+
+        info = resp.json()['data']['song']
+        pic_url = re.sub('_\d+\.', '.', info['logo'])
+        song = Song()
+        song.feed(
+            song_id=info['song_id'],
+            song_name=info['song_name'],
+            album_id=info['album_id'],
+            album_name=info['album_name'],
+            artist_id=info['artist_id'],
+            artist_name=info['artist_name'],
+            singers=info['singers'],
+            album_pic_url=pic_url,
+            comment='http://www.xiami.com/song/' + str(info['song_id'])
+        )
+        return song
+
+    def album(self, album_id):
+        url = self.URL
+        params = self._make_params(id=album_id, r='album/detail')
+        resp = self._request(url, params=params, headers=headers)
+
+        info = resp.json()['data']
+        songs = []
+        album_id=info['album_id'],
+        album_name=info['album_name'],
+        artist_id = info['artist_id']
+        artist_name = info['artist_name']
+        pic_url = re.sub('_\d+\.', '.', info['album_logo'])
+        for track, info_n in enumerate(info['songs'], 1):
+            song = Song()
+            song.feed(
+                song_id=info_n['song_id'],
+                song_name=info_n['song_name'],
+                album_id=album_id,
+                album_name=album_name,
+                artist_id=artist_id,
+                artist_name=artist_name,
+                singers=info_n['singers'],
+                album_pic_url=pic_url,
+                track=track,
+                comment='http://www.xiami.com/song/' + str(info_n['song_id'])
+            )
+            songs.append(song)
+        return songs
+
+    def collect(self, collect_id):
+        url = self.URL
+        params = self._make_params(id=collect_id, r='collect/detail')
+        resp = self._request(url, params=params, headers=headers)
+
+        info = resp.json()['data']
+        collect_name = info['collect_name']
+        collect_id = info['list_id']
+        songs = []
+        for info_n in info['songs']:
+            pic_url = re.sub('_\d+\.', '.', info['album_logo'])
+            song = Song()
+            song.feed(
+                song_id=info_n['song_id'],
+                song_name=info_n['song_name'],
+                album_id=info_n['album_id'],
+                album_name=info_n['album_name'],
+                artist_id=info_n['artist_id'],
+                artist_name=info_n['artist_name'],
+                singers=info_n['singers'],
+                album_pic_url=pic_url,
+                comment='http://www.xiami.com/song/' + str(info_n['song_id'])
+            )
+            songs.append(song)
+        return collect_id, collect_name, songs
+
+    def artist_top_songs(self, artist_id, page=1, limit=20):
+        url = self.URL
+        params = self._make_params(id=artist_id, page=page, limit=limit, r='artist/hot-songs')
+        resp = self._request(url, params=params, headers=headers)
+
+        info = resp.json()['data']
+        for info_n in info['songs']:
+            song_id = info_n['song_id']
+            yield self.song(song_id)
+
+    def search_songs(self, keywords, page=1, limit=20):
+        url = self.URL
+        params = self._make_params(key=keywords, page=page, limit=limit, r='search/songs')
+        resp = self._request(url, params=params, headers=headers)
+
+        info = resp.json()['data']
+        for info_n in info['songs']:
+            pic_url = re.sub('_\d+\.', '.', info['album_logo'])
+            song = Song()
+            song.feed(
+                song_id=info_n['song_id'],
+                song_name=info_n['song_name'],
+                album_id=info_n['album_id'],
+                album_name=info_n['album_name'],
+                artist_id=info_n['artist_id'],
+                artist_name=info_n['artist_name'],
+                singers=info_n['singer'],
+                album_pic_url=pic_url,
+                comment='http://www.xiami.com/song/' + str(info_n['song_id'])
+            )
+            yield song
+
+    def get_song_id(self, *song_sids):
+        song_ids = []
+        for song_sid in song_sids:
+            if isinstance(song_sid, int) or song_sid.isdigit():
+                song_ids.append(int(song_sid))
+
+            url = 'https://www.xiami.com/song/playlist/id/{}/cat/json'.format(song_sid)
+            resp = self._request(url, headers=headers)
+            info = resp.json()
+            song_id = int(str(info['data']['trackList'][0]['song_id']))
+            song_ids.append(song_id)
+        return song_ids
+
+
+class XiamiWebAPI(object):
+
+    URL = 'https://www.xiami.com/song/playlist/'
+
+    def __init__(self):
+        self.sess = requests.session()
+
+    def _request(self, url, method='GET', **kwargs):
+        try:
+            resp = self.sess.request(method, url, **kwargs)
+        except Exception, err:
+            print 'Error:', err
+            sys.exit()
+
+        return resp
+
+    def _make_song(self, info):
+        song = Song()
+        song.feed(
+            song_id=info['song_id'],
+            song_sub_title=info['song_sub_title'],
+            songwriters=info['songwriters'],
+            singers=info['singers'],
+            song_name=info['name'],
+
+            album_id=info['album_id'],
+            album_name=info['album_name'],
+
+            artist_id=info['artist_id'],
+            artist_name=info['artist_name'],
+
+            composer=info['composer'],
+            lyric_url='http:' + info['lyric_url'],
+
+            track=info['track'],
+            cd_serial=info['cd_serial'],
+            album_pic_url='http:' + info['album_pic'],
+            comment='http://www.xiami.com/song/' + str(info['song_id']),
+
+            length=info['length'],
+            play_count=info['playCount'],
+
+            location=info['location']
+        )
+        return song
+
+    def _find_z(self, album):
+        zs = []
+        for i, song in enumerate(album[:-1]):
+            next_song = album[i+1]
+
+            cd_serial = song.cd_serial
+            next_cd_serial = next_song.cd_serial
+
+            if cd_serial != next_cd_serial:
+                z = len(str(song.track))
+                zs.append(z)
+
+        z = len(str(song.track))
+        zs.append(z)
+
+        for song in album:
+            song.z = zs[song.cd_serial - 1]
+
+    def song(self, song_id):
+        url = self.URL + 'id/%s/cat/json' % song_id
+        resp = self._request(url, headers=headers)
+
+        info = resp.json()['data']['trackList'][0]
+        song = self._make_song(info)
+        return song
+
+    def songs(self, *song_ids):
+        url = self.URL + 'id/%s/cat/json' % '%2C'.join(song_ids)
+        resp = self._request(url, headers=headers)
+
+        info = resp.json()['data']
+        songs = []
+        for info_n in info['trackList']:
+            song = self._make_song(info_n)
+            songs.append(song)
+        return songs
+
+    def album(self, album_id):
+        url = self.URL + 'id/%s/type/1/cat/json' % album_id
+        resp = self._request(url, headers=headers)
+
+        info = resp.json()['data']
+        songs = []
+        for info_n in info['trackList']:
+            song = self._make_song(info_n)
+            songs.append(song)
+
+        self._find_z(songs)
+        return songs
+
+    def collect(self, collect_id):
+        url = self.URL + 'id/%s/type/3/cat/json' % collect_id
+        resp = self._request(url, headers=headers)
+
+        info = resp.json()['data']
+        songs = []
+        for info_n in info['trackList']:
+            song = self._make_song(info_n)
+            songs.append(song)
+        return songs
+
+    def search_songs(self, keywords):
+        url = 'https://www.xiami.com/ajax/search-index?key=%s&_=%s' % (
+            urllib.quote(keywords), int(time.time() * 1000))
+        resp = self._request(url, headers=headers)
+
+        html = resp.content
+        song_ids = re.findall(r'song/(\d+)', html)
+        songs = self.songs(*song_ids)
+        return songs
+
+
 class xiami(object):
     def __init__(self):
         self.dir_ = os.getcwdu()
@@ -131,6 +441,8 @@ class xiami(object):
 
         self.download = self.play if args.play else self.download
         self._is_play = bool(args.play)
+
+        self._api = XiamiWebAPI()
 
     def init(self):
         if os.path.exists(cookie_file):
@@ -337,7 +649,7 @@ class xiami(object):
                 encryed_url = t[1:]
                 durl = decry(row, encryed_url)
                 return durl
-            except Exception as e:
+            except Exception, e:
                 print s % (1, 91, '  |-- Error, get_durl --'), e
                 time.sleep(5)
 
@@ -360,7 +672,7 @@ class xiami(object):
                     self.cover_data = self._request(url).content
                     if self.cover_data[:5] != '<?xml':
                         return self.cover_data
-                except Exception as e:
+                except Exception, e:
                     print s % (1, 91, '   \\\n   \\-- Error, get_cover --'), e
                     time.sleep(5)
 
@@ -418,12 +730,12 @@ class xiami(object):
 
     def modified_id3(self, file_name, info):
         id3 = ID3()
-        id3.add(TRCK(encoding=3, text=info['track']))
-        id3.add(TDRC(encoding=3, text=info['year']))
+        id3.add(TRCK(encoding=3, text=str(info['track'])))
+        id3.add(TDRC(encoding=3, text=str(info['year'])))
         id3.add(TIT2(encoding=3, text=info['song_name']))
         id3.add(TALB(encoding=3, text=info['album_name']))
         id3.add(TPE1(encoding=3, text=info['artist_name']))
-        id3.add(TPOS(encoding=3, text=info['cd_serial']))
+        id3.add(TPOS(encoding=3, text=str(info['cd_serial'])))
         lyric_data = self.get_lyric(info)
         id3.add(USLT(encoding=3, text=lyric_data)) if lyric_data else None
         #id3.add(TCOM(encoding=3, text=info['composer']))
@@ -549,131 +861,38 @@ class xiami(object):
                     self.download_songs(song_ids)
 
             else:
-                print(s % (2, 91, u'   请正确输入虾米网址.'))
+                print s % (2, 91, u'   请正确输入虾米网址.')
+
+    def make_file_name(self, song, cd_serial_auth=False):
+        z = song['z']
+        file_name = str(song['track']).zfill(z) + '.' \
+            + song['song_name'] \
+            + ' - ' + song['artist_name'] + '.mp3'
+        if cd_serial_auth:
+            song['file_name'] = ''.join([
+                '[Disc-',
+                str(song['cd_serial']),
+                ' # ' + song['disc_description'] \
+                    if song['disc_description'] else '', '] ',
+                file_name])
+        else:
+            song['file_name'] = file_name
 
     def get_songs(self, album_id, song_id=None):
-        html = self._request(url_album % album_id).text
-        html = html.split('<div id="wall"')[0]
-        html1, html2 = html.split('<div id="album_acts')
-
-        t = re.search(r'"v:itemreviewed">(.+?)<', html1).group(1)
-        album_name = modificate_text(t)
-
-        t = re.search(r'"/artist/\w+.+?>(.+?)<', html1).group(1)
-        artist_name = modificate_text(t)
-
-        t = re.findall(u'(\d+)年(\d+)月(\d+)', html1)
-        year = '-'.join(t[0]) if t else ''
-
-        album_description = ''
-        t = re.search(u'专辑介绍：(.+?)<div class="album_intro_toggle">',
-                      html2, re.DOTALL)
-        if t:
-            t = t.group(1)
-            t = re.sub(r'<.+?>', '', t)
-            t = parser.unescape(t)
-            t = parser.unescape(t)
-            t = re.sub(r'\s\s+', u'\n', t).strip()
-            t = re.sub(r'<.+?(http://.+?)".+?>', r'\1', t)
-            t = re.sub(r'<.+?>([^\n])', r'\1', t)
-            t = re.sub(r'<.+?>(\r\n|)', u'\n', t)
-            album_description = t
-
-        t = re.search(r'//(pic\.xiami\.net.+?)"', html).group(1) # issue133
-        t = 'http://' + t
-        album_pic_url = t
-
-        songs = []
-        for c in html2.split('class="trackname"')[1:]:
-            disc = re.search(r'>disc (\d+)', c).group(1)
-
-            t = re.search(r'>disc .+?\[(.+?)\]', c)
-            disc_description = modificate_text(t.group(1)) if t else ''
-
-            # find track
-            t = re.findall(r'"trackid">(\d+)', c)
-            tracks = [i.lstrip('0') for i in t]
-            z = len(str(len(tracks)))
-
-            # find all song_ids and song_names
-            t = re.findall(r'<a href="/song/(\w+)".+?>(.+?)</', c)
-            song_names = [i[1] for i in t]
-            song_ids = re.findall(r'value="(\d+)" name="recommendids"', c)
-            # song_names = [modificate_text(i[1]) \
-                          # for i in t]
-
-            # find count of songs that be played.
-            t = re.findall(r'class="song_hot_bar"><span style="width:(\d+)', c)
-            song_played = [int(i) if i.isdigit() else 0 for i in t]
-
-            if len(tracks) != len(song_ids) != len(song_names):
-                print s % (1, 91, '  !! Error: ' \
-                           'len(tracks) != len(song_ids) != len(song_names)')
-                sys.exit(1)
-
-            for i in xrange(len(tracks)):
-                song_info = {}
-                song_info['song_id'] = song_ids[i]
-                if len(song_played) > i:
-                    song_info['song_played'] = song_played[i]
-                else:
-                    song_info['song_played'] = 0
-
-                song_info['album_id'] = album_id
-                song_info['song_url'] = u'http://www.xiami.com/song/' \
-                                        + song_ids[i]
-                song_info['track'] = tracks[i]
-                song_info['cd_serial'] = disc
-                song_info['year'] = year
-                song_info['album_pic_url'] = album_pic_url
-                song_info['song_name'] = modificate_text(song_names[i])
-                song_info['album_name'] = album_name
-                song_info['artist_name'] = artist_name
-                song_info['z'] = z
-                song_info['disc_description'] = disc_description
-                t = '%s\n\n%s%s' % (song_info['song_url'],
-                                    disc_description + u'\n\n' \
-                                        if disc_description else '',
-                                    album_description)
-                song_info['comment'] = t
-
-                songs.append(song_info)
+        songs = self._api.album(album_id)
 
         cd_serial_auth = int(songs[-1]['cd_serial']) > 1
-        for i in xrange(len(songs)):
-            z = songs[i]['z']
-            file_name = songs[i]['track'].zfill(z) + '.' \
-                + songs[i]['song_name'] \
-                + ' - ' + songs[i]['artist_name'] + '.mp3'
-            if cd_serial_auth:
-                songs[i]['file_name'] = ''.join([
-                    '[Disc-',
-                    songs[i]['cd_serial'],
-                    ' # ' + songs[i]['disc_description'] \
-                        if songs[i]['disc_description'] else '', '] ',
-                    file_name])
-            else:
-                songs[i]['file_name'] = file_name
+        for song in songs:
+            self.make_file_name(song, cd_serial_auth=cd_serial_auth)
 
-        t = [i for i in songs if i['song_id'] == song_id] \
-                if song_id else songs
-        songs = t
-
+        songs = [i for i in songs if i['song_id'] == song_id] \
+                 if song_id else songs
         return songs
 
     def get_song(self, song_id):
-        html = self._request(url_song % song_id).text
-        html = html.split('<div id="wall"')[0]
-        t = re.search(r'href="/album/(.+?)" title="', html)
-        if t:
-            album_id = t.group(1)
-        else:
-            return []
-
-        if not song_id.isdigit():
-            song_id = re.search(r'/song/(\d+)', html).group(1)
-        songs = self.get_songs(album_id, song_id=song_id)
-        return songs
+        song = self._api.song(song_id)
+        self.make_file_name(song)
+        return [song]
 
     def download_song(self):
         songs = self.get_song(self.song_id)
@@ -971,9 +1190,11 @@ class xiami(object):
             self.download_song()
 
     def display_infos(self, i, nn, n, durl):
+        length = datetime.datetime.fromtimestamp(i['length']).strftime('%M:%S')
         print n, '/', nn
         print s % (2, 94, i['file_name'])
         print s % (2, 95, i['album_name'])
+        print s % (2, 93, length)
         print 'http://www.xiami.com/song/%s' % i['song_id']
         print 'http://www.xiami.com/album/%s' % i['album_id']
         print durl
@@ -994,7 +1215,7 @@ class xiami(object):
 
     def play(self, songs, nn=u'1', n=1):
         if args.play == 2:
-            songs = sorted(songs, key=lambda k: k['song_played'], reverse=True)
+            songs = sorted(songs, key=lambda k: k['play_count'], reverse=True)
 
         for i in songs:
             self.record(i['song_id'], i['album_id'])
