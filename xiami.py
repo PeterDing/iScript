@@ -60,8 +60,19 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Content-Type":"application/x-www-form-urlencoded",
     "Referer":"http://www.xiami.com/",
-    "User-Agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 "\
-        "(KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36"
+    "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36"\
+}
+
+HEADERS2 = {
+    'pragma': 'no-cache',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36',
+    'accept': 'text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01',
+    'cache-control': 'no-cache',
+    'authority': 'www.xiami.com',
+    'x-requested-with': 'XMLHttpRequest',
+    'referer': 'https://www.xiami.com/play?ids=/song/playlist/id/',
 }
 
 ss = requests.session()
@@ -371,7 +382,7 @@ class XiamiWebAPI(object):
 
     def song(self, song_id):
         url = self.URL + 'id/%s/cat/json' % song_id
-        resp = self._request(url, headers=headers)
+        resp = self._request(url, headers=HEADERS2)
 
         info = resp.json()['data']['trackList'][0]
         song = self._make_song(info)
@@ -379,7 +390,7 @@ class XiamiWebAPI(object):
 
     def songs(self, *song_ids):
         url = self.URL + 'id/%s/cat/json' % '%2C'.join(song_ids)
-        resp = self._request(url, headers=headers)
+        resp = self._request(url, headers=HEADERS2)
 
         info = resp.json()['data']
         songs = []
@@ -390,7 +401,7 @@ class XiamiWebAPI(object):
 
     def album(self, album_id):
         url = self.URL + 'id/%s/type/1/cat/json' % album_id
-        resp = self._request(url, headers=headers)
+        resp = self._request(url, headers=HEADERS2)
 
         info = resp.json()['data']
         songs = []
@@ -403,7 +414,7 @@ class XiamiWebAPI(object):
 
     def collect(self, collect_id):
         url = self.URL + 'id/%s/type/3/cat/json' % collect_id
-        resp = self._request(url, headers=headers)
+        resp = self._request(url, headers=HEADERS2)
 
         info = resp.json()['data']
         songs = []
@@ -413,12 +424,12 @@ class XiamiWebAPI(object):
         return songs
 
     def search_songs(self, keywords):
-        url = 'https://www.xiami.com/ajax/search-index?key=%s&_=%s' % (
+        url = 'https://www.xiami.com/search?key=%s&_=%s' % (
             urllib.quote(keywords), int(time.time() * 1000))
         resp = self._request(url, headers=headers)
 
         html = resp.content
-        song_ids = re.findall(r'song/(\d+)', html)
+        song_ids = re.findall(r'song/(\w+)"', html)
         songs = self.songs(*song_ids)
         return songs
 
@@ -1178,16 +1189,18 @@ class xiami(object):
                                 r'<p class="album">(?:Album:|专辑：)(.+?)</p>', cn)
 
         # search song at xiami
-        for info in songs_info:
-            url = 'http://www.xiami.com/web/search-songs?key=%s' \
-                % urllib.quote(' '.join(info))
-            r = self._request(url)
-            j = r.json()
-            if not r.ok or not j:
-                print s % (1, 93, '  !! no find:'), ' - '.join(info)
+        for name, artist, album in songs_info:
+            name = name.strip()
+            artist = artist.strip()
+            album = album.strip()
+
+            songs = self._api.search_songs(name + ' ' + artist)
+            if not songs:
+                print s % (1, 93, '  !! no find:'), ' - '.join([name, artist, album])
                 continue
-            self.song_id = j[0]['id']
-            self.download_song()
+
+            self.make_file_name(songs[0])
+            self.download(songs[:1], n=1)
 
     def display_infos(self, i, nn, n, durl):
         length = datetime.datetime.fromtimestamp(i['length']).strftime('%M:%S')
