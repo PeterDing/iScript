@@ -334,6 +334,12 @@ class XiamiWebAPI(object):
 
     def _make_song(self, info):
         song = Song()
+
+        location=info['location']
+        row = location[0]
+        encryed_url = location[1:]
+        durl = decry(row, encryed_url)
+
         song.feed(
             song_id=info['song_id'],
             song_sub_title=info['song_sub_title'],
@@ -358,7 +364,8 @@ class XiamiWebAPI(object):
             length=info['length'],
             play_count=info['playCount'],
 
-            location=info['location']
+            location=info['location'],
+            location_url=durl
         )
         return song
 
@@ -1339,7 +1346,7 @@ class xiami(object):
             "shareTo": "all",
             "_xiamitoken": ss.cookies['_xiamitoken'],
         }
-        url = 'http://www.xiami.com/ajax/addtag'
+        url = 'https://www.xiami.com/ajax/addtag'
         r = self._request(url, data=data, method='POST')
         j = r.json()
         if j['status'] == 'ok':
@@ -1351,27 +1358,31 @@ class xiami(object):
         tags = args.tags
         for url in urls:
             if '/collect/' in url:
-                collect_id = re.search(r'/collect/(\d+)', url).group(1)
+                collect_id = re.search(r'/collect/(\w+)', url).group(1)
                 print s % (1, 97, u'\n  ++ save collect:'), \
                     'http://www.xiami.com/song/collect/' + collect_id
                 result = self._save_do(collect_id, 4, tags)
 
             elif '/album/' in url:
-                album_id = re.search(r'/album/(\d+)', url).group(1)
+                album_id = re.search(r'/album/(\w+)', url).group(1)
+                album = self._api.album(album_id)
+                album_id = album[0].album_id
                 print s % (1, 97, u'\n  ++ save album:'), \
-                    'http://www.xiami.com/album/' + album_id
+                    'http://www.xiami.com/album/' + str(album_id)
                 result = self._save_do(album_id, 5, tags)
 
             elif '/artist/' in url:
-                artist_id = re.search(r'/artist/(\d+)', url).group(1)
+                artist_id = re.search(r'/artist/(\w+)', url).group(1)
                 print s % (1, 97, u'\n  ++ save artist:'), \
                     'http://www.xiami.com/artist/' + artist_id
                 result = self._save_do(artist_id, 6, tags)
 
             elif '/song/' in url:
-                song_id = re.search(r'/song/(\d+)', url).group(1)
+                song_id = re.search(r'/song/(\w+)', url).group(1)
+                song = self._api.song(song_id)
+                song_id = song.song_id
                 print s % (1, 97, u'\n  ++ save song:'), \
-                    'http://www.xiami.com/song/' + song_id
+                    'http://www.xiami.com/song/' + str(song_id)
                 result = self._save_do(song_id, 3, tags)
 
             elif '/u/' in url:
