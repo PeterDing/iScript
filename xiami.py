@@ -22,7 +22,7 @@ url_song = "http://www.xiami.com/song/%s"
 url_album = "http://www.xiami.com/album/%s"
 url_collect = "http://www.xiami.com/collect/ajax-get-list"
 url_artist_albums = "http://www.xiami.com/artist/album/id/%s/page/%s"
-url_artist_top_song = "http://www.xiami.com/artist/top/id/%s"
+url_artist_top_song = "http://www.xiami.com/artist/top-%s"
 url_lib_songs = "http://www.xiami.com/space/lib-song/u/%s/page/%s"
 url_recent = "http://www.xiami.com/space/charts-recent/u/%s/page/%s"
 
@@ -345,7 +345,7 @@ class XiamiWebAPI(object):
             song_sub_title=info['song_sub_title'],
             songwriters=info['songwriters'],
             singers=info['singers'],
-            song_name=info['name'],
+            song_name=parser.unescape(info['name']),
 
             album_id=info['album_id'],
             album_name=info['album_name'],
@@ -371,6 +371,8 @@ class XiamiWebAPI(object):
 
     def _find_z(self, album):
         zs = []
+        song = album[0]
+
         for i, song in enumerate(album[:-1]):
             next_song = album[i+1]
 
@@ -996,7 +998,7 @@ class xiami(object):
 
     def download_artist_top_20_songs(self):
         html = self._request(url_artist_top_song % self.artist_id).text
-        song_ids = re.findall(r'/song/(.+?)" title', html)
+        song_ids = re.findall(r'/music/send/id/(\d+)', html)
         artist_name = re.search(
             r'<p><a href="/artist/\w+">(.+?)<', html).group(1)
         d = modificate_text(artist_name + u' - top 20')
