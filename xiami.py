@@ -393,6 +393,10 @@ class XiamiWebAPI(object):
         url = self.URL + 'id/%s/cat/json' % song_id
         resp = self._request(url, headers=HEADERS2)
 
+        # there is no song
+        if not resp.json().get('data'):
+            return None
+
         info = resp.json()['data']['trackList'][0]
         song = self._make_song(info)
         return song
@@ -400,6 +404,10 @@ class XiamiWebAPI(object):
     def songs(self, *song_ids):
         url = self.URL + 'id/%s/cat/json' % '%2C'.join(song_ids)
         resp = self._request(url, headers=HEADERS2)
+
+        # there is no song
+        if not resp.json().get('data'):
+            return None
 
         info = resp.json()['data']
         songs = []
@@ -411,6 +419,10 @@ class XiamiWebAPI(object):
     def album(self, album_id):
         url = self.URL + 'id/%s/type/1/cat/json' % album_id
         resp = self._request(url, headers=HEADERS2)
+
+        # there is no album
+        if not resp.json().get('data'):
+            return None
 
         info = resp.json()['data']
         songs = []
@@ -901,6 +913,9 @@ class xiami(object):
     def get_songs(self, album_id, song_id=None):
         songs = self._api.album(album_id)
 
+        if not songs:
+            return []
+
         cd_serial_auth = int(songs[-1]['cd_serial']) > 1
         for song in songs:
             self.make_file_name(song, cd_serial_auth=cd_serial_auth)
@@ -911,6 +926,10 @@ class xiami(object):
 
     def get_song(self, song_id):
         song = self._api.song(song_id)
+
+        if not song:
+            return []
+
         self.make_file_name(song)
         return [song]
 
@@ -929,6 +948,9 @@ class xiami(object):
 
     def download_album(self):
         songs = self.get_songs(self.album_id)
+        if not songs:
+            return
+
         song = songs[0]
 
         d = song['album_name'] + ' - ' + song['artist_name']
