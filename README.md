@@ -1301,6 +1301,7 @@ python2-requests (https://github.com/kennethreitz/requests)
 
 --update              下载新发布的东西
 --redownload          重新遍历所有的东西，如果有漏掉的东西则下载
+--proxy protocol://address:port     设置代理
 
 -f OFFSET, --offset OFFSET      从第offset个开始，只对 -V 有用。
 ```
@@ -1313,6 +1314,10 @@ tm是tumblr.py的马甲 (alias tm='python2 /path/to/tumblr.py')
 # 下载图片
 tm http://sosuperawesome.tumblr.com
 tm http://sosuperawesome.tumblr.com -t beautiful
+
+# 下载图片(使用代理)
+tm http://sosuperawesome.tumblr.com -x socks5://127.0.0.1:1024
+tm http://sosuperawesome.tumblr.com -t beautiful -x socks5://127.0.0.1:1024
 
 # 下载单张图片
 tm http://sosuperawesome.tumblr.com/post/121467716523/murosvur-on-etsy
