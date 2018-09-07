@@ -62,6 +62,8 @@ headers = {
 ss = requests.session()
 ss.headers.update(headers)
 
+PROXY = None
+
 class Error(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -119,12 +121,19 @@ def download_run(item):
     # num = random.randint(0, 7) % 8
     # col = s % (1, num + 90, filepath)
     # print '  ++ download: %s' % col
-    cmd = ' '.join([
-        'wget', '-c', '-q', '-T', '10',
-        '-O', '"%s.tmp"' % filepath,
-        '--user-agent', '"%s"' % headers['User-Agent'],
-        '"%s"' % item['durl'].replace('http:', 'https:')
-    ])
+
+    if PROXY:
+        cmd = ' '.join([
+            'curl', '-s', '-x', '"%s"' % PROXY, '-o', '"%s.tmp"' % filepath,
+            '-H', '"User-Agent: %s"' % headers['User-Agent'],
+            '"%s"' % item['durl']
+        ])
+    else:
+        cmd = ' '.join([
+            'curl', '-s', '-o', '"%s.tmp"' % filepath,
+            '-H', '"User-Agent: %s"' % headers['User-Agent'],
+            '"%s"' % item['durl']
+        ])
     status = os.system(cmd)
     return status, filepath
 
@@ -165,16 +174,20 @@ class TumblrAPI(object):
         api_url = '/'.join(['https://api.tumblr.com/v2/blog',
                            base_hostname, target, type])
         params['api_key'] = API_KEY
+        if PROXY:
+            proxies = {'http': PROXY, 'https': PROXY}
+        else:
+            proxies = None
         while True:
             try:
-                res = ss.get(api_url, params=params, timeout=10)
+                res = ss.get(api_url, params=params, proxies=proxies, timeout=10)
                 json_data = res.json()
                 break
             except KeyboardInterrupt:
                 sys.exit()
             except Exception as e:
                 NET_ERRORS.value += 1  # count errors
-                # print s % (1, 93, '[Error at requests]:'), e
+                print s % (1, 93, '[Error at requests]:'), e, '\n'
                 time.sleep(5)
         if json_data['meta']['msg'].lower() != 'ok':
             raise Error(s % (1, 91, json_data['meta']['msg']))
@@ -506,8 +519,18 @@ def args_handler(argv):
                    help='update new things')
     p.add_argument('--redownload', action='store_true',
                    help='redownload all things')
+    p.add_argument('-x', '--proxy', type=str,
+                   help='redownload all things')
     args = p.parse_args(argv[1:])
     xxx = args.xxx
+
+    if args.proxy:
+        if args.proxy[:4] not in ('http', 'sock'):
+            print s % (1, 91, '[Error]:'), 'proxy must have a protocol:// prefix'
+            sys.exit(1)
+        else:
+            global PROXY
+            PROXY = args.proxy
 
     if args.redownload: args.update = True
     return args, xxx
