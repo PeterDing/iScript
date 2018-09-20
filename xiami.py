@@ -747,7 +747,7 @@ class xiami(object):
         else:
             return None
 
-   def get_lyric_from_song(self, song):
+    def get_lyric_from_song(self, song):
         def lyric_parser(data):
             # get ' ' from http://img.xiami.net/lyric/1_13772259457649.lrc
             if len(data) < 10:
