@@ -747,6 +747,46 @@ class xiami(object):
         else:
             return None
 
+    def get_lyric_from_song(self, song):
+        def lyric_parser(data):
+            # get ' ' from http://img.xiami.net/lyric/1_13772259457649.lrc
+            if len(data) < 10:
+                return None
+
+            if re.search(r'\[\d\d:\d\d', data):
+                title = ' title: %s\n' % song.song_name.encode('utf8')
+                album = ' album: %s\n' % song.album_name.encode('utf8')
+                artist = 'artist: %s\n' % song.artist_name.encode('utf8')
+
+                tdict = {}
+                for line in data.split('\n'):
+                    print line
+                    if re.search(r'^\[\d\d:', line):
+                        cn = re.sub(r'\[\d{2}:\d{2}\.\d{2}\]', '', line)
+                        time_tags = re.findall(r'\[\d{2}:\d{2}\.\d{2}\]', line)
+                        for tag in time_tags: tdict[tag] = cn + '\n'
+                time_tags = tdict.keys()
+                time_tags.sort()
+                data = ''.join([title, album, artist,
+                                '\n------------------\n\n'] + \
+                               [tdict[tag] for tag in time_tags])
+                return data
+            else:
+                # for http://img.xiami.net/lyric/upload/19/1770983119_1356864643.lrc
+                return data
+
+        url = 'http://www.xiami.com/song/playlist/id/%s' % song.song_id
+        xml = self._request(url).content
+        t = re.search('<lyric>(http.+?)</lyric>', xml)
+        if not t: return None
+        lyric_url = t.group(1)
+        data = self._request(lyric_url).content.replace('\r\n', '\n')
+        data = lyric_parser(data)
+        if data:
+            return data.decode('utf8', 'ignore')
+        else:
+            return None
+
     def get_disc_description(self, album_url, info):
         if not self.html:
             self.html = self._request(album_url).text
@@ -929,7 +969,8 @@ class xiami(object):
 
         if not song:
             return []
-
+            
+        self.get_lyric_from_song(song)
         self.make_file_name(song)
         return [song]
 
