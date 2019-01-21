@@ -1504,8 +1504,8 @@ class panbaiducom_HOME(object):
                 j = {'errno': 'file has exist'}
                 return j
 
-        data = ('filelist=' \
-                + urllib.quote_plus('["%s"]' % info['path'].encode('utf8')) \
+        data = ('fsidlist=' \
+                + urllib.quote_plus('[%s]' % info['fs_id']) \
                 + '&path=' \
                 + urllib.quote_plus(info['remotepath'].encode('utf8'))
             )
@@ -1582,15 +1582,17 @@ class panbaiducom_HOME(object):
         j = info['file_list']['list']
         isdirs = [x['isdir'] for x in j]
         paths = [x['path'] for x in j]
-        z = zip(isdirs, paths)
+        fs_ids = [x['fs_id'] for x in j]
+        z = zip(fs_ids, isdirs, paths)
         if not infos:
             infos = [
                 {
-                    'isdir': x,
-                    'path': y,
+                    'fs_id': a,
+                    'isdir': b,
+                    'path': c,
                     'remotepath': remotepath \
                         if remotepath[-1] != '/' else remotepath[:-1]
-                } for x, y in z
+                } for a, b, c in z
             ]
 
         return infos
