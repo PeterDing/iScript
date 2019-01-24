@@ -1639,8 +1639,8 @@ class panbaiducom_HOME(object):
     def _secret_or_not(url):
         ss.headers['Referer'] = 'http://pan.baidu.com'
         r = ss.get(url, headers=headers)
+
         if r.status_code != 200 and r.status_code != 302:
-            print('cookies', ss.cookies.get_dict())
             ss.headers['Cookie'] = ';'.join(['{}={}'.format(k, v) for k, v in ss.cookies.get_dict().items()])
             r = ss.get(url, headers=headers, cookies=r.cookies)
 
@@ -1663,8 +1663,8 @@ class panbaiducom_HOME(object):
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'Accept': '*/*',
                 'X-Requested-With': 'XMLHttpRequest',
-                'Cookie': 'BAIDUID=0F38C66B2C9AC2FC887BD3FEB059F5AC:FG=1; PANWEB=1',
                 'Connection': 'keep-alive',
+                'Referer': 'http://pan.baidu.com'
             }
             r = ss.post(url, data=data, headers=theaders)
             if r.json()['errno']:
