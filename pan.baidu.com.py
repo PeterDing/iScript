@@ -2940,20 +2940,40 @@ class panbaiducom(object):
             'fs_id': j[0]['fs_id']
             })
 
+    def get_vcode(self):
+        url = (
+            'https://pan.baidu.com/api/getvcode'
+            '?prod=pan'
+            '&t={}'
+            '&channel=chunlei'
+            '&web=1'
+            '&app_id=250528'
+            '&bdstoken={}'
+        ).format(random.random(), self.bdstoken)
+
+        r = ss.get(url)
+        j = r.json()
+        return j
+
     def get_infos(self):
         url = ('https://pan.baidu.com/api/sharedownload?'
                'sign={}&timestamp={}&bdstoken={}'
                '&channel=chunlei&clienttype=0&web=1').format(
                    self.sign, self.timestamp, self.bdstoken)
 
-        data = ('encrypt=0&product=share'
-                + '&uk=' + self.uk
-                + '&primaryid=' + self.shareid
-                + '&fid_list=' + urllib.quote_plus('["%s"]' % self.infos['fs_id'])
-               )
+        data = {
+            'encrypt': '0',
+            'product': 'share',
+            'uk': self.uk,
+            'primaryid': self.shareid,
+            'fid_list': urllib.quote_plus('[%s]' % self.infos['fs_id']),
+            'path_list': '',
+            'vip': '0',
+        }
 
         while True:
-            r = ss.post(url, data=data)
+            data_str = '&'.join(['{}={}'.format(k, v) for k, v in data.items()])
+            r = ss.post(url, data=data_str)
             j = r.json()
             if not j['errno']:
                 dlink = fast_pcs_server(j['list'][0]['dlink'].encode('utf8'))
@@ -2964,9 +2984,10 @@ class panbaiducom(object):
                     panbaiducom_HOME._download_do(self.infos)
                 break
             else:
+                j = self.get_vcode()
                 vcode = j['vcode']
                 input_code = panbaiducom_HOME.save_img(j['img'], 'jpg')
-                self.params.update({'input': input_code, 'vcode': vcode})
+                data.update({'vcode_input': input_code, 'vcode_str': vcode})
 
     def get_infos2(self, path):
         while True:
