@@ -1637,6 +1637,8 @@ class panbaiducom_HOME(object):
 
     @staticmethod
     def _secret_or_not(url):
+        surl = url.split('?')[0].split('/1')[1].strip('/')
+
         ss.headers['Referer'] = 'http://pan.baidu.com'
         r = ss.get(url, headers=headers)
 
@@ -1649,12 +1651,17 @@ class panbaiducom_HOME(object):
                 secret = raw_input(s % (2, 92, "  请输入提取密码: "))
             else:
                 secret = args.secret
+
             data = 'pwd=%s&vcode=&vcode_str=' % secret
-            query = 'bdstoken=null&channel=chunlei&clienttype=0&web=1&app_id=250528'
-            url = "%s&t=%d&%s" % (
-                r.url.replace('init', 'verify'),
-                int(time.time()*1000),
-                query
+            url = (
+                'https://pan.baidu.com/share/verify?'
+                + 'surl=' + surl
+                + '&t=' + str(int(time.time()*1000))
+                + '&channel=chunlei'
+                + '&web=1'
+                + '&app_id=250528'
+                + '&bdstoken=null'
+                + '&clienttype=0'
             )
             theaders = {
                 'Accept-Encoding': 'gzip, deflate',
@@ -2975,7 +2982,8 @@ class panbaiducom(object):
             data_str = '&'.join(['{}={}'.format(k, v) for k, v in data.items()])
             r = ss.post(url, data=data_str)
             j = r.json()
-            if not j['errno']:
+            errno = j['errno']
+            if errno == 0:
                 dlink = fast_pcs_server(j['list'][0]['dlink'].encode('utf8'))
                 self.infos['dlink'] = dlink
                 if args.play:
@@ -2983,6 +2991,9 @@ class panbaiducom(object):
                 else:
                     panbaiducom_HOME._download_do(self.infos)
                 break
+            elif errno == 118:
+                print s % (1, 91, '  !! 没有下载权限！, 请转存网盘后，从网盘地址下载')
+                sys.exit(1)
             else:
                 j = self.get_vcode()
                 vcode = j['vcode']
@@ -3008,7 +3019,7 @@ class panbaiducom(object):
                     panbaiducom_HOME._download_do(self.infos)
                 break
             else:
-                print s % (1, '  !! Error at get_infos2, can\'t get dlink')
+                print s % (1, 91, '  !! Error at get_infos2, can\'t get dlink')
 
     def do(self, paths):
         for path in paths:
