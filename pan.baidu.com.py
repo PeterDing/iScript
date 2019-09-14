@@ -114,7 +114,7 @@ headers = {
     "Accept-Language":"en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
     "Referer":"http://pan.baidu.com/disk/home",
     "X-Requested-With": "XMLHttpRequest",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.75 Safari/537.36",
     "Connection": "keep-alive",
 }
 
@@ -758,7 +758,7 @@ class panbaiducom_HOME(object):
         self.timestamp = timestamp
 
     def _get_dlink(self, path):
-        dlink = ('http://d.pcs.baidu.com/rest/2.0/pcs/file?method=download'
+        dlink = ('http://c.pcs.baidu.com/rest/2.0/pcs/file?method=download'
                  '&app_id=250528&path={}&ver=2.0&clienttype=1').format(
                    urllib.quote(path))
 
@@ -939,25 +939,31 @@ class panbaiducom_HOME(object):
 
         cookie = 'Cookie: ' + '; '.join([
             k + '=' + v for k, v in ss.cookies.get_dict().items()])
-        user_agent  = "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia"
-        # user_agent  = "netdisk;7.15.1;HUAWEI+G750-T01;android-android;4.2.2"
-        # user_agent = headers['User-Agent']
+
+        # Netdisk user agents:
+        #
+        # "netdisk;6.7.1.9;PC;PC-Windows;10.0.17763;WindowsBaiduYunGuanJia"
+        # "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia"
+        # "netdisk;7.15.1;HUAWEI+G750-T01;android-android;4.2.2"
+        # "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia"
+        # "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia"
+        #
+        # Recently all downloading requests using above user-agents are limited by baidu
+
+        user_agent = headers['User-Agent']
 
         if args.aget_s:
             quiet = ' --quiet=true' if args.quiet else ''
-                #'--user-agent "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia" ' \
-                #'--user-agent "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia" ' \
-                #'--header "Referer:http://pan.baidu.com/disk/home " ' \
-            cmd = 'aget -k %s -s %s ' \
+            cmd = 'aget ' \
+                '"%s" ' \
                 '-o "%s.tmp" ' \
                 '-H "User-Agent: %s" ' \
-                '-H "Content-Type: application/x-www-form-urlencoded" ' \
+                '-H "Referer: http://pan.baidu.com/disk/home" ' \
                 '-H "Connection: Keep-Alive" ' \
                 '-H "Accept-Encoding: gzip" ' \
                 '-H "%s" ' \
-                '"%s"' \
-                % (args.aget_k, args.aget_s, infos['file'],
-                   user_agent, cookie, infos['dlink'])
+                '-s %s -k %s' \
+                % (infos['dlink'], infos['file'], user_agent, cookie, args.aget_s, args.aget_k)
         elif args.aria2c:
             quiet = ' --quiet=true' if args.quiet else ''
             taria2c = ' -x %s -s %s' % (args.aria2c, args.aria2c)
