@@ -118,6 +118,8 @@ headers = {
     "Connection": "keep-alive",
 }
 
+NETDISK_UA = 'netdisk;8.12.9;;android-android;7.0;JSbridge3.0.0'
+
 ss = requests.session()
 ss.headers.update(headers)
 
@@ -1143,8 +1145,13 @@ class panbaiducom_HOME(object):
             "content-crc32" : content_crc32,
             "ondup" : self.ondup
         }
+
+        # WARNING: here needs netdist user-agent
+        theaders = dict(ss.headers)
+        theaders['User-Agent'] = NETDISK_UA
+
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         if r.ok:
             return ENoError
         else:
@@ -1204,8 +1211,13 @@ class panbaiducom_HOME(object):
                 {'block_list': self.upload_datas[lpath]['slice_md5s']}
             )
         }
+
+        # WARNING: here needs netdist user-agent
+        theaders = dict(ss.headers)
+        theaders['User-Agent'] = NETDISK_UA
+
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
-        r = ss.post(url, params=p, data=data, verify=VERIFY)
+        r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         if r.ok:
             return ENoError
         else:
@@ -1232,6 +1244,8 @@ class panbaiducom_HOME(object):
         data = MultipartEncoder(files)
         theaders = dict(headers)
         theaders['Content-Type'] = data.content_type
+        theaders['User-Agent'] = NETDISK_UA
+
         url = 'https://c.pcs.baidu.com/rest/2.0/pcs/file'
         r = ss.post(url, params=p, data=data, verify=VERIFY, headers=theaders)
         j = r.json()
