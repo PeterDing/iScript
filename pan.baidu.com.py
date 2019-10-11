@@ -1659,7 +1659,7 @@ class panbaiducom_HOME(object):
     def _secret_or_not(url):
         surl = url.split('?')[0].split('/1')[1].strip('/')
 
-        ss.headers['Referer'] = 'http://pan.baidu.com'
+        ss.headers['Referer'] = 'https://pan.baidu.com'
         r = ss.get(url, headers=headers)
 
         if r.status_code != 200 and r.status_code != 302:
@@ -1691,12 +1691,14 @@ class panbaiducom_HOME(object):
                 'Accept': '*/*',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Connection': 'keep-alive',
-                'Referer': 'http://pan.baidu.com'
+                'Sec-Fetch-Mode': 'cors',
+                'Referer': 'https://pan.baidu.com/share/init?surl=' + surl
             }
             r = ss.post(url, data=data, headers=theaders)
             if r.json()['errno']:
-                print s % (2, 91, "  !! 提取密码错误\n")
+                print s % (2, 91, "  !! 提取密码错误, %s\n" % r.text)
                 sys.exit(1)
+            ss.cookies.update(r.cookies.get_dict())
 
     #######################################################################
     # for saveing inbox shares
@@ -2916,7 +2918,6 @@ class panbaiducom_HOME(object):
 class panbaiducom(object):
     @staticmethod
     def get_web_fileinfo(cm, url):
-        info = {}
         if 'shareview' in url:
             info['uk']       = re.search(r'uk="(\d+)"', cm).group(1)
             info['shareid']  = re.search(r'shareid="(\d+)"', cm).group(1)
