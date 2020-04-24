@@ -1033,12 +1033,10 @@ class panbaiducom_HOME(object):
 
         cookie = 'Cookie: ' + '; '.join([
             k + '=' + v for k, v in ss.cookies.get_dict().items()])
+        user_agent = 'User-Agent: ' + headers['User-Agent']
         quiet = ' --really-quiet' if args.quiet else ''
-        cmd = 'mpv%s --no-ytdl --cache-default 20480 --cache-secs 120 ' \
-            '--http-header-fields "%s" ' \
-            '--http-header-fields "%s" ' \
-            '"%s"' \
-            % (quiet, headers['User-Agent'], cookie, infos['dlink'])
+        cmd = 'mpv%s --no-ytdl --http-header-fields="%s","%s" "%s"' \
+            % (quiet, user_agent, cookie, infos['dlink'])
 
         os.system(cmd)
         timeout = 1
