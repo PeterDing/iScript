@@ -443,6 +443,7 @@ jca 或 jobclearall                      # 清除 *全部任务*
 -k num, --aget_k size               aget 分段大小: eg: -k 200K
                                                        -k 1M
                                                        -k 2M
+--appid num                         设置 app-id. 如果无法下载或下载慢, 尝试设置为 778750
 -p, --play                          play with mpv
 -P password, --passwd password      分享密码，加密密码
 -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
@@ -558,7 +559,8 @@ bp cd ...
 
 ```
 ## 下载、播放速度慢？
-如果wiki中的速度解决方法不管用，可以试试加该参数 -t fs
+如果无法下载或下载慢, 尝试设置参数 --appid 778750
+bp d /path/file --appid 778750
 
 # 下载当前工作目录 (递归)
 bp d . -R
@@ -780,6 +782,10 @@ ls、重命名、移动、删除、复制、使用正则表达式进行文件操
 
 > https://github.com/houtianze/bypy
 
+
+> 3个方法解决百度网盘限速: https://www.runningcheese.com/baiduyun
+
+
 ---
 
 <a name="bt.py"></a>
@@ -906,6 +912,7 @@ bt c magnet_link -t be64
 
 
 > http://en.wikipedia.org/wiki/Torrent_file
+
 
 ---
 
