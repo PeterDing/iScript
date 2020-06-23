@@ -760,9 +760,11 @@ class panbaiducom_HOME(object):
         self.timestamp = timestamp
 
     def _get_dlink(self, path):
+        # use app_id: 778750
+        # reference: [3个方法解决百度网盘限速](https://www.runningcheese.com/baiduyun)
         dlink = ('http://c.pcs.baidu.com/rest/2.0/pcs/file?method=download'
-                 '&app_id=250528&path={}&ver=2.0&clienttype=1').format(
-                   urllib.quote(path))
+                 '&app_id={}&path={}&ver=2.0&clienttype=1').format(
+                    args.appid, urllib.quote(path))
 
         dlink = fast_pcs_server(dlink)
         return dlink
@@ -956,7 +958,7 @@ class panbaiducom_HOME(object):
 
         if args.aget_s:
             quiet = ' --quiet=true' if args.quiet else ''
-            cmd = 'aget ' \
+            cmd = 'ag ' \
                 '"%s" ' \
                 '-o "%s.tmp" ' \
                 '-H "User-Agent: %s" ' \
@@ -3109,6 +3111,8 @@ def handle_args(argv):
         type=int, help='aget 分段下载数量')
     p.add_argument('-k', '--aget_k', action='store', default='200K', \
         type=str, help='aget 分段大小')
+    p.add_argument('--appid', action='store', default='250528', type=str, \
+                   help='设置 app-id. 如果无法下载或下载慢, 尝试设置为 778750')
     p.add_argument('-p', '--play', action='store_true', help='play with mpv')
     p.add_argument('-v', '--view', action='count', help='view details')
     p.add_argument('-V', '--VERIFY', action='store_true', help='verify')
