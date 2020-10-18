@@ -489,7 +489,7 @@ class panbaiducom_HOME(object):
 
         html_string = resp.content
 
-        mod = re.search(r'"bdstoken":"(.+?)"', html_string)
+        mod = re.search(r"bdstoken', '(.+?)'", html_string)
         if mod:
             self.bdstoken = mod.group(1)
             return self.bdstoken
@@ -873,7 +873,7 @@ class panbaiducom_HOME(object):
                                 t = i['path'].encode('utf8')
                                 t = t.replace(base_dir, '')
                                 t = t[1:] if t[0] == '/' else t
-                                t =  os.path.join(os.getcwd(), t)
+                                t =  os.path.join(args.outdir, t)
 
                                 i['dlink'] = self._get_dlink(i['path'].encode('utf8'))
 
@@ -896,7 +896,7 @@ class panbaiducom_HOME(object):
 
                 elif not meta['info'][0]['isdir']:
                     t =  os.path.join(
-                        os.getcwd(), meta['info'][0]['server_filename'].encode('utf8')
+                        args.outdir, meta['info'][0]['server_filename'].encode('utf8')
                     )
                     infos = {
                         'file': t,
@@ -952,17 +952,18 @@ class panbaiducom_HOME(object):
         # "netdisk;4.4.0.6;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia"
         # "netdisk;5.3.1.3;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia"
         #
+        # 'LogStatistic'
+
         # Recently all downloading requests using above user-agents are limited by baidu
 
         user_agent = headers['User-Agent']
 
         if args.aget_s:
             quiet = ' --quiet=true' if args.quiet else ''
-            cmd = 'ag ' \
+            cmd = 'aget ' \
                 '"%s" ' \
                 '-o "%s.tmp" ' \
                 '-H "User-Agent: %s" ' \
-                '-H "Referer: http://pan.baidu.com/disk/home" ' \
                 '-H "Connection: Keep-Alive" ' \
                 '-H "Accept-Encoding: gzip" ' \
                 '-H "%s" ' \
@@ -978,7 +979,7 @@ class panbaiducom_HOME(object):
                 '--header "%s" ' \
                 '"%s"' \
                 % (quiet, taria2c, tlimit, infos['name'],
-                   infos['dir_'], headers['User-Agent'],
+                   infos['dir_'], user_agent,
                    cookie, infos['dlink'])
         else:
             quiet = ' -q' if args.quiet else ''
@@ -990,7 +991,7 @@ class panbaiducom_HOME(object):
                 '--header "%s" ' \
                 '"%s"' \
                 % (quiet, tlimit, infos['file'],
-                   headers['User-Agent'], cookie, infos['dlink'])
+                   user_agent, cookie, infos['dlink'])
 
         status = os.system(cmd)
         exit = True
@@ -1001,7 +1002,15 @@ class panbaiducom_HOME(object):
                 pass
             else:
                 exit = False
-        if status != 0:     # other http-errors, such as 302.
+
+        content_length_matched = False
+        saved_path = '%s.tmp' % infos['file']
+        if os.path.exists(saved_path):
+            meta = os.stat(saved_path)
+            if meta.st_size == infos['size']:
+                content_length_matched = True
+
+        if status != 0 or not content_length_matched:     # other http-errors, such as 302.
             #wget_exit_status_info = wget_es[status]
             print('\n\n ---###   \x1b[1;91mEXIT STATUS\x1b[0m ==> '\
                 '\x1b[1;91m%d\x1b[0m   ###--- \n\n' % status)
@@ -2962,9 +2971,9 @@ class panbaiducom(object):
         self.infos.update({
             'name': j[0]['server_filename'].encode('utf8'),
             'file': os.path.join(
-                os.getcwd(), j[0]['server_filename'].encode('utf8')
+                args.outdir, j[0]['server_filename'].encode('utf8')
             ),
-            'dir_': os.getcwd(),
+            'dir_': args.outdir,
             'fs_id': j[0]['fs_id']
             })
 
@@ -3030,8 +3039,8 @@ class panbaiducom(object):
             if dlink:
                 self.infos = {
                     'name': name,
-                    'file': os.path.join(os.getcwd(), name),
-                    'dir_': os.getcwd(),
+                    'file': os.path.join(args.outdir, name),
+                    'dir_': args.outdir,
                     'dlink': fast_pcs_server(dlink.group(1))
                 }
                 if args.play:
@@ -3061,8 +3070,8 @@ class panbaiducom(object):
             name = urllib.unquote_plus(t)
             self.infos = {
                 'name': name,
-                'file': os.path.join(os.getcwd(), name),
-                'dir_': os.getcwd(),
+                'file': os.path.join(args.outdir, name),
+                'dir_': args.outdir,
                 'dlink': fast_pcs_server(path)
             }
 
@@ -3113,6 +3122,8 @@ def handle_args(argv):
         type=str, help='aget 分段大小')
     p.add_argument('--appid', action='store', default='250528', type=str, \
                    help='设置 app-id. 如果无法下载或下载慢, 尝试设置为 778750')
+    p.add_argument('-o', '--outdir', action='store', default=os.getcwd(), \
+                   type=str, help='保存目录')
     p.add_argument('-p', '--play', action='store_true', help='play with mpv')
     p.add_argument('-v', '--view', action='count', help='view details')
     p.add_argument('-V', '--VERIFY', action='store_true', help='verify')
