@@ -444,6 +444,7 @@ jca 或 jobclearall                      # 清除 *全部任务*
                                                        -k 1M
                                                        -k 2M
 --appid num                         设置 app-id. 如果无法下载或下载慢, 尝试设置为 778750
+-o path, --outdir path              指定下周目录: eg: -o /path/to/directory
 -p, --play                          play with mpv
 -P password, --passwd password      分享密码，加密密码
 -y, --yes                           yes # 用于 rmre, mvre, cpre, rnre ！！慎用
