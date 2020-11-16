@@ -213,7 +213,7 @@ wget
 
 aria2  (~ 1.18)
 
-aget # 需要 python >= 3.5, 安装 pip3 install aget
+aget-rs (https://github.com/PeterDing/aget-rs/releases)
 
 pip2 install rsa pyasn1 requests requests-toolbelt
 
