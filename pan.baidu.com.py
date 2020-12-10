@@ -873,7 +873,8 @@ class panbaiducom_HOME(object):
 
         html_string = resp.content
 
-        mod = re.search(r"bdstoken', '(.+?)'", html_string)
+        open('/tmp/t/sss', 'w').write(html_string)
+        mod = re.search(r'bdstoken[\'":\s]+([0-9a-f]{32})', html_string)
         if mod:
             self.bdstoken = mod.group(1)
             return self.bdstoken
@@ -1205,7 +1206,8 @@ class panbaiducom_HOME(object):
         resp = self._request('GET', url, '_get_dlink', headers=headers)
         info = resp.json()
         if info.get('urls'):
-            return info['urls'][0]['url'].encode('utf8')
+            dlink = info['urls'][0]['url'].encode('utf8')
+            return dlink
         else:
             print s % (1, 91, '  !! Error at _get_dlink, can\'t get dlink')
             sys.exit(1)
@@ -1417,7 +1419,6 @@ class panbaiducom_HOME(object):
                 '-o "%s.tmp" ' \
                 '-H "User-Agent: %s" ' \
                 '-H "Connection: Keep-Alive" ' \
-                '-H "Accept-Encoding: gzip" ' \
                 '-H "%s" ' \
                 '-s %s -k %s' \
                 % (infos['dlink'], infos['file'], user_agent, cookie, args.aget_s, args.aget_k)
@@ -1505,8 +1506,14 @@ class panbaiducom_HOME(object):
             k + '=' + v for k, v in ss.cookies.get_dict().items()])
         user_agent = 'User-Agent: ' + headers['User-Agent']
         quiet = ' --really-quiet' if args.quiet else ''
-        cmd = 'mpv%s --no-ytdl --http-header-fields="%s","%s" "%s"' \
-            % (quiet, user_agent, cookie, infos['dlink'])
+        cmd = 'mpv%s --no-ytdl --http-header-fields="%s","%s" ' \
+            % (quiet, user_agent, cookie)
+
+        if infos.get('m3u8'):
+            # https://github.com/mpv-player/mpv/issues/6928#issuecomment-532198445
+            cmd += ' --stream-lavf-o-append="protocol_whitelist=file,http,https,tcp,tls,crypto,hls,applehttp" '
+
+        cmd += "%s" % infos['dlink']
 
         os.system(cmd)
         timeout = 1
@@ -3301,7 +3308,7 @@ class panbaiducom_HOME(object):
         r = ss.post(url, params=params, data=data)
         j = r.json()
 
-        if j['errno'] != 0:
+        if not j.get('shorturl'):
             print s % (1, 91, '  !! Error at _share'), j
             sys.exit(1)
         else:
