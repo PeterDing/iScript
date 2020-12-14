@@ -873,7 +873,6 @@ class panbaiducom_HOME(object):
 
         html_string = resp.content
 
-        open('/tmp/t/sss', 'w').write(html_string)
         mod = re.search(r'bdstoken[\'":\s]+([0-9a-f]{32})', html_string)
         if mod:
             self.bdstoken = mod.group(1)
