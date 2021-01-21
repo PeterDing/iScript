@@ -1,4 +1,8 @@
-## iScript
+# iScript
+
+## pan.baidu.com.py 已经重构，不再维护
+
+[**BaiduPCS-Py**](https://github.com/PeterDing/BaiduPCS-Py) 是 pan.baidu.com.py 的重构版，运行在 Python >= 3.6
 
 [![Join the chat at https://gitter.im/PeterDing/iScript](https://badges.gitter.im/PeterDing/iScript.svg)](https://gitter.im/PeterDing/iScript?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -205,6 +209,10 @@ xm s http://www.xiami.com/artist/23460?spm=a1z1s.6928801.1561534521.115.ShW08b
 
 <a name="pan.baidu.com.py"></a>
 ### pan.baidu.com.py - 百度网盘的下载、离线下载、上传、播放、转存、文件操作
+
+**pan.baidu.com.py 已经重构，不再维护**
+
+[**BaiduPCS-Py**](https://github.com/PeterDing/BaiduPCS-Py) 是 pan.baidu.com.py 的重构版，运行在 Python >= 3.6
 
 #### 1. 依赖
 
